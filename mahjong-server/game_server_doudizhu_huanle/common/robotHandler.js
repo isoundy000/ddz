@@ -79,7 +79,7 @@ exports.qiangdizhu = function(socket,data){
     if(!userId ||fen==undefined || fen==null){
         socket.emit('system_error', { errcode: 500, errmsg: '参数错误' });
     }
-    dealUseridErr(socket,userId);
+    // dealUseridErr(socket,userId);
     var roomInfo = gameMgr.getRoomByUserId(userId);
     var player = roomInfo.getPlayerById(userId);
     player.clearTimer();

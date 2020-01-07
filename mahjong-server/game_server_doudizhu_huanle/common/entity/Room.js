@@ -17,7 +17,7 @@ function Room(roomId, roomConfig, createUser) {
     //是否是私密 0 否 1 是
     this.isPrivate = roomConfig.isPrivate;
     //上家出的牌
-    this.lastPokers={uesrId:0,pokers:[]};
+    this.lastPokers={userId:0,pokers:[]};
     //剩余的牌
     this.shengyuPokers=[];
     //底注
@@ -106,7 +106,7 @@ function Room(roomId, roomConfig, createUser) {
     this.countdown = 0;
     let self = this
     this.publicBeishu={chushi:roomConfig.chushibeishu,mingpai:0,qiangdizhu:this.minQiangFen,dipai:0,zhadan:this.zdBeishu,chuntian:0,shengpai:0};
-    this.nongminBeishu = 1;
+    this.nongminBeishu = 0;
 }
 
 //Room.prototype.GAME_STATE = {READY:'ready',PLAYING:'playing',SETTLEMENT:'settlement'};

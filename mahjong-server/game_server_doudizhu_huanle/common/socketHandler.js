@@ -787,6 +787,7 @@ exports.qiangdizhu = function(socket,data){
         roomInfo.setBeiShu(3);
         //设置抢地主倍数
         roomInfo.qiangdizhu = 3;
+        roomInfo.setPublicBeishu("qiangdizhu",fen)
         let banker = roomInfo.getBanker();
         banker.addPokers(roomInfo.dipai);
         console.log("banker.pokers",banker.pokers)

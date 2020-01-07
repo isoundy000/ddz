@@ -57,7 +57,7 @@ function RobotSocket(userId) {
                 if(!socket){
                     socket = userMgr.getT(self.userId)
                 }
-                robotHandler.qiangdizhu(self.userId,data);
+                robotHandler.qiangdizhu(socket,data);
             },delayTime);
         }
     });

@@ -302,7 +302,7 @@ exports.getAllSamePai = function(pokers,weishu){
     pokers = [].concat(pokers);
     console.log(pokers);
     let jin = [16,17];
-    if(weishu ===1){
+    if(weishu ==1){
         jin.push(15)
     }
     for(let i of jin){
