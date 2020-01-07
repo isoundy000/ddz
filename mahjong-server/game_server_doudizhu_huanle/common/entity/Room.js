@@ -120,8 +120,9 @@ Room.prototype.setLastPokers = function(userId,pokers){
     this.lastPokers.userId = userId;
 }
 
+
 Room.prototype.setPublicBeishu = function(key,value){
-    this.publicBeishu[key]=value;
+    this.publicBeishu[key] = value;
 }
 
 /**

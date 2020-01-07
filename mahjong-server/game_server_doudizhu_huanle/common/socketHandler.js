@@ -643,8 +643,9 @@ exports.tuoguan = function(socket,data){
     userMgr.broacastByRoomId("gb_tuoguan",{errcode:0,errmsg:"ok",userId:userId},roomInfo.roomId);
     userMgr.bindT(userId,tuoguanSocket);
     console.log("roomInfo.lastPokers.userId",roomInfo.lastPokers.userId);
-    if(roomInfo.currentTurn==player.seatIndex&&player.isTuoguan==0){
-        player.isTuoguan = 1;
+    player.isTuoguan = 1;
+    if(roomInfo.currentTurn==player.seatIndex&&player.isTuoguan==1){
+        
         if (tuoguanSocket.tuoguan_countdown != null && tuoguanSocket.tuoguan_countdown < 0) { //8秒才能广播一次信息
 
             return;
@@ -963,7 +964,7 @@ exports.chupai = function(socket,data){
         roomInfo.setLastPokers(userId,pokers);
         if(type.type == "zhadan" || type.type == "huojian"){
             roomInfo.zhadanNum += 1;
-            roomInfo.zdBeishu = roomInfo.zhadanNum * 2
+            roomInfo.setPublicBeishu("zhadan",roomInfo.zhadanNum * 2)
         }
         if(type.type === "huojian"){
             roomInfo.setBeiShu(2);
