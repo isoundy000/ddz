@@ -1,0 +1,5 @@
+pm2 start ./account_server/app.js  --name account_server  -o ./logs/account_server.log -e ./logs/account_server_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
+pm2 start ./hall_server/app.js  --name hall_server -o ./logs/hall_server.log -e ./logs/hall_server_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
+pm2 start ./game_server_niuniu/app.js  --name game_server_niuniu -o ./logs/game_server_niuniu.log -e ./logs/game_server_niuniu_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
+pm2 start ./game_server_paodekuai/app.js  --name game_server_paodekuai -o ./logs/game_server_paodekuai.log -e ./logs/game_server_paodekuai_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
+pm2 start ./staticServer/app.js  --name staticServer -o ./logs/staticServer.log -e ./logs/staticServer_err.log --log-date-format="YYYY-MM-DD HH:mm Z"

@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0, user-scalable=no">
+<title></title>
+<link rel="stylesheet" href="css/frozenui.css">
+<link rel="stylesheet" href="css/login.css">
+<link rel="stylesheet" href="css/base.css" />
+
+</head>
+<body>
+
+<div class="c-title">
+	<!-- <div class="logo">
+		<img src="img/login-alipay.png" width="42" height="32" alt="">
+	</div> -->
+	<p class="name">斗跑</p>
+</div>
+<p id="url" style="display: none;"><%=url %></p>
+<div class="c-login">
+	<h1>注册</h1>
+	<form class="loginForm" id="login" method="GET">
+		<input type="text" id="nickname" class="userLogo" placeholder="请输入名称" lay-verify="required|userName" />
+		<input type="text" id="account" placeholder="请输入手机号码" lay-verify="phone" />
+		<input type="text" class="codeText" placeholder="请输入验证码" lay-verify="required" />
+		<input type="button" id="codeBtn" value="获取验证码" />
+		<!-- <input type="text" class="userLogo" placeholder="请输入邮箱" lay-verify="email" /> -->
+		<input type="password" id="password" placeholder="请输入密码" lay-verify="required" />
+		<input type="password" placeholder="请输入确认密码" lay-verify="required" />
+		<input type="button" value="注册" id="regBtn" />
+	</form>
+</div>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/base.js"></script>
+<script type="text/javascript">
+/**
+ * 配置验证须知
+ * 1、要引入jquery.js、base.js、base.css
+ * 2、提交按钮应在<form></form>内部
+ * 3、在要验证的input中写上lay-verify="验证方法名|验证方法名" 可写多个但要用|分隔开
+ * 4、要添加验证方法可在base.js中添加
+ * 5、诺只想引用提示弹出：showTip.success("弹出提示内容");、showTip.fall("弹出提示内容")
+ * 6、base.css中可以自行修改弹窗样式
+ */
+ function getSearchString(key, Url) {
+    var str = Url;
+    str = str.substring(1, str.length); // 获取URL中?之后的字符（去掉第一位的问号）
+    // 以&分隔字符串，获得类似name=xiaoli这样的元素数组
+    var arr = str.split("&");
+    var obj = new Object();
+    // 将每一个数组元素以=分隔并赋给obj对象
+    for (var i = 0; i < arr.length; i++) {
+        var tmp_arr = arr[i].split("=");
+        obj[decodeURIComponent(tmp_arr[0])] = decodeURIComponent(tmp_arr[1]);
+    }
+    return obj[key];
+}
+let s= document.getElementById("login");
+let p = window.location.search;
+let host = window.location.host;
+var bind = getSearchString("bind_recommender",p)
+let url = document.getElementById("url").innerText
+console.log(bind)
+var url2 = url+"?bind_recommender="+bind
+console.log("url2",url2)
+s.setAttribute("action",url)
+console.log(host+"/sendnum")
+$('#regBtn').click(function(){
+	if(!checkInputFunction($('#regBtn'))){
+		return false;
+	}
+	//下面书写验证成功后执行的内容
+	let account = $("#account").val();
+	let password = $("#password").val();
+	let nickname = $("#nickname").val();
+	let bind_recommender = bind
+
+	$.ajax({
+			cache:false,
+			type:"GET",
+			url:url+"register",
+			data:{account:account,nickname:nickname,password:password,bind_recommender:bind_recommender},
+			dataType:"json",
+			async:false,
+			beforeSend:function (xhr,settings) {
+				{{/*xhr.setRequestHeader("X-CSRFToken","{{ csrf_token }}")*/}}
+			},
+			success:function (data) {
+				if (data.code == 1){
+					alert(data.errmsg);
+				}else if(data.errcode == 0){
+					alert("注册成功");
+					window.location.reload();
+				}
+			}
+		})
+});
+$('#codeBtn').click(function(){
+	// if(!checkCodeFunction($('.codeBtn'))){
+	// 	return false;
+	// }
+	let hostName = window.location.hostname;
+	//下面书写验证成功后执行的内容
+	let account = $("#account").val();
+	$.ajax({
+			cache:false,
+			type:"GET",
+			url:"http://"+hostName+":19000/sendnum",
+			data:{account:account},
+			dataType:"json",
+			async:false,
+			beforeSend:function (xhr,settings) {
+				{{/*xhr.setRequestHeader("X-CSRFToken","{{ csrf_token }}")*/}}
+			},
+			success:function (data) {
+				if (data.code == 1){
+					alert(data.errmsg);
+				}else if(data.code == 0){
+					let s= document.getElementById("codeBtn");
+					s.setAttribute("disabled",true);
+					let time= 60;
+					var t = setInterval(function(){
+						s.setAttribute("value","已发送"+time)
+						time--;
+					},1000)
+					
+					setTimeout(function(){
+						
+						let s= document.getElementById("codeBtn");
+						s.setAttribute("disabled",false);
+						s.setAttribute("value","获取验证码");
+						window.clearInterval(t);
+					},60000)
+					
+
+				}
+			}
+		})
+});
+</script>
+<div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';">
+</div>
+</body>
+</html>
+

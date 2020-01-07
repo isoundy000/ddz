@@ -1,0 +1,15 @@
+.vscode
+.DS_Store
+node_modules
+
+./hall_server/public/remote-assets/res/*
+./hall_server/public/remote-assets/src/*
+.idea
+logs
+tests
+package-lock.json
+/start_all_pm2__.bat
+/game_server_doudizhu/test.cmd
+/start_all_pm2__ - 副本.bat
+/test.cmd
+/deprecated/roommgr_test.js
