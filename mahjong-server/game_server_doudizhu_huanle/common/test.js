@@ -1,14 +1,25 @@
-// let gameLogic  = require("./gameLogic")
+let gameLogic  = require("./gameLogic")
 // let socketHandler = require("./socketHandler")
 // let commonUtil = require("../../utils/commonUtil")
-// let s=[ {color: 3, num: 12}]
+let s=[ { color: 3, num: 14 },
+    { color: 1, num: 13 },
+    { color: 2, num: 12 },
+    { color: 3, num: 11 },
+    { color: 0, num: 10 },
+    { color: 2, num: 10 },
+    { color: 3, num: 10 },
+    { color: 0, num: 9 },
+    { color: 2, num: 8 },
+    { color: 0, num: 7 },
+    { color: 0, num: 6 },
+    { color: 1, num: 6 } ] 
 // let l = [{num:14},{num:14,color:1},{num:12,color:1},{num:11,color:1},{num:10,color:1},{num:9,color:1}]
 // // console.log("compare",gameLogic.compare(s,l))
 // console.log("结果",gameLogic.getBiggerPokers(s,l));
 // console.log("结果2",gameLogic.getSuijiPai(l));
 
-// let pokerType = gameLogic.getPokerType(s)
-// console.log(pokerType);
+let pokerType = gameLogic.getSuijiPai(s)
+console.log("pokerType",pokerType);
 // function sortSS(a,b){
 //     return a.num-b.num
 // }
@@ -155,4 +166,4 @@
 // console.log(s)
 
 
-console.log(add.ip())
+// console.log(add.ip())

@@ -77,7 +77,7 @@ exports.qiangdizhu = function(socket,data){
         socket = userMgr.getT(userId)
     }
     if(!userId ||fen==undefined || fen==null){
-        socket.emit('system_error', { errcode: 500, errmsg: '参数错误' });
+        return socket.emit('system_error', { errcode: 500, errmsg: '参数错误',flag:"qiangdizhu"});
     }
     // dealUseridErr(socket,userId);
     var roomInfo = gameMgr.getRoomByUserId(userId);
@@ -156,7 +156,7 @@ exports.jiabei = function(socket,data){
         socket = userMgr.getT(userId)
     }
     if(!userId || beishu==undefined || beishu == null){
-        socket.emit('system_error', { errcode: 500, errmsg: '参数错误' });
+        socket.emit('system_error', { errcode: 500, errmsg: '参数错误',flag:"jiabei" });
     }
     // dealUseridErr(socket,userId);
     var roomInfo = gameMgr.getRoomByUserId(userId);
@@ -520,7 +520,7 @@ async function ready(socket, data) {
     var roomInfo = gameMgr.getRoomByUserId(userId);
     //console.log('************玩家准备*********' + userId);
     if (!userId || !roomInfo) {
-        socket.emit('system_error', { errcode: 500, errmsg: "参数错误" });
+        socket.emit('system_error', { errcode: 500, errmsg: "参数错误" ,flag:"ready"});
         return;
     }
     // //检查传过来的userId是否有误
@@ -582,7 +582,7 @@ function tishi(socket,data){
     let userId = data.userId;
     let chupai = data.chupai;
     if(socket&&!userId){
-        socket.emit("tishi_result",{errcode:1,errmsg:"参数错误"});
+        socket.emit("tishi_result",{errcode:1,errmsg:"参数错误",flag:"tishi"});
         return;
     }
     let roomInfo = gameMgr.getRoomByUserId(userId);
@@ -638,7 +638,7 @@ async function buchu(socket,data){
     let userId = data.userId;
     let roomInfo = gameMgr.getRoomByUserId(userId)
     if(socket&& !userId ){
-        socket.emit("chupai_result",{errcode:1,errmsg:"参数错误"});
+        socket.emit("chupai_result",{errcode:1,errmsg:"参数错误",flag:"buchu"});
         return;
     }
     // userMgr.bind(userId,socket)
@@ -670,7 +670,7 @@ async function chupai(socket,data){
     // console.log("pokers",pokers)
     // console.log(!socket)
     if( socket&&!userId || !pokers){
-        socket.emit("chupai_result",{errcode:1,errmsg:"参数错误"});
+        socket.emit("chupai_result",{errcode:1,errmsg:"参数错误",flag:"chupai"});
         return;
     }
     let result = {};

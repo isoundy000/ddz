@@ -631,12 +631,14 @@ exports.tuoguan = function(socket,data){
     if(typeof data ==="string"){
         data = JSON.parse(data);
     }
+    
     var userId = data.userId;
     console.log(userId+"开始托管")
     if(!userId&&socket){
         socket.emit("systen_error",{errcode:500,errmsg:"参数错误"})
     }
     let roomInfo = gameMgr.getRoomByUserId(userId)
+    console.log("tuoguanleaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",roomInfo.gameState)
     var tuoguanSocket = userMgr.getT(userId);
     let player = roomInfo.getPlayerById(userId);
     
@@ -879,7 +881,7 @@ exports.jiabei = function(socket,data){
     dealUseridErr(socket,userId);
     var roomInfo = gameMgr.getRoomByUserId(userId);
     var player = roomInfo.getPlayerById(userId);
-    player.beishu = beishu;
+    player.privateBeishu = beishu;
     player.clearTimer();
     let banker = roomInfo.getBanker();
     userMgr.broacastByRoomId("gb_jiabei",{beishu:beishu,userId:userId},roomInfo.roomId);

@@ -308,7 +308,7 @@ exports.getAllSamePai = function(pokers,weishu){
     for(let i of jin){
         for(let j of pokers){
             if(j.num==i){
-                commonUtil.removeOne(pokers,i);
+                commonUtil.removeOne(pokers,j);
             }
         }
         
@@ -994,30 +994,27 @@ exports.getSuijiPai=function(mypokers){
     function danshun(){
         let shunzi = exports.getAllSamePai(mypokers,1);
         console.log("danshun2",shunzi)
+        let res = []
+        let temp = {};
+        let result = [];
+
+        shunzi.sort(sortLen)
         for(let i of shunzi){
-            for (j of i){
-                if (j===15){
-                    let index = i.indexOf(j);
-                    i.splice(index,1)
-                }
+            if(i.length>5){
+                result = i;
+                break;
             }
         }
-        shunzi.sort(sortLen)
-        console.log("SSSSSSS",shunzi)
-        let res = []
-        console.log(shunzi[0].length)
-            if(shunzi[0].length>=5){
-                console.log(12)
-                for(let m of shunzi[0]){
-                    for(let i of mypokers){
-                        if(i.num ==m){
-                            res.push(i)
-                        }
-                    }
-                }
+        for(let i of result){
 
+            for(let j of mypokers){
+                if(i.indexOf(j.num) !== -1 &&temp[j.num] !==1){
+                    temp[j.num] = 1
+                    res.push(j);
+                }
+                
             }
-            console.log("SSSSSSS",res)
+    }
 
         return res
         
