@@ -79,7 +79,7 @@ async function dealUseridErr(socket,userId){
  * @param {*} data
  */
 exports.login = async function (socket, data,config) {
-    if(typeof data ==="string"){
+    if(typeof data =="string"){
         data = JSON.parse(data);
     }
     
@@ -130,8 +130,23 @@ exports.login = async function (socket, data,config) {
             });
         })
 
-    } 
+    }
     await getCoins();
+    async function getRoomId(){
+        return new Promise( (resolve,reject)=>{
+             playerService.getUserDataByUserId(userId,function(err,result){
+                if(err){
+                    console.log(err)
+                    return;
+                }
+                if(result){
+                    resolve(result.roomid)
+                    roomId = result.roomid;
+                }
+            });
+        })
+
+    } 
     //检查参数是否被篡改
     // var md5 = crypto.md5(roomId  + time + config.ROOM_PRI_KEY);
     // if (md5 != sign) {
@@ -141,6 +156,11 @@ exports.login = async function (socket, data,config) {
     
     //选择房间
       var roomId = "";
+      let room_id = await getRoomId();
+      roomId=room_id
+      if(!roomId){
+          roomId = ""
+      }
       let roomList = gameMgr.getRoomList();
       let keys = Object.keys(roomList);
       function sorts(a,b){//对房间按照玩家人数从大到小排序
@@ -321,6 +341,34 @@ exports.login = async function (socket, data,config) {
     };
     // ret.data.seats=newSeats;
     socket.emit('login_result', ret);
+
+    var seats2={}
+    seats2.pokers = [];
+    for (var i = 0; i < roomInfo.seats.length; i++) {
+        
+        var player = roomInfo.seats[i];
+        // if(playerInfo.userId ==userId){
+        //     exports.tuoguan()
+        // }
+        var playerInfo = {};
+        playerInfo.userId = player.userId;
+        playerInfo.pokers = player.pokers;
+
+        seats2.pokers.push(playerInfo);
+        if (userId == player.userId) {
+            userData = seats[i];
+        }
+    }
+    seats2.currentSeatIndex = roomInfo.currentTurn;
+    seats2.gameState = roomInfo.gameState;
+    seats2.dipai = roomInfo.dipai
+    if(room_id){
+        socket.emit('login_result2',seats2 );
+        console.log("seats2",seats2)
+    }
+
+    
+
     console.log(ret)
     //console.log('********【'+currentPlayer.name+'】_join_room********');
     //console.log(JSON.stringify(ret));
@@ -349,8 +397,9 @@ exports.login = async function (socket, data,config) {
         //         socket.emit('begin_ready',{ countdown: roomInfo.READY_COUNTDOWN });
         //     }
         // }
-        getBeishu(roomId)
+        
     }
+    getBeishu(roomId)
 }
 
 /**
@@ -656,7 +705,7 @@ exports.tuoguan = function(socket,data){
         setTimeout(() => {
             tuoguanSocket.tuoguan_countdown = 1;
         }, 5000)
-        tuoguanSocket.emit("your_turn",{gameState:"playing"});
+        tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState});
     }
     if(!socket){
         socket = userMgr.getT(userId)
@@ -784,6 +833,7 @@ exports.qiangdizhu = function(socket,data){
     if(fen >roomInfo.minQiangFen){
         roomInfo.minQiangFen = fen;
     }
+    userMgr.broacastByRoomId("gb_qiangdizhu_result",{userId:userId,fen:fen},roomInfo.roomId)
     if(fen == 3){
         roomInfo.setBanker(userId);
         roomInfo.setBeiShu(3);
@@ -804,7 +854,7 @@ exports.qiangdizhu = function(socket,data){
         for(let i of roomInfo.seats){
             i.setTimer(function(){
                 let socket = userMgr.get(i.userId)
-                exports.jiabei(socket,{userId:i.userId,beishu:0})
+                exports.jiabei(socket,{userId:i.userId,beishu:1})
             },roomInfo.JB_COUNTDOWN+5000)
         }
         return;
@@ -812,15 +862,23 @@ exports.qiangdizhu = function(socket,data){
     
     if(roomInfo.isAllOpt(player.PLAY_STATE.QIANGDIZHU)){
         if(roomInfo.minQiangFen==0){
-            for (let i of roomInfo.seats){
-                i.reset();
+            roomInfo.noQiang += 1;
+            if(roomInfo.noQiang % 3 == 0){
+                let random = commonUtil.randomFrom(1,3)
+                banker = roomInfo.seats[random]
+                roomInfo.setBanker(banker.userId)
+            }else{
+                for (let i of roomInfo.seats){
+                    i.reset();
+                }
+                faPai(roomInfo);
+                return;
             }
-            faPai(roomInfo);
-            return;
-        }
-        let userId = roomInfo.findDiZhu();
 
-        roomInfo.setBanker(userId);
+        }else{
+            let userId = roomInfo.findDiZhu();
+            roomInfo.setBanker(userId);
+        }
         roomInfo.setBeiShu(fen);
         roomInfo.qiangdizhu = fen;
         let banker = roomInfo.getBanker();
@@ -828,13 +886,17 @@ exports.qiangdizhu = function(socket,data){
         let bankPokers = pokerSort(banker.pokers);
         // roomInfo.setState(roomInfo.GAME_STATE.PLAYING);
         roomInfo.setState(roomInfo.GAME_STATE.JIABEI)
-        userMgr.broacastByRoomId('gb_dizhu',{userId:userId,bankPokers:bankPokers,gameState:roomInfo.gameState,countdown:roomInfo.JB_COUNTDOWN,mingpai:banker.mingpai}, roomInfo.roomId);
+        userMgr.broacastByRoomId('gb_dizhu',{userId:banker.userId,bankPokers:bankPokers,gameState:roomInfo.gameState,countdown:roomInfo.JB_COUNTDOWN,mingpai:banker.mingpai}, roomInfo.roomId);
         console.log(1234)
         for(let i of roomInfo.seats){
             i.setTimer(function(){
                 let socket = userMgr.get(i.userId)
                 exports.jiabei(socket,{userId:i.userId,beishu:0})
             },roomInfo.JB_COUNTDOWN+5000)
+            if(i.isTuoguan==1){
+                let tuoguanSocket = userMgr.getT(i.userId)
+                tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState})
+            }
         }
     }else{
         checkDiZhuState(userId,roomInfo.roomId);
@@ -1690,13 +1752,22 @@ exports.exit = function (socket, data) {
  * 玩家掉线
  * @param socket
  */
-exports.disconnect = function (socket) {
+exports.disconnect =async function (socket) {
     if(typeof data ==="string"){
         data = JSON.parse(data);
     }
     var userId = socket.userId;
-
-    dealUseridErr(socket,userId)
+    console.log("disconnuserid",userId);
+    //检查传过来的userId是否有误
+    // let userid = await checkUserId(socket,userId);
+    // console.log("disconnuserid",userid);
+    if(!socket){
+        socket = userMgr.getT(userId)
+    }
+    // if(userid===1 || !userid ||userid!==userId){
+    //     socket.emit('system_error', { errcode: 500, errmsg: "传入的数据有误" });
+    //     return;
+    // }
     //如果是旧链接断开，则不需要处理。
     if (userMgr.get(userId) != socket) {
         return;
@@ -1704,7 +1775,10 @@ exports.disconnect = function (socket) {
 
     var roomInfo = gameMgr.getRoomByUserId(userId);
     if (!roomInfo) {
+        console.log("roomInfo yichang")
         userMgr.del(userId);
+        
+        gameMgr.exitRoom(userId);
         return;
     }
     var data = {
@@ -1724,6 +1798,12 @@ exports.disconnect = function (socket) {
     //清除玩家的在线信息
     userMgr.del(userId);
     socket.userId = null;
+    console.log("roomInfo.gameState",roomInfo.gameState)
+    if(roomInfo.gameState==roomInfo.GAME_STATE.READY || roomInfo.gameState==roomInfo.GAME_STATE.SETTLEMENT){
+        userMgr.broacastByRoomId('gb_player_exit', { userId: userId }, roomInfo.roomId);
+        gameMgr.exitRoom(userId);
+ 
+    }
 }
 
 /**

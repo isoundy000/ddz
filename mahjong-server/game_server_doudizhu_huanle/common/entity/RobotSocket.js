@@ -35,7 +35,8 @@ function RobotSocket(userId) {
      */
     this.socket.on('your_turn',function(data){
         console.log('******【'+self.userId+'】begin_托管*******');
-        console.log(data);
+        
+        data.userId=self.userId
         var delayTime = commonUtil.randomFrom(2000,3000);
         if(data.gameState=="playing"){
             setTimeout(function(){
@@ -48,6 +49,8 @@ function RobotSocket(userId) {
                 if(!socket){
                     socket = userMgr.getT(self.userId)
                 }
+                data.beishu = 1
+                console.log("datajiabei",data);
                 robotHandler.jiabei(socket,data);
             },delayTime);
         }
@@ -57,6 +60,9 @@ function RobotSocket(userId) {
                 if(!socket){
                     socket = userMgr.getT(self.userId)
                 }
+                data.fen = 0;
+                console.log("dataqiangdizhu",data);
+
                 robotHandler.qiangdizhu(socket,data);
             },delayTime);
         }

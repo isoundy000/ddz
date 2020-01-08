@@ -1006,9 +1006,8 @@ exports.getSuijiPai=function(mypokers){
             }
         }
         for(let i of result){
-
             for(let j of mypokers){
-                if(i.indexOf(j.num) !== -1 &&temp[j.num] !==1){
+                if(j.num==i &&temp[j.num] !==1){
                     temp[j.num] = 1
                     res.push(j);
                 }

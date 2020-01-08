@@ -373,14 +373,16 @@ exports.exitRoom = function (userId) {
     if (room == null) {
         return;
     }
-
+    console.log("开始清除玩家信息")
     //如果游戏还没开始,可直接从房间退出
     room.exitRoom(userId);
     //从数据库中移除玩家
     gameService.updateUserExitRoom(userId, player.seatIndex, (err, result) => {
         if (err) {
-            console.error(err);
+            return console.error(err);
         }
+        console.log("clear",userId)
+
     });
 };
 

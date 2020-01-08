@@ -82,7 +82,7 @@ exports.opt = function(userId,data){
     }
     let sjPoker = roomInfo.lastPokers.pokers;
 
-    let data1 ={userId:userId,chupai:1}
+    let data1 ={userId:userId,chupai:1,flag:"opt"}
     let res = tishi(socket,data1);
     console.log("tuoguan",userId,res)
     let tuoguanSocket = userMgr.getT(userId)
@@ -223,7 +223,7 @@ async function exit(socket, data) {
     if (socket) {
         socket.emit('exit_result', { state: player.state,res:"yes" });
         console.log("exit",player)
-        exports.disconnect(socket);
+        // exports.disconnect(socket);
     }
     //如果玩家在开始准备阶段退出，判断是不是庄家，否则更换庄家
     if (player.state == player.PLAY_STATE.FREE || player.state == player.PLAY_STATE.READY) {
@@ -338,6 +338,7 @@ async function ready(socket, data) {
 function tishi(socket,data){
     let userId = data.userId;
     let chupai = data.chupai;
+    let flag = data.flag;
     if(socket && !userId){
         socket.emit("tishi_result",{errcode:1,errmsg:"参数错误"});
         return;
@@ -347,12 +348,18 @@ function tishi(socket,data){
     console.log("lastPokers",lastPokers)
     let lastPokersType = gameLogic.getPokerType(lastPokers,userId);
     let player = roomInfo.getPlayerById(userId);
+    let temp_player = player;
     console.log("roomInfo.currentTurn",roomInfo.currentTurn)
     let nextPlayer = roomInfo.getNextTurnPlayer(roomInfo.currentTurn);
     let res;
-    if(nextPlayer.pokers.length==1 && roomInfo.lastPokers.pokers.length==1){
+    if(flag = "opt"){
+        player = nextPlayer;
+    }
+    if(player.pokers.length==1 && roomInfo.lastPokers.pokers.length==1){
+        player = temp_player;
          res= gameLogic.getBiggerPokers(lastPokers,player.pokers,player.userId,1);
     }else{
+        player = temp_player;
         res = gameLogic.getBiggerPokers(lastPokers,player.pokers,player.userId);
     }
     

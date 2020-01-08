@@ -91,6 +91,7 @@ exports.qiangdizhu = function(socket,data){
     if(fen >roomInfo.minQiangFen){
         roomInfo.minQiangFen = fen;
     }
+    userMgr.broacastByRoomId("gb_qiangdizhu_result",{userId:userId,fen:fen},roomInfo.roomId)
     if(fen == 3){
         roomInfo.setBanker(userId);
         roomInfo.setBeiShu(3);
@@ -112,15 +113,25 @@ exports.qiangdizhu = function(socket,data){
     
     if(roomInfo.isAllOpt(player.PLAY_STATE.QIANGDIZHU)){
         if(roomInfo.minQiangFen==0){
-            for (let i of roomInfo.seats){
-                i.reset();
+            roomInfo.noQiang += 1;
+            if(roomInfo.noQiang % 3 == 0){
+                let random = commonUtil.randomFrom(1,3)
+                let banker = roomInfo.seats[random]
+                roomInfo.setBanker(banker.userId)
+            }else{
+                for (let i of roomInfo.seats){
+                    i.reset();
+                }
+                faPai(roomInfo);
+                return;
             }
-            faPai(roomInfo);
-            return;
-        }
-        let userId = roomInfo.findDiZhu();
 
-        roomInfo.setBanker(userId);
+        }else{
+            let userId = roomInfo.findDiZhu();
+
+            roomInfo.setBanker(userId);
+            
+        }
         roomInfo.setBeiShu(fen);
         roomInfo.qiangdizhu = fen;
         let banker = roomInfo.getBanker();
@@ -128,14 +139,14 @@ exports.qiangdizhu = function(socket,data){
         let bankPokers = pokerSort(banker.pokers);
         // roomInfo.setState(roomInfo.GAME_STATE.PLAYING);
         roomInfo.setState(roomInfo.GAME_STATE.JIABEI)
-        userMgr.broacastByRoomId('gb_dizhu',{userId:userId,bankPokers:bankPokers,gameState:roomInfo.gameState,countdown:roomInfo.JB_COUNTDOWN,mingpai:banker.mingpai}, roomInfo.roomId);
+        userMgr.broacastByRoomId('gb_dizhu',{userId:banker.userId,bankPokers:bankPokers,gameState:roomInfo.gameState,countdown:roomInfo.JB_COUNTDOWN,mingpai:banker.mingpai}, roomInfo.roomId);
         console.log(1234)
         for(let i of roomInfo.seats){
             i.setTimer(function(){
                 let socket = userMgr.get(i.userId)
                 exports.jiabei(socket,{userId:i.userId,beishu:0})
             },roomInfo.JB_COUNTDOWN+5000);
-            if(i.isTuoguan=1){
+            if(i.isTuoguan==1){
                 let tuoguanSocket = userMgr.getT(i.userId)
                 tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState})
             }
@@ -145,6 +156,19 @@ exports.qiangdizhu = function(socket,data){
     }
 }
 
+
+function pokerSort(pokers) {
+    for (var i = 0; i < pokers.length - 1; i++) {//外层循环控制排序趟数
+        for (var j = 0; j < pokers.length - 1 - i; j++) {//内层循环控制每一趟排序多少次
+            if (parseInt(pokers[j].num) < parseInt(pokers[j + 1].num)) {
+                var temp = pokers[j];
+                pokers[j] = pokers[j + 1];
+                pokers[j + 1] = temp;
+            }
+        }
+    }
+    return pokers;
+}
 //加倍超级几倍
 exports.jiabei = function(socket,data){
     if(typeof data ==="string"){
@@ -581,6 +605,7 @@ async function ready(socket, data) {
 function tishi(socket,data){
     let userId = data.userId;
     let chupai = data.chupai;
+    let flag = data.flag;
     if(socket&&!userId){
         socket.emit("tishi_result",{errcode:1,errmsg:"参数错误",flag:"tishi"});
         return;
@@ -654,7 +679,7 @@ async function buchu(socket,data){
     let flag;
     if(tishi_result.length==0){
         flag=0
-    }else if(roomInfo.lastPokers.userId==nextPlayer.userId){
+    }else if(roomInfo.lastPokers.userId==nextPlayer.userId || tishi_result.length>0){
         flag=1;
     }
     
@@ -746,13 +771,13 @@ async function chupai(socket,data){
     
     let nextSocket = userMgr.get(nextPlayer.userId);
     let tishi_result = tishi(nextSocket,{userId:nextPlayer.userId,chupai:1});
-    console.log("nextSocketaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",nextSocket.userId)
+
     console.log("roomInfo.lastpokers",roomInfo.lastPokers)
     console.log("tishi",tishi_result)
     let flag;
     if(tishi_result.length==0){
         flag=0
-    }else if(roomInfo.lastPokers.userId==nextPlayer.userId){
+    }else if(roomInfo.lastPokers.userId==nextPlayer.userId || tishi_result.length>0){
         flag=1;
     }
     

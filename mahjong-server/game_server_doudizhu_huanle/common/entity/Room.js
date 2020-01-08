@@ -104,6 +104,7 @@ function Room(roomId, roomConfig, createUser) {
      * @type {number}
      */
     this.countdown = 0;
+    this.noQiang = 0;//都不抢地主的次数
     let self = this
     this.publicBeishu={chushi:roomConfig.chushibeishu,mingpai:0,qiangdizhu:this.minQiangFen,dipai:0,zhadan:this.zdBeishu,chuntian:0,shengpai:0};
     this.nongminBeishu = 0;

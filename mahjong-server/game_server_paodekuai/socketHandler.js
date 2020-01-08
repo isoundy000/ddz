@@ -1625,10 +1625,13 @@ exports.disconnect =async function (socket) {
         data = JSON.parse(data);
     }
     var userId = socket.userId;
-
+    console.log("disconnuserid",userId);
     //检查传过来的userId是否有误
     let userid = await checkUserId(socket,userId);
-    console.log("userid",userid);
+    console.log("disconnuserid",userid);
+    if(!socket){
+        socket = userMgr.getT(userId)
+    }
     if(userid===1 || !userid ||userid!==userId){
         socket.emit('system_error', { errcode: 500, errmsg: "传入的数据有误" });
         return;
@@ -1640,7 +1643,9 @@ exports.disconnect =async function (socket) {
 
     var roomInfo = gameMgr.getRoomByUserId(userId);
     if (!roomInfo) {
+        console.log("roomInfo yichang")
         userMgr.del(userId);
+        gameMgr.exitRoom(userId);
         return;
     }
     var data = {
@@ -1660,6 +1665,11 @@ exports.disconnect =async function (socket) {
     //清除玩家的在线信息
     userMgr.del(userId);
     socket.userId = null;
+    console.log("roomInfo.gameState",roomInfo.gameState)
+    if(roomInfo.gameState==roomInfo.GAME_STATE.READY || roomInfo.gameState==roomInfo.GAME_STATE.SETTLEMENT){
+        
+        gameMgr.exitRoom(userId);
+    }
 }
 
 /**
