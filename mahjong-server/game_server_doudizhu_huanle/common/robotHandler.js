@@ -797,6 +797,13 @@ async function chupai(socket,data){
 
 function gameOver(roomId) {
     console.log("gameover roomId",roomId)
+    for(let i of roomInfo.seats){
+        i.clearTimer();//清除定时器
+        if(i.isTuoguan==1){
+            userMgr.broacastByRoomId("gb_qxtuoguan",{userId:i.userId},roomId)
+            i.isTuoguan=0;
+        }
+    }
     var roomInfo = gameMgr.getRoomById(roomId);
     //计算输赢
     gameMgr.settlement(roomId);
@@ -853,7 +860,18 @@ function gameOver(roomId) {
                 var player = tempSeats[i];
 
                 var socket = userMgr.get(player.userId);
-
+                if (!socket||player.isOnline==0) {
+                    //console.log('*******清理玩家【'+player.userId+'】********');
+                    if(!socket){
+                        socket = userMgr.getT(player.userId)
+                        socket.userId = player.userId;
+                    }
+                    (function(socket){
+                        let dataRes = {};
+                        dataRes.userId = player.userId;
+                        exports.exit(socket,JSON.stringify(dataRes));
+                    })(socket)
+                }
             }
 
             let data = {};
@@ -1027,13 +1045,16 @@ function optTimeOut(userId) {
         console.log('*********玩家【' + userId + '】操作超时*********');
         //发送操作超时事件
         userMgr.sendMsg(userId, 'opt_timeout', { userId: userId });
-        //玩家直接弃牌
         var userSocket = userMgr.get(userId);
-        let roomInfo = gameMgr.getRoomByUserId(userId)
-        var data = {};
-        data.userId = userId;
+        let roomInfo = gameMgr.getRoomByUserId(userId);
+        var data = {errcode:0,errmsg:"ok",userId:userId};
+        
         let tuoguanSocket = userMgr.getT(userId);
+        let player = roomInfo.getPlayerById(userId)
+        player.isTuoguan=1;
         tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState})
+
+        userMgr.broacastByRoomId("gb_tuoguan",data,roomInfo.roomId);
     }
 }
 /**

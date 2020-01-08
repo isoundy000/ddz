@@ -1377,6 +1377,13 @@ function checkGameState(userId,roomId,chupai_flag) {
 
 function gameOver(roomId) {
     var roomInfo = gameMgr.getRoomById(roomId);
+    for(let i of roomInfo.seats){
+        i.clearTimer();//清除定时器
+        if(i.isTuoguan==1){
+            userMgr.broacastByRoomId("gb_qxtuoguan",{userId:i.userId},roomId)
+            i.isTuoguan=0;
+        }
+    }
     //计算输赢
     gameMgr.settlement(roomId);
     
@@ -1433,6 +1440,18 @@ function gameOver(roomId) {
                 var player = tempSeats[i];
 
                 var socket = userMgr.get(player.userId);
+                if (!socket||player.isOnline==0) {
+                    //console.log('*******清理玩家【'+player.userId+'】********');
+                    if(!socket){
+                        socket = userMgr.getT(player.userId)
+                        socket.userId = player.userId;
+                    }
+                    (function(socket){
+                        let dataRes = {};
+                        dataRes.userId = player.userId;
+                        exports.exit(socket,JSON.stringify(dataRes));
+                    })(socket)
+                }
 
             }
 

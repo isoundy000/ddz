@@ -1036,6 +1036,7 @@ exports.getSuijiPai=function(mypokers){
         for(let i of res[0]){
             temp[i]=0
         }
+        // console.log("res[0]",res[0])
         for(let i of res[0]){
             for(let j of mypokers){
                 if(i==j.num && temp[i]!==2){
@@ -1085,14 +1086,16 @@ exports.getSuijiPai=function(mypokers){
         return res
     }
     function duizi(){
-        console.log("duizi2")
         let duizi = exports.getAllSamePai(mypokers,2);
         let temp = {}
         let res = []
+        
+
         duizi.sort(sortgg);
+        console.log("duizi2",duizi)
         for(let i of mypokers){
             let s = 0;
-            if(i.num == duizi[0] && s <2){
+            if(i.num == duizi[0][0] && s <2){
                 s++;
                 res.push(i)
             }
