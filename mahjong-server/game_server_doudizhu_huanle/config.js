@@ -3,7 +3,12 @@
  */
 
 let config={
-
+    xinshou:xinshou(),
+    chuji:chuji(),
+    putong:putong(),
+    zhongji:zhongji(),
+    gaoji:gaoji(),
+    dingji:dingji()
 }
  function xinshou() {
     return {

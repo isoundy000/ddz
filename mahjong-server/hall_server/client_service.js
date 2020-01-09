@@ -3606,6 +3606,26 @@ app.get('/get_sys_notice_list', function (req, res) {
     })
 
 });
+/**
+ * 获取系统公告列表
+ */
+app.get('/get_sys_notice', function (req, res) {
+    // if (!check_account(req, res)) {
+    //     http.send(res, 1, "请求不合法")
+    //     return;
+    // }
+    noticeService.getSysNoticeList(function (err, result) {
+        if (err) {
+            console.log(err);
+            http.send(res, 1, "获取系统公告列表错误")
+            return;
+        } else {
+            var data = {};
+            http.send(res, 0, "ok", result[0])
+        }
+    })
+
+});
 
 app.get("/jubao",function(req,res){
     let userId = req.query.userId;

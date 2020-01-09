@@ -96,7 +96,7 @@ exports.login = async function (socket, data,config) {
     var sign = data.sign;
     let type = data.type;
     let clubId=data.clubId;
-    let type = data.type;
+    // let type = data.type;
     var coins;
     let session = data.session;
     if (!userId) {
@@ -115,8 +115,17 @@ exports.login = async function (socket, data,config) {
         clubId=0;
     }
     dealUseridErr(socket,userId)
-    let room_config = myConfig.xinshou();
-
+    console.log("type",type)
+    let room_config = myConfig.config[type]
+    console.log("room_config",room_config)
+    if(coins < room_config.minScoreLimit){
+        socket.emit("login_result",{errcode:1 ,errmsg:"金币不足"});
+            return;
+    }
+    if(coins > room_config.maxScoreLimit && room_config.maxScoreLimit != -1){
+        socket.emit("login_result",{errcode:1 ,errmsg:"请选择更高级的场次"});
+            return;
+    }
     async function getCoins(){
         return new Promise( (resolve,reject)=>{
              playerService.getUserDataByUserId(userId,function(err,result){
@@ -215,10 +224,7 @@ exports.login = async function (socket, data,config) {
         if(room_config.room_type == "shiwanfang" ){
             coins = parseInt(room_config.coins);
         }
-        if(coins < room_config.minScoreLimit){
-            socket.emit("login_result",{errcode:1 ,errmsg:"金币不足"});
-                return;
-        }
+
         let keys = Object.keys(gameMgr.getRoomList);
       console.log("房间ids"+keys)
         let ret = await gameMgr.enterRoom({
@@ -603,7 +609,14 @@ exports.ready = function (socket, data) {
     if (player.timer) {
         player.clearTimer();
     }
-
+    if(player.coins < roomInfo.minScoreLimit){
+        socket.emit("login_result",{errcode:1 ,errmsg:"金币不足"});
+            return;
+    }
+    if(player.coins > roomInfo.maxScoreLimit && roomInfo.maxScoreLimit != -1){
+        socket.emit("login_result",{errcode:1 ,errmsg:"请选择更高级的场次"});
+            return;
+    }
     //金币过低
     if(player.coins<=0){
         socket.emit('system_error', { errcode: 500, errmsg: "金币不足" });
@@ -1719,7 +1732,7 @@ exports.exit = function (socket, data) {
     if (!player) {
         return
     }
-    if(player.state !== player.PLAY_STATE.FREE){
+    if(player.state !== player.PLAY_STATE.FREE && player.state != player.PLAY_STATE.READY){
         socket.emit('exit_result', { state:player.state,res:"no" })
         return
     }

@@ -157,10 +157,10 @@ exports.createRoom = async function (data) {
             return
         }
 
-        // if (data.coins < data.diZhu * 10 ||data.coins <data.minScoreLimit) {
-        //     resolve(2221);
-        //     return;
-        // }
+        if (data.coins <data.minScoreLimit) {
+            resolve(2221);
+            return;
+        }
 
         
         // data.biPai = 1;//最低比牌圈数

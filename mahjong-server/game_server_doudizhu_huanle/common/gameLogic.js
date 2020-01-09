@@ -1093,8 +1093,9 @@ exports.getSuijiPai=function(mypokers){
 
         duizi.sort(sortgg);
         console.log("duizi2",duizi)
+        let s = 0;
         for(let i of mypokers){
-            let s = 0;
+            
             if(duizi[0]){
                 if(i.num == duizi[0][0] && s <2){
                     s++;
