@@ -11,7 +11,7 @@ var config = require('../../configs').game_server_zhajinhua;
 var commonUtil = require('../../utils/commonUtil');
 var dateUtil = require('../../utils/dateUtil');
 var RobotSocket = require('./entity/RobotSocket');
-var socketHandler = require('./socketHandler');
+var socketHandler = require('../classic/socketHandler');
 var gameService = require('../../common/service/gameService')
 var commonService = require('../../common/service/commonService');
 

@@ -1,10 +1,10 @@
-let gameMgr = require('./gameMgr');
+let gameMgr = require('../common_match/gameMgr');
 let express = require('express')
 let app = express();
 var tokenMgr = require("../../common/tokenmgr");
 var http = require('../../utils/http');
 var crypto = require('../../utils/crypto');
-var userMgr = require('./userMgr');
+var userMgr = require('../common_match/userMgr');
 //测试
 app.all('*', function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");

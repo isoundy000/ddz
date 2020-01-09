@@ -6,10 +6,10 @@
 var config = require('../../configs').game_server_zhajinhua;
 var crypto = require('../../utils/crypto');
 // var tokenMgr = require("../common/tokenmgr");
-var userMgr = require('./userMgr');
-var gameMgr = require('./gameMgr');
+var userMgr = require('../common/userMgr');
+var gameMgr = require('../common/gameMgr');
 var rechargeService = require('../../common/service/rechargeService')
-var gameLogic = require('./gameLogic');
+var gameLogic = require('../common/gameLogic');
 var http = require('../../utils/http');
 var IPUtil = require('../../utils/IPUtil');
 var activityService = require('../../common/service/activityService');
@@ -18,10 +18,10 @@ var commonUtil = require('../../utils/commonUtil');
 var playerService = require("../../common/service/playerService")
 var gameService = require('../../common/service/gameService')
 var redis = require("../../utils/redis")
-var gameLogic = require("./gameLogic")
+var gameLogic = require("../common/gameLogic")
 var commonServer = require("../../common/service/commonService")
-var myConfig = require("../config")
-var RobotSocket = require("./entity/RobotSocket")
+var myConfig = require("./config")
+var RobotSocket = require("../common/entity/RobotSocket")
 /**
  * 处理传来的userid错误
  * 

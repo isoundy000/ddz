@@ -20,7 +20,7 @@ var gameService = require('../../common/service/gameService')
 var redis = require("../../utils/redis")
 var gameLogic = require("./gameLogic")
 var commonServer = require("../../common/service/commonService")
-var myConfig = require("../config")
+var myConfig = require("../classic/config")
 var RobotSocket = require("./entity/RobotSocket")
 /**
  * 处理传来的userid错误
