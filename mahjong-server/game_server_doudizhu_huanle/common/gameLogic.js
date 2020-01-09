@@ -1095,10 +1095,15 @@ exports.getSuijiPai=function(mypokers){
         console.log("duizi2",duizi)
         for(let i of mypokers){
             let s = 0;
-            if(i.num == duizi[0][0] && s <2){
-                s++;
-                res.push(i)
+            if(duizi[0]){
+                if(i.num == duizi[0][0] && s <2){
+                    s++;
+                    res.push(i)
+                }
+            }else{
+                return []
             }
+
         }
         console.log("duizi",res)
         return res;
@@ -1490,7 +1495,7 @@ exports.compare = function (myPokers, otherPokers) {
         return -1
     }
     if(myPokersType == "zhadan"){
-        if(otherPokersType !== "zhandan"){
+        if(otherPokersType !== "zhadan"){
             return 1
         }else{
             if(mytype.pokers > otherType.pokers){
@@ -1503,7 +1508,7 @@ exports.compare = function (myPokers, otherPokers) {
         }
     }
     if(otherPokersType == "zhadan"){
-        if(myPokersType !== "zhandan"){
+        if(myPokersType !== "zhadan"){
             return -1
         }else{
             if(mytype.pokers > otherType.pokers){

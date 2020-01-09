@@ -106,8 +106,8 @@ app.get("/img",function(req,res){
 })
 app.get("/register",function(req,res){
     let userId = req.query.bind_recommender;
-    var hall_Server = config.hall_server();
-    let url = "http://"+hall_Server.HALL_IP+":"+hall_Server.CLEINT_PORT;
+    var account_server = config.account_server();
+    let url = "http://"+hall_ip+":"+account_server.CLIENT_PORT;
     console.log(url)
     res.render("register",{url:url});
 })

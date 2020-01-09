@@ -96,6 +96,7 @@ exports.login = async function (socket, data,config) {
     var sign = data.sign;
     let type = data.type;
     let clubId=data.clubId;
+    let type = data.type;
     var coins;
     let session = data.session;
     if (!userId) {
@@ -684,7 +685,7 @@ exports.tuoguan = function(socket,data){
     var userId = data.userId;
     console.log(userId+"开始托管")
     if(!userId&&socket){
-        socket.emit("systen_error",{errcode:500,errmsg:"参数错误"})
+        return socket.emit("systen_error",{errcode:500,errmsg:"参数错误"})
     }
     let roomInfo = gameMgr.getRoomByUserId(userId)
     console.log("tuoguanleaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",roomInfo.gameState)
@@ -695,6 +696,9 @@ exports.tuoguan = function(socket,data){
     userMgr.bindT(userId,tuoguanSocket);
     console.log("roomInfo.lastPokers.userId",roomInfo.lastPokers.userId);
     player.isTuoguan = 1;
+    console.log("roomInfo.currentTurn",roomInfo.currentTurn)
+    console.log("player.seatIndex",player.seatIndex)
+    console.log("player.isTuoguan",player.isTuoguan)
     if(roomInfo.currentTurn==player.seatIndex&&player.isTuoguan==1){
         
         if (tuoguanSocket.tuoguan_countdown != null && tuoguanSocket.tuoguan_countdown < 0) { //8秒才能广播一次信息
@@ -705,6 +709,7 @@ exports.tuoguan = function(socket,data){
         setTimeout(() => {
             tuoguanSocket.tuoguan_countdown = 1;
         }, 5000)
+        console.log(2233)
         tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState});
     }
     if(!socket){
@@ -818,6 +823,9 @@ exports.qiangdizhu = function(socket,data){
     }
     var userId = data.userId;
     var fen = data.fen;
+    if(!socket){
+        socket = userMgr.getT(userId)
+    }
     if(!userId ||fen==undefined || fen==null){
         socket.emit('system_error', { errcode: 500, errmsg: '参数错误' });
     }
@@ -864,6 +872,7 @@ exports.qiangdizhu = function(socket,data){
         if(roomInfo.minQiangFen==0){
             roomInfo.noQiang += 1;
             if(roomInfo.noQiang % 3 == 0){
+                roomInfo.noQiang=0
                 let random = commonUtil.randomFrom(1,3)
                 banker = roomInfo.seats[random]
                 roomInfo.setBanker(banker.userId)
@@ -962,6 +971,7 @@ exports.jiabei = function(socket,data){
     console.log("一个人加倍了",f)
     if(f){
         let banker = roomInfo.getBanker()
+        roomInfo.setCurrentTurn(banker.seatIndex)
         roomInfo.setState(roomInfo.GAME_STATE.PLAYING)
         userMgr.broacastByRoomId("gb_turn",{gameState:roomInfo.GAME_STATE.CHUPAI,userId:banker.userId,countdown:roomInfo.OPT_COUNTDOWN},roomInfo.roomId)
         roomInfo.nongminBeishu = roomInfo.nongminBeishu -1;
@@ -969,7 +979,7 @@ exports.jiabei = function(socket,data){
             banker.setTimer(optTimeOut(banker.userId),roomInfo.OPT_COUNTDOWN)
         }else{
             let tuoguanSocket = userMgr.getT(banker.userId)
-            tuoguanSocket.emit("your_turn",{gameState:"playing"});
+            tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState});
         }
     }
 }
@@ -1721,12 +1731,16 @@ exports.exit = function (socket, data) {
         exports.disconnect(socket);
     }
     //如果玩家在开始准备阶段退出，判断是不是庄家，否则更换庄家
+    console.log("player.state",player.state)
     if (player.state == player.PLAY_STATE.FREE || player.state == player.PLAY_STATE.READY) {
         //console.log('********exit玩家退出【'+player.userId+'】**********');
         //如果玩家已经准备了，则清除计时器
         if(player.state == player.PLAY_STATE.READY){
             player.clearTimer();
+            
+
         }
+        userMgr.broacastByRoomId('gb_player_exit', { userId: userId }, roomInfo.roomId);
         //当前房间内的玩家数量
         var currentPlayerCountInRoom = roomInfo.getPlayerCount();
         var currentPreparedPlayerCount = roomInfo.getPreparedPlayerCount();
@@ -1744,20 +1758,13 @@ exports.exit = function (socket, data) {
             }
         }else{
             gameMgr.exitRoom(userId);
-            if (player.isBanker) {
-                //console.log('********exit更换庄家**********');
 
-            var nextPlayer = roomInfo.changeBanker(player.seatIndex);
-            if(nextPlayer){
-                roomInfo.setBanker(nextPlayer.userId);
-            }
-            }
             //console.log('********玩家【'+userId+'】退出房间**********');
             //获取当前房间的庄家
             var banker = roomInfo.getBanker();
-            if(banker){
-                userMgr.broacastByRoomId('gb_player_exit', { userId: userId, banker: banker.userId,seats:roomInfo.seats }, roomInfo.roomId);
-            }
+
+            userMgr.broacastByRoomId('gb_player_exit', { userId: userId }, roomInfo.roomId);
+
 
             //游戏准备阶段，如果推出后所有玩家都已经准备了，则游戏开始
             if (roomInfo.gameState == roomInfo.GAME_STATE.READY) {

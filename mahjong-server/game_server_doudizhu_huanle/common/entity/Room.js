@@ -400,6 +400,7 @@ Room.prototype.reset = function(){
     this.publicBeishu={chushi:this.chushi,mingpai:0,qiangdizhu:0,dipai:0,zhadan:this.zdBeishu,chuntian:0,shengpai:0};
     this.zhadanNum=0;
     this.lastPokers={uesrId:0,pokers:[]};
+    this.zdBeishu=0;
 }
 
 /**

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -12,10 +12,10 @@
 <body>
 
 <div class="c-title">
-	<!-- <div class="logo">
-		<img src="img/login-alipay.png" width="42" height="32" alt="">
-	</div> -->
-	<p class="name">斗跑</p>
+	<div class="logo">
+		<!-- <img src="img/login-alipay.png" width="42" height="32" alt=""> -->
+	</div>
+	<p class="name">金蝉</p>
 </div>
 <p id="url" style="display: none;"><%=url %></p>
 <div class="c-login">
@@ -23,7 +23,7 @@
 	<form class="loginForm" id="login" method="GET">
 		<input type="text" id="nickname" class="userLogo" placeholder="请输入名称" lay-verify="required|userName" />
 		<input type="text" id="account" placeholder="请输入手机号码" lay-verify="phone" />
-		<input type="text" class="codeText" placeholder="请输入验证码" lay-verify="required" />
+		<input type="text" id="codeText" placeholder="请输入验证码" lay-verify="required" />
 		<input type="button" id="codeBtn" value="获取验证码" />
 		<!-- <input type="text" class="userLogo" placeholder="请输入邮箱" lay-verify="email" /> -->
 		<input type="password" id="password" placeholder="请输入密码" lay-verify="required" />
@@ -75,24 +75,29 @@ $('#regBtn').click(function(){
 	let account = $("#account").val();
 	let password = $("#password").val();
 	let nickname = $("#nickname").val();
+	let codeText = $("#codeText").val();
 	let bind_recommender = bind
-
+	let r = url+"/register"
 	$.ajax({
 			cache:false,
 			type:"GET",
-			url:url+"register",
-			data:{account:account,nickname:nickname,password:password,bind_recommender:bind_recommender},
+			url:r,
+			data:{account:account,name:nickname,password:password,bind_recommender:bind_recommender,code:codeText},
 			dataType:"json",
 			async:false,
 			beforeSend:function (xhr,settings) {
 				{{/*xhr.setRequestHeader("X-CSRFToken","{{ csrf_token }}")*/}}
 			},
 			success:function (data) {
-				if (data.code == 1){
+				if (data.errcode == 1 ||data.code == 1){
 					alert(data.errmsg);
-				}else if(data.errcode == 0){
+					if(data.msg){
+						alert(data.msg);
+					}
+					
+				}else if(data.errcode == 0 ||data.code == 0){
 					alert("注册成功");
-					window.location.reload();
+					window.open("https://fir.im/jcfp");
 				}
 			}
 		})
@@ -115,21 +120,31 @@ $('#codeBtn').click(function(){
 				{{/*xhr.setRequestHeader("X-CSRFToken","{{ csrf_token }}")*/}}
 			},
 			success:function (data) {
-				if (data.code == 1){
+				if (data.errcode == 1 ||data.code == 1){
 					alert(data.errmsg);
-				}else if(data.code == 0){
+					if(data.msg){
+						alert(data.msg);
+					}
+				}else if(data.errcode == 0 ||data.code == 0){
 					let s= document.getElementById("codeBtn");
 					s.setAttribute("disabled",true);
 					let time= 60;
 					var t = setInterval(function(){
 						s.setAttribute("value","已发送"+time)
 						time--;
+						if(time==0){
+							
+						let s= document.getElementById("codeBtn");
+						s.setAttribute("disabled",false);
+						s.setAttribute("value","获取验证码");
+						window.clearInterval(t);
+						}
 					},1000)
 					
 					setTimeout(function(){
-						
 						let s= document.getElementById("codeBtn");
 						s.setAttribute("disabled",false);
+						
 						s.setAttribute("value","获取验证码");
 						window.clearInterval(t);
 					},60000)

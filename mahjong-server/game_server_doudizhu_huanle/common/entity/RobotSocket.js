@@ -35,12 +35,13 @@ function RobotSocket(userId) {
      */
     this.socket.on('your_turn',function(data){
         console.log('******【'+self.userId+'】begin_托管*******');
-        
+        console.log("data",data)
         data.userId=self.userId
+        let userId = self.userId
         var delayTime = commonUtil.randomFrom(2000,3000);
         if(data.gameState=="playing"){
             setTimeout(function(){
-                robotHandler.opt(self.userId,data);
+                robotHandler.opt(userId,data);
             },delayTime);
         }
         if(data.gameState=="jiabei"){
