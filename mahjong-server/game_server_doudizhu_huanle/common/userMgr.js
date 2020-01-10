@@ -125,6 +125,27 @@ exports.broacastByRoomId = function (event, data, roomId) {
 };
 
 /**
+ * 根据比赛场在房间内广播
+ * @param event
+ * @param data
+ * @param sender
+ * @param includingSender
+ */
+exports.broacastByMatchId = function (event, data, matchId) {
+    var matchUsers = gameMgr.getMatchUsers(matchId);
+    if (matchUsers == null ||matchUsers == undefined ) {
+        return;
+    }
+    for (let i of matchUsers) {
+        var socket = userList[i];
+        if (socket != null) {
+            socket.emit(event, data);
+            console.log("发送",event)
+        }
+    }
+};
+
+/**
  * 发给庄家
  * @param event
  * @param data

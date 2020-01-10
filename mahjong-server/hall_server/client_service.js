@@ -1665,8 +1665,8 @@ app.get('/get_wx_kefu', (req, res) => {
             console.log(err);
             return;
         }
-        http.send(res, 0, 'ok', result);
-        console.log(result)
+        http.send(res, 0, 'ok', {result:result});
+        // console.log(result)
     })
         
 

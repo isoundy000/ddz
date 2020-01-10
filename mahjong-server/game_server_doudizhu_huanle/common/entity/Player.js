@@ -174,15 +174,15 @@ Player.prototype.settlement = async function(totalWin){
     this.allTalWin += actualTotalWin;
     console.log("actualTotalWin",actualTotalWin,totalWin,this.userId)
     //保存游戏记录
-    if(roomInfo.jiesuan==="jinbi"){
+
         if(this.numOfGame==roomInfo.maxGames){
-            gameService.saveGameRecord(this.userId, this.name, "game_server_paodekuai", 0, this.allTalWin,roomInfo.seatCount,this.roomId,this.numOfGame,1 ,roomInfo.clubId,(err, result) => {
+            gameService.saveGameRecord(this.userId, this.name, "doudizhu", 0, this.allTalWin,roomInfo.seatCount,this.roomId,this.numOfGame,1 ,roomInfo.clubId,(err, result) => {
                 if (err) {
                     console.log(err);
                 }
             })
         }else{
-            gameService.saveGameRecord(this.userId, this.name, "game_server_paodekuai", 0, actualTotalWin,roomInfo.seatCount,this.roomId,this.numOfGame,0 ,roomInfo.clubId,(err, result) => {
+            gameService.saveGameRecord(this.userId, this.name, "doudizhu", 0, actualTotalWin,roomInfo.seatCount,this.roomId,this.numOfGame,0 ,roomInfo.clubId,(err, result) => {
                 if (err) {
                     console.log(err);
                 }
@@ -191,25 +191,9 @@ Player.prototype.settlement = async function(totalWin){
 
             //保存消费详情
     await rechargeService.changeUserGoldsAndSaveConsumeRecordAsync(
-        this.userId, actualTotalWin, 'game_server_paodekuai', "coins",
+        this.userId, actualTotalWin, 'doudizhu', "coins",
         `[跑得快]房间号[${this.roomId}]输或赢的金币`,this.roomId,roomInfo.clubId
     );
-    }else{
-        if(this.numOfGame==roomInfo.maxGames){
-            gameService.saveGameJiFenRecord(this.userId, this.name, "game_server_paodekuai", 0, this.allTalWin,roomInfo.seatCount,this.roomId,this.numOfGame,1 ,roomInfo.clubId, (err, result) => {
-                if (err) {
-                    console.log(err);
-                }
-            })
-        }else{
-            gameService.saveGameJiFenRecord(this.userId, this.name, "game_server_paodekuai", 0, this.totalWin,roomInfo.seatCount, this.roomId,this.numOfGame,0 ,roomInfo.clubId,(err, result) => {
-                if (err) {
-                    console.log(err);
-                }
-            })
-        }
-
-    }
 
 
 

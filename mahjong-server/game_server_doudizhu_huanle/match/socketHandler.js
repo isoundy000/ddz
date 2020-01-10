@@ -6,10 +6,10 @@
 var config = require('../../configs').game_server_zhajinhua;
 var crypto = require('../../utils/crypto');
 // var tokenMgr = require("../common/tokenmgr");
-var userMgr = require('../common_match/userMgr');
-var gameMgr = require('../common_match/gameMgr');
+var userMgr = require('../common/userMgr');
+var gameMgr = require('../common/gameMgr');
 var rechargeService = require('../../common/service/rechargeService')
-var gameLogic = require('../common_match/gameLogic');
+var gameLogic = require('../common/gameLogic');
 var http = require('../../utils/http');
 var IPUtil = require('../../utils/IPUtil');
 var activityService = require('../../common/service/activityService');
@@ -18,10 +18,13 @@ var commonUtil = require('../../utils/commonUtil');
 var playerService = require("../../common/service/playerService")
 var gameService = require('../../common/service/gameService')
 var redis = require("../../utils/redis")
-var gameLogic = require("../common_match/gameLogic")
+var gameLogic = require("../common/gameLogic")
 var commonServer = require("../../common/service/commonService")
 var myConfig = require("./config_match")
-var RobotSocket = require("../common_match/entity/RobotSocket")
+var RobotSocket = require("../common/entity/RobotSocket")
+var club_server = require("../../common/service/clubService")
+var commonService = require("../../common/service/commonService")
+var agentService = require("../../common/service/agentService")
 /**
  * 处理传来的userid错误
  * 
@@ -1586,20 +1589,140 @@ function optTimeOut(userId) {
         exports.tuoguan(userSocket, JSON.stringify(data));
     }
 }
+
+async function generateClubId() {
+    var clubId = "";
+    for (var i = 0; i < 7; ++i) {
+        clubId += Math.floor(Math.random() * 10);
+    }
+        try {
+            let roomInfo = await commonService.getTableValuesAsync('*', 't_club', {
+                club_id: clubId,
+            })
+            // console.log("clubId",clubId,clubId.length)
+            if (roomInfo != null ||clubId.length<7||clubId[0]==0) {
+                return await generateClubId();
+            } else {
+                return clubId;
+            }
+        } catch (error) {
+            console.log(error);
+            return 0;
+        }
+    
+}
 //报名参加比赛
-exports.baoming = function(socket,data){
+exports.baoming =async function(socket,data){
     let userId = data.userId;
-    let chang_type = data.chang_type;
-    if(!userId || !chang_type){
+    let type = data.type;
+    
+    if(!userId || !type){
         socket.emit("baoming_result",{errcode:500,errmsg:"参数错误"})
         return;
     }
+    let usersNum = myConfig[type].usersNum
+    let matchId = gameMgr.getOneMatch(type)
+    if(matchId){
+        async.auto({
+            updatePlayerClub:function(callback){
+                playerService.updatePlayerClub(userId,matchId,callback)
+            },
+            updateClubUsers:["updatePlayerClub",function(result,callback){
+                club_server.agreeJoinClub(applyId,function(err,data){
+                    if(err || !data){
+                        return http.send(res,1,"服务器出错，请稍后再试");
+                    }
+                    if(data ==1){
+                        return http.send(res,0,"玩家第一次加入俱乐部，赠送房卡");
+                    }
+                    if(data==0){
+                        return http.send(res,0,"成功");
+                    }
+                })
+            }]
+        },function(err,result){
+            if(err){
+                return socket.emit("system_error",{errcode:500,errmsg:"服务器异常"})
+            }
+            gameMgr.addMatch(matchId,usersNum,type)
+            gameMgr.joinMatch(matchId,userId)
+            userMgr.bind(userId,socket)
 
+            let nowUsersNum = gameMgr.getUsersNum(matchId)
+            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum},matchId)
+        })
+    }else{
+        matchId = await generateClubId()
+        async.auto({
+            createClub2:function(callback){
+                club_server.createClub2(matchId,type,usersNum,function(err,result){
+                    if(err || !result){
+                        return callback(err,null)
+                    }
+                    callback(null,result)
+        
+                })
+
+            },
+            updatePlayerClub:function(callback){
+                playerService.updatePlayerClub(userId,matchId,callback)
+            },
+            updateClubUsers:["createClub2","updatePlayerClub",function(result,callback){
+                club_server.agreeJoinClub(applyId,function(err,data){
+                    if(err || !data){
+                        return http.send(res,1,"服务器出错，请稍后再试");
+                    }
+                    if(data ==1){
+                        return http.send(res,0,"玩家第一次加入俱乐部，赠送房卡");
+                    }
+                    if(data==0){
+                        return http.send(res,0,"成功");
+                    }
+                })
+            }]
+        },function(err,result){
+            if(err){
+                return socket.emit("system_error",{errcode:500,errmsg:"服务器异常"})
+            }
+            gameMgr.addMatch(matchId,usersNum,type)
+            gameMgr.joinMatch(matchId,userId)
+            userMgr.bind(userId,socket)
+
+            let nowUsersNum = gameMgr.getUsersNum(matchId)
+            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum},matchId)
+        })
+
+
+        
+    }
     
 }
-
+//退出比赛场
 exports.tuisai = function(socket,data){
-    
+    let userId = data.userId;
+    let matchId = data.matchId;
+    if(!userId ||!matchId ){
+        socket.emit("tuisai_result",{errcode:500,errmsg:"参数错误"})
+        return;
+    }
+    agentService.hadLeftClub2(userId, (err, left_results) => {
+        if (err) {
+            console.error(err);
+            return
+        }
+        if (left_results == null) {
+            http.send(res, 1, "退赛失败");
+            return;
+        }
+        club_server.dleteClubUsers(userId,matchId,function(err,data){
+            if(err || !data){
+                console.error(err);
+                return
+            }
+            http.send(res, 0, "退赛成功");
+        })
+        
+    })
 }
 ///////////////////////////////////////////////////////////
 /**

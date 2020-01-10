@@ -25,6 +25,8 @@ const Costs = {
 
 //缓存所有的房间信息
 var roomList = {};
+//缓存比赛场信息
+var matchList = {};//{13:{usersNum:60,users:[]}}
 //创建中的房间
 var creatingRooms = {};
 //缓存玩家所在的房间
@@ -35,6 +37,63 @@ var playerLocation = {};
  */
 exports.getRoomList = function () {
     return roomList;
+}
+
+/**
+ * 获取比赛场列表
+ */
+exports.getMatchList = function () {
+    return matchList;
+}
+
+//获取未开始人数未满的比赛场
+//usersnum该比赛场额定人数
+exports.getOneMatch = function(type){
+    for(let i of matchList){
+        if(matchList[i].status==0 && matchList[i].users.length<matchList[i].usersNum && matchList[i].type ==type ){
+            return i
+        }
+    }
+    return null
+}
+//得到当前比赛场的人数
+exports.getUsersNum = function(matchId){
+    return matchList[matchId].users.length
+}
+
+/**
+ * 得到一个比赛场内所有的玩家信息
+ */
+//得到当前比赛场的人数
+exports.getMatchUsers = function(matchId){
+    return matchList[matchId].users
+}
+//加入比赛场
+exports.joinMatch = function(matchId,userId,type){
+    if(matchList[matchId].users.length>=matchList[matchId].usersNum){
+        return 0
+    }
+    matchList[matchId].users.push(userId)
+    return 1
+}
+
+//退赛
+exports.exitMatch = function(matchId,userId){
+        let index = matchMedia[matchId].users.indexOf(userId)
+        return matchMedia[matchId].users.splice(index,1)
+
+    
+}
+//创建新的比赛场
+exports.addMatch = function(matchId,usersNum,type){
+    matchList[matchId] = {usersNum:usersNum,type:type,users:[]}
+    return 1
+}
+
+//删除比赛场
+exports.DelMatch = function(matchId){
+    delete matchList[matchId]
+    return 1
 }
 
 

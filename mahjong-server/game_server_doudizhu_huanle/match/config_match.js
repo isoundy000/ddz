@@ -16,7 +16,7 @@ let config={
         type:"doudizhu",
         kindId:"200",
         allAward:17000,//总奖励
-        award1:8000,//第一名奖励
+        award:[8000,3000,1000,800,800,800,500,500,500,500,500,500],//奖励
         //明牌最大倍数
         mingpaiBeishu: 4,
         room_count: -1,
@@ -47,7 +47,7 @@ function jingying() {
         //明牌最大倍数
         mingpaiBeishu: 4,
         allAward:47000,//总奖励
-        award1:20000,//第一名奖励
+        award:[20000,12000,6000,3000,3000,3000],//奖励
         room_count: -1,
         chushibeishu:15,
         seatCount: 3,
@@ -77,16 +77,14 @@ function dashi() {
         type:"doudizhu",
         kindId:"202",
         isDaiKai:0,
+        usersNum:60,
         //明牌最大倍数
         mingpaiBeishu: 4,
         allAward:20,//总奖励
-        award1:120000,//第一名奖励
+        award:[120000,40000,16000,8000,8000,8000],//奖励
         room_count: -1,
         chushibeishu:15,
         seatCount: 3,
-        robot_count:1,//房间机器人的数量
-        robotWinPR:80,//机器人胜率
-        playerWinPR:20,//玩家胜率
         qiangfen:[1,2,3],
         //最低入场分数
         minScoreLimit: 20000,

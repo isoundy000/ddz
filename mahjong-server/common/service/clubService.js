@@ -334,7 +334,7 @@ updateClueUserType:function(clubId,userId,user_type,callback){
         db.queryForAll(sql,data,callback)
     },
     /**
-     * 更新俱乐部成员
+     * 创建俱乐部
      */
     createClub:async function(userId,club_avatar,club_name,is_private,callback){
         var sql = 'insert into t_club set club_id=?,create_user=?,club_avatar=?,club_name=?,is_private=?,create_time=?,member_count =member_count+1';
@@ -343,6 +343,24 @@ updateClueUserType:function(clubId,userId,user_type,callback){
         
         let create_time = new Date().getTime();
         let data = [id,userId,club_avatar,club_name,is_private,create_time]
+
+        db.save(sql,data,function(err,data){
+            if(err){
+                callback(err,null)
+            }else{
+                console.log("data.club_id",{clubId:id})
+                callback(null,{clubId:id})
+            }
+        });
+    },
+
+    createClub2:async function(club_id,type,usersNum,callback){
+        var sql = 'insert into t_club set club_id=?,type=?,usersNum=?,create_time=?';
+
+        // let id = await generateClubId();
+        
+        let create_time = new Date().getTime();
+        let data = [club_id,type,usersNum]
 
         db.save(sql,data,function(err,data){
             if(err){
@@ -484,9 +502,6 @@ updateClueUserType:function(clubId,userId,user_type,callback){
                     async.auto({
                         updateUser: function (callback) {
                             playerService.updateBelongsClubAndAgent(applyEntity.apply_user, applyEntity.belongs_agent, applyEntity.club_id, callback);
-                        },
-                        updateClub: function (callback) {
-                            self.updateMemberCount(applyEntity.club_id, 1, callback);
                         },
                         updateClubUser:function(callback){
                             self.updateUserClub(applyEntity.club_id,applyEntity.apply_user,0,callback)

@@ -32,7 +32,7 @@ module.exports = {
         //先查询缓存中是否存在缓存数据
         cacheUtil.get(constants.CACHE_GLOBAL_CONFIG, function (value) {
             //缓存中无值则从数据库读取
-            if (value) {
+            if (0) {
                 var configs = JSON.parse(value);
                 callback(configs[key]);
             } else {

@@ -717,6 +717,17 @@ module.exports = {
         })
 
     },
+
+
+    /**
+     * 
+     *  更新玩家所属的比赛场
+     */
+        updatePlayerClub(user_id, belongs_club, callback) {
+        let sql = "update t_users set belongs_club = ? where userid = ?";
+        const args = uArray.push(belongs_agent, user_id);
+        db.update(sql, args, callback)
+    },
     /**
      * 修改玩家的key值
      * @param {*} account 

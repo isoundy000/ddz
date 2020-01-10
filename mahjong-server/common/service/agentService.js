@@ -140,6 +140,24 @@ module.exports = {
         })
 
     },
+        /**
+     * 从游戏群踢出玩家
+     * @param {*} left_user_id 
+     * @param {*} club_id 
+     * @param {*} callback 
+     */
+    hadLeftClub2(left_user_id, callback) {
+        let sql1 = "update t_users set belongs_club=NULL from  where userid =?"
+        let data = [left_user_id]
+        db.queryForAll(sql1,data,function(err,result){
+            if(err||!result){
+                callback(err,null)
+            }else{
+
+            }
+        })
+
+    },
     /**
      * 修改游戏群公告
      * @param {*} club_id 
