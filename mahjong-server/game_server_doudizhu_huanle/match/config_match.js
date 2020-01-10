@@ -14,7 +14,9 @@ let config={
         maxGames:-1,//无限局数
         isPrivate:0,
         type:"doudizhu",
+        jinji:[45,27,12,3],//晋级名次
         kindId:"200",
+        chushifenshu:4000,
         allAward:17000,//总奖励
         award:[8000,3000,1000,800,800,800,500,500,500,500,500,500],//奖励
         //明牌最大倍数
@@ -41,9 +43,11 @@ function jingying() {
         diZhu:40,
         maxGames:-1,//无限局数
         isPrivate:0,
+        jinji:[45,27,12,3],//晋级名次
         type:"doudizhu",
         kindId:"201",
         isDaiKai:0,
+        chushifenshu:4000,
         //明牌最大倍数
         mingpaiBeishu: 4,
         allAward:47000,//总奖励
@@ -74,6 +78,8 @@ function dashi() {
         diZhu:200,
         maxGames:-1,//无限局数
         isPrivate:0,
+        jinji:[45,27,12,3],//晋级名次
+        chushifenshu:4000,
         type:"doudizhu",
         kindId:"202",
         isDaiKai:0,

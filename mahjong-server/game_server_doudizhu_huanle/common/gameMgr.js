@@ -26,7 +26,7 @@ const Costs = {
 //缓存所有的房间信息
 var roomList = {};
 //缓存比赛场信息
-var matchList = {};//{13:{usersNum:60,users:[]}}
+var matchList = {};//{13:{usersNum:60,type:xinshou,users:[{userId:xxx,fen:xxx}]}}
 //创建中的房间
 var creatingRooms = {};
 //缓存玩家所在的房间
@@ -64,25 +64,44 @@ exports.getUsersNum = function(matchId){
 /**
  * 得到一个比赛场内所有的玩家信息
  */
-//得到当前比赛场的人数
+//得到当前比赛场的人
 exports.getMatchUsers = function(matchId){
     return matchList[matchId].users
 }
 //加入比赛场
-exports.joinMatch = function(matchId,userId,type){
+exports.joinMatch = function(matchId,userId,fen){
     if(matchList[matchId].users.length>=matchList[matchId].usersNum){
         return 0
     }
-    matchList[matchId].users.push(userId)
+    let data = {userId:userId,fen:fen,status:0}
+    matchList[matchId].users.push(data)
+    return 1
+}
+
+//改变比赛场用户信息
+exports.setMatchUsers = function(matchId,userId,key,value){
+
+    for(let users of matchList[matchId]){
+        for(let user of users){
+            if(user.userId==userId){
+                user[key] = value
+            }
+        }
+    }
+    matchList[matchId].users.push(data)
     return 1
 }
 
 //退赛
 exports.exitMatch = function(matchId,userId){
-        let index = matchMedia[matchId].users.indexOf(userId)
-        return matchMedia[matchId].users.splice(index,1)
+    for(let i of matchMedia[matchId].users){
+        if(i.userId==userId){
+            let index = matchMedia[matchId].users.indexOf(i)
+            return matchMedia[matchId].users.splice(index,1)
+        }
+    }
+    return null
 
-    
 }
 //创建新的比赛场
 exports.addMatch = function(matchId,usersNum,type){

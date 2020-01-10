@@ -1398,6 +1398,14 @@ function checkGameState(userId,roomId,chupai_flag) {
 }
 
 /**
+ * 
+ * 自动匹配比赛场合适的玩家 
+ */
+function match(matchId){
+    
+}
+
+/**
  * 游戏结束，广播结算结果
  */
 
