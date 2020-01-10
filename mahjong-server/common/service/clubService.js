@@ -565,6 +565,42 @@ updateClueUserType:function(clubId,userId,user_type,callback){
             }
         })
     },
+
+        /**
+     * 同意加入俱乐部
+     */
+    agreeJoinClub2: function (club_id,user_id,userType, callback) {
+        var self = this;
+        async.auto({
+            updateClubUser:function(callback){
+                self.updateUserClub(club_id,user_id,0,callback)
+            },
+            sendNotification: function (callback) {
+                var notification = {};
+                notification.title = '比赛场加入反馈';
+                notification.content = '加入成功';
+                notification.status = 0;
+                notification.to_user = applyEntity.apply_user;
+                notification.to_username = applyEntity.apply_username;
+                notification.type = 'sys';
+                notification.create_time = dateUtil.getCurrentTimestapm();
+
+                notificationService.saveNotification(notification, callback);
+            },
+
+        }, function (err, result) {
+            if (err) {
+                callback(err);
+            } else {
+                if (result.updateClubUser.affectedRows > 0 ) {
+                    callback(null, 1);
+                } else {
+                    callback(null, 0);
+                }
+            }
+
+        });
+    },
     /**
      * 拒绝加入俱乐部
      */

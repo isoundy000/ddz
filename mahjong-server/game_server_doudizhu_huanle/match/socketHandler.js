@@ -1628,20 +1628,18 @@ exports.baoming =async function(socket,data){
                 playerService.updatePlayerClub(userId,matchId,callback)
             },
             updateClubUsers:["updatePlayerClub",function(result,callback){
-                club_server.agreeJoinClub(applyId,function(err,data){
+                club_server.agreeJoinClub2(matchId,userId,0,function(err,data){
                     if(err || !data){
-                        return http.send(res,1,"服务器出错，请稍后再试");
+                        socket.emit("baoming_result",{errcode:500,errmsg:"服务器出错，请稍后再试"})
+                        return 
                     }
-                    if(data ==1){
-                        return http.send(res,0,"玩家第一次加入俱乐部，赠送房卡");
-                    }
-                    if(data==0){
-                        return http.send(res,0,"成功");
+                    if(data==1){
+                        callback(null,data)
                     }
                 })
             }]
         },function(err,result){
-            if(err){
+            if(err && !result.updateClubUsers){
                 return socket.emit("system_error",{errcode:500,errmsg:"服务器异常"})
             }
             gameMgr.addMatch(matchId,usersNum,type)
@@ -1649,7 +1647,10 @@ exports.baoming =async function(socket,data){
             userMgr.bind(userId,socket)
 
             let nowUsersNum = gameMgr.getUsersNum(matchId)
-            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum},matchId)
+            if(nowUsersNum==usersNum){
+                userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:1},matchId)
+            }
+            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:0},matchId)
         })
     }else{
         matchId = await generateClubId()
@@ -1668,14 +1669,11 @@ exports.baoming =async function(socket,data){
                 playerService.updatePlayerClub(userId,matchId,callback)
             },
             updateClubUsers:["createClub2","updatePlayerClub",function(result,callback){
-                club_server.agreeJoinClub(applyId,function(err,data){
+                club_server.agreeJoinClub2(matchId,userId,0,function(err,data){
                     if(err || !data){
                         return http.send(res,1,"服务器出错，请稍后再试");
                     }
-                    if(data ==1){
-                        return http.send(res,0,"玩家第一次加入俱乐部，赠送房卡");
-                    }
-                    if(data==0){
+                    if(data==1){
                         return http.send(res,0,"成功");
                     }
                 })
@@ -1689,7 +1687,10 @@ exports.baoming =async function(socket,data){
             userMgr.bind(userId,socket)
 
             let nowUsersNum = gameMgr.getUsersNum(matchId)
-            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum},matchId)
+            if(nowUsersNum==usersNum){
+                userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:1},matchId)
+            }
+            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:0},matchId)
         })
 
 
@@ -1711,7 +1712,7 @@ exports.tuisai = function(socket,data){
             return
         }
         if (left_results == null) {
-            http.send(res, 1, "退赛失败");
+            socket.emit("tuisai_result",{errcode:500,errmsg:"退赛失败"})
             return;
         }
         club_server.dleteClubUsers(userId,matchId,function(err,data){
@@ -1719,7 +1720,8 @@ exports.tuisai = function(socket,data){
                 console.error(err);
                 return
             }
-            http.send(res, 0, "退赛成功");
+            gameMgr.exitMatch(matchId,userId)
+            socket.emit("tuisai_result",{errcode:500,errmsg:"退赛成功"})
         })
         
     })
