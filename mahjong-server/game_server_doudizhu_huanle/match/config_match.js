@@ -16,6 +16,7 @@ let config={
         type:"doudizhu",
         jinji:[45,27,12,3],//晋级名次
         kindId:"200",
+        usersNum:60,
         chushifenshu:4000,
         allAward:17000,//总奖励
         award:[8000,3000,1000,800,800,800,500,500,500,500,500,500],//奖励
@@ -47,6 +48,7 @@ function jingying() {
         type:"doudizhu",
         kindId:"201",
         isDaiKai:0,
+        usersNum:60,
         chushifenshu:4000,
         //明牌最大倍数
         mingpaiBeishu: 4,
@@ -105,5 +107,8 @@ function dashi() {
 
 }
 
+function bisai_config(){
+    
+}
 
 exports.config = config

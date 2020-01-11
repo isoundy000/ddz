@@ -3655,6 +3655,17 @@ app.get("/jubao",function(req,res){
     })
 
 })
+
+
+/***
+ * 获取比赛场场次信息
+ * 
+ */
+let bisai_config = require("../game_server_doudizhu_huanle/match/config_match")
+ app.get("/get_bisai",function(req,res){
+     let config = bisai_config.config
+     return http.send(res,0,"ok",{data:config})
+ })
 /**
  * 根据玩家ID获取消息通知列表
  */

@@ -9,6 +9,7 @@ exports.start = function (config) {
     io = require('socket.io')(config.CLIENT_PORT);
     
     io.sockets.on('connection', function(socket){
+        console.log("lalalalalaldemaxiya")
         /**
          * 登录
          */
@@ -48,6 +49,29 @@ exports.start = function (config) {
 
             socketHandler.mingpai(socket,data);
         });
+
+        /**
+         * 报名
+         */
+        socket.on('baoming',function(data){
+            console.log("baoming le aaaa")
+            socketHandler.baoming(socket,data);
+        });
+        /**
+         * 报名
+         */
+        socket.on('tuisai',function(data){
+            console.log("tuisai")
+            socketHandler.tuisai(socket,data);
+        });
+         /**
+         * 获取排名
+         */
+        socket.on('rank',function(data){
+
+            socketHandler.rank(socket,data);
+        });
+        
         
         socket.on("mingpai_start",function(data){
             socketHandler.mingpaiStart(socket,data);

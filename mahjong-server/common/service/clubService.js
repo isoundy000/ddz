@@ -360,14 +360,14 @@ updateClueUserType:function(clubId,userId,user_type,callback){
         // let id = await generateClubId();
         
         let create_time = new Date().getTime();
-        let data = [club_id,type,usersNum]
+        let data = [club_id,type,usersNum,create_time]
 
         db.save(sql,data,function(err,data){
             if(err){
                 callback(err,null)
             }else{
-                console.log("data.club_id",{clubId:id})
-                callback(null,{clubId:id})
+                // console.log("data.club_id",{clubId:id})
+                callback(null,data)
             }
         });
     },
@@ -569,7 +569,7 @@ updateClueUserType:function(clubId,userId,user_type,callback){
         /**
      * 同意加入俱乐部
      */
-    agreeJoinClub2: function (club_id,user_id,userType, callback) {
+    agreeJoinClub2: function (club_id,user_id,name,userType, callback) {
         var self = this;
         async.auto({
             updateClubUser:function(callback){
@@ -580,8 +580,8 @@ updateClueUserType:function(clubId,userId,user_type,callback){
                 notification.title = '比赛场加入反馈';
                 notification.content = '加入成功';
                 notification.status = 0;
-                notification.to_user = applyEntity.apply_user;
-                notification.to_username = applyEntity.apply_username;
+                notification.to_user = user_id;
+                notification.to_username = name;
                 notification.type = 'sys';
                 notification.create_time = dateUtil.getCurrentTimestapm();
 

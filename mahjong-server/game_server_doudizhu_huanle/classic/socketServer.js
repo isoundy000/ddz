@@ -9,6 +9,7 @@ exports.start = function (config) {
     io = require('socket.io')(config.CLIENT_PORT);
     
     io.sockets.on('connection', function(socket){
+            console.log("classics")
         /**
          * 登录
          */

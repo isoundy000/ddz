@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\mahjong-server\\game_server_paodekuai\\app.js"
+            "program": "${workspaceFolder}\\mahjong-server\\game_server_doudizhu_huanle\\match\\app_match.js"
         }
     ]
 }

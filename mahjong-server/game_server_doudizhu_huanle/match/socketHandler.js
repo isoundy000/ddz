@@ -1397,13 +1397,7 @@ function checkGameState(userId,roomId,chupai_flag) {
     }
 }
 
-/**
- * 
- * 自动匹配比赛场合适的玩家 
- */
-function match(matchId){
-    
-}
+
 
 /**
  * 游戏结束，广播结算结果
@@ -1619,26 +1613,31 @@ async function generateClubId() {
         }
     
 }
+var async = require("async")
 //报名参加比赛
 exports.baoming =async function(socket,data){
     let userId = data.userId;
     let type = data.type;
-    
-    if(!userId || !type){
-        socket.emit("baoming_result",{errcode:500,errmsg:"参数错误"})
+    let name = data.name
+    console.log("报名",userId,type,name)
+    if(!userId || !type ||!name){
+        socket.emit("system_error",{errcode:500,errmsg:"参数错误"})
         return;
     }
-    let usersNum = myConfig[type].usersNum
+    // console.log("type",myConfig.config)
+    let usersNum = myConfig.config[type].usersNum
+    let fen = myConfig.config[type].chushifenshu
     let matchId = gameMgr.getOneMatch(type)
+    console.log("matchId",matchId)
     if(matchId){
         async.auto({
             updatePlayerClub:function(callback){
                 playerService.updatePlayerClub(userId,matchId,callback)
             },
             updateClubUsers:["updatePlayerClub",function(result,callback){
-                club_server.agreeJoinClub2(matchId,userId,0,function(err,data){
+                club_server.agreeJoinClub2(matchId,userId,name,0,function(err,data){
                     if(err || !data){
-                        socket.emit("baoming_result",{errcode:500,errmsg:"服务器出错，请稍后再试"})
+                        socket.emit("system_error",{errcode:500,errmsg:"服务器出错，请稍后再试"})
                         return 
                     }
                     if(data==1){
@@ -1647,11 +1646,13 @@ exports.baoming =async function(socket,data){
                 })
             }]
         },function(err,result){
+            console.log("result.updateClubUsers",result.updateClubUsers)
             if(err && !result.updateClubUsers){
+                console.log(err)
                 return socket.emit("system_error",{errcode:500,errmsg:"服务器异常"})
             }
             gameMgr.addMatch(matchId,usersNum,type)
-            gameMgr.joinMatch(matchId,userId)
+            gameMgr.joinMatch(matchId,userId,fen,name)
             userMgr.bind(userId,socket)
 
             let nowUsersNum = gameMgr.getUsersNum(matchId)
@@ -1662,6 +1663,7 @@ exports.baoming =async function(socket,data){
         })
     }else{
         matchId = await generateClubId()
+        console.log("matchId2",matchId)
         async.auto({
             createClub2:function(callback){
                 club_server.createClub2(matchId,type,usersNum,function(err,result){
@@ -1677,21 +1679,22 @@ exports.baoming =async function(socket,data){
                 playerService.updatePlayerClub(userId,matchId,callback)
             },
             updateClubUsers:["createClub2","updatePlayerClub",function(result,callback){
-                club_server.agreeJoinClub2(matchId,userId,0,function(err,data){
+                club_server.agreeJoinClub2(matchId,userId,name,0,function(err,data){
                     if(err || !data){
-                        return http.send(res,1,"服务器出错，请稍后再试");
+                        return callback(err,null);
                     }
-                    if(data==1){
-                        return http.send(res,0,"成功");
-                    }
+                    callback(null,data)
                 })
             }]
         },function(err,result){
-            if(err){
+            console.log(123)
+            console.log("result.updateClubUsers"+result.updateClubUsers)
+            if(err|| result.updateClubUsers!=1){
+                console.log(err)
                 return socket.emit("system_error",{errcode:500,errmsg:"服务器异常"})
             }
             gameMgr.addMatch(matchId,usersNum,type)
-            gameMgr.joinMatch(matchId,userId)
+            gameMgr.joinMatch(matchId,userId,fen,name)
             userMgr.bind(userId,socket)
 
             let nowUsersNum = gameMgr.getUsersNum(matchId)
@@ -1708,10 +1711,11 @@ exports.baoming =async function(socket,data){
 }
 //退出比赛场
 exports.tuisai = function(socket,data){
+    console.log("tuisai")
     let userId = data.userId;
     let matchId = data.matchId;
     if(!userId ||!matchId ){
-        socket.emit("tuisai_result",{errcode:500,errmsg:"参数错误"})
+        socket.emit("system_error",{errcode:500,errmsg:"参数错误"})
         return;
     }
     agentService.hadLeftClub2(userId, (err, left_results) => {
@@ -1729,10 +1733,31 @@ exports.tuisai = function(socket,data){
                 return
             }
             gameMgr.exitMatch(matchId,userId)
-            socket.emit("tuisai_result",{errcode:500,errmsg:"退赛成功"})
+            socket.emit("tuisai_result",{errcode:200,errmsg:"退赛成功"})
         })
         
     })
+}
+
+exports.rank = function(socket,data){
+    let matchId = data.matchId;
+    if(!match){
+        return socket.emit("system_error",{errcode:500,errmsg:"参数错误"})
+    }
+    let matchUsers= gameMgr.getMatchUsers(matchId);
+    function sortByfen(a,b){
+        return a.fen -b.fen
+    }
+    matchUsers.sort(sortByfen)
+    return socket.emit("rank_result",{errcode:200,errmsg:"ok",data:matchUsers})
+}
+
+/**
+ * 
+ * 自动匹配比赛场合适的玩家 
+ */
+function match(matchId){
+    
 }
 ///////////////////////////////////////////////////////////
 /**

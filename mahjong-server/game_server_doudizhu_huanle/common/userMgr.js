@@ -137,7 +137,7 @@ exports.broacastByMatchId = function (event, data, matchId) {
         return;
     }
     for (let i of matchUsers) {
-        var socket = userList[i];
+        var socket = userList[i.userId];
         if (socket != null) {
             socket.emit(event, data);
             console.log("发送",event)

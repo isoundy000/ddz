@@ -725,7 +725,7 @@ module.exports = {
      */
         updatePlayerClub(user_id, belongs_club, callback) {
         let sql = "update t_users set belongs_club = ? where userid = ?";
-        const args = uArray.push(belongs_agent, user_id);
+        const args = uArray.push(belongs_club, user_id);
         db.update(sql, args, callback)
     },
     /**

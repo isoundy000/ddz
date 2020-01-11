@@ -26,7 +26,7 @@ const Costs = {
 //缓存所有的房间信息
 var roomList = {};
 //缓存比赛场信息
-var matchList = {};//{13:{usersNum:60,type:xinshou,users:[{userId:xxx,fen:xxx}]}}
+var matchList = {};//{13:{usersNum:60,type:xinshou,users:[{userId:xxx,fen:xxx,status:0,name:name}]}}
 //创建中的房间
 var creatingRooms = {};
 //缓存玩家所在的房间
@@ -49,7 +49,7 @@ exports.getMatchList = function () {
 //获取未开始人数未满的比赛场
 //usersnum该比赛场额定人数
 exports.getOneMatch = function(type){
-    for(let i of matchList){
+    for(let i in matchList){
         if(matchList[i].status==0 && matchList[i].users.length<matchList[i].usersNum && matchList[i].type ==type ){
             return i
         }
@@ -68,12 +68,13 @@ exports.getUsersNum = function(matchId){
 exports.getMatchUsers = function(matchId){
     return matchList[matchId].users
 }
+
 //加入比赛场
-exports.joinMatch = function(matchId,userId,fen){
+exports.joinMatch = function(matchId,userId,fen,name){
     if(matchList[matchId].users.length>=matchList[matchId].usersNum){
         return 0
     }
-    let data = {userId:userId,fen:fen,status:0}
+    let data = {userId:userId,fen:fen,status:0,name:name}
     matchList[matchId].users.push(data)
     return 1
 }
