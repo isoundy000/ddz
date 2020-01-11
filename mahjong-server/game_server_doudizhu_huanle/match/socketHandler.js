@@ -1624,7 +1624,7 @@ exports.baoming =async function(socket,data){
         socket.emit("system_error",{errcode:500,errmsg:"参数错误"})
         return;
     }
-    // console.log("type",myConfig.config)
+    console.log("type",myConfig.config(type))
     let usersNum = myConfig.config[type].usersNum
     let fen = myConfig.config[type].chushifenshu
     let matchId = gameMgr.getOneMatch(type)

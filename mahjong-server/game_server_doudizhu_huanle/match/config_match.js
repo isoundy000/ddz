@@ -144,11 +144,20 @@ function bisai_config(){
             fee:"20000",},
         ]
 }
-function getMatchConfig(type){
-    matchServer.getMatchConfig(type,function(err,result){
-        if(err){
-            
-        }
+function getMatchDb(type){
+    return new Promise((resolve,reject)=>{
+        matchServer.getMatchConfig(type,function(err,result){
+            if(err){
+                console.log(err)
+                return reject(err)
+            }
+            resolve(result)
+        })
     })
+
 }
-exports.config = config
+async function getMatchConfig(type){
+    let config = await getMatchConfig(type)
+    console.log("config",config)
+}
+exports.config = getMatchConfig
