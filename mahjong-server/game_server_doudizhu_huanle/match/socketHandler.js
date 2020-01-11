@@ -1657,9 +1657,9 @@ exports.baoming =async function(socket,data){
 
             let nowUsersNum = gameMgr.getUsersNum(matchId)
             if(nowUsersNum==usersNum){
-                userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:1},matchId)
+                userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:1,matchId:matchId,allUsersNum:usersNum},matchId)
             }
-            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:0},matchId)
+            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:0,matchId:matchId,allUsersNum:usersNum},matchId)
         })
     }else{
         matchId = await generateClubId()
@@ -1699,9 +1699,9 @@ exports.baoming =async function(socket,data){
 
             let nowUsersNum = gameMgr.getUsersNum(matchId)
             if(nowUsersNum==usersNum){
-                userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:1},matchId)
+                userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:1,matchId:matchId,allUsersNum:usersNum},matchId)
             }
-            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:0},matchId)
+            userMgr.broacastByMatchId("match_usersNum",{usersNum:nowUsersNum,start:0,matchId:matchId,allUsersNum:usersNum},matchId)
         })
 
 
@@ -1719,10 +1719,12 @@ exports.tuisai = function(socket,data){
         return;
     }
     agentService.hadLeftClub2(userId, (err, left_results) => {
+        console.log("left_results",left_results)
         if (err) {
             console.error(err);
-            return
+            return socket.emit("system_error",{errcode:500,errmsg:"服务器错误"})
         }
+        console.log("left_results2",left_results)
         if (left_results == null) {
             socket.emit("tuisai_result",{errcode:500,errmsg:"退赛失败"})
             return;

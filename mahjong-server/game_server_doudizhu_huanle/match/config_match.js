@@ -1,13 +1,15 @@
+let matchServer = require("../../common/service/matchServer")
 /**
  * 金币场房间管理(初级)
  */
-
 let config={
     xinshou:xinshou(),
     jingying:jingying(),
     dashi:dashi(),
+    bisai_config:bisai_config()
 }
  function xinshou() {
+     
     return {
         room_type:"xinshou",
         diZhu:10,
@@ -19,7 +21,12 @@ let config={
         usersNum:60,
         chushifenshu:4000,
         allAward:17000,//总奖励
-        award:[8000,3000,1000,800,800,800,500,500,500,500,500,500],//奖励
+        award:[{award:120000,type:0},
+            {award:40000,type:0},
+            {award:16000,type:0},
+            {award:8000,type:0},
+            {award:8000,type:0},
+            {award:8000,type:0},], //奖励
         //明牌最大倍数
         mingpaiBeishu: 4,
         room_count: -1,
@@ -53,7 +60,12 @@ function jingying() {
         //明牌最大倍数
         mingpaiBeishu: 4,
         allAward:47000,//总奖励
-        award:[20000,12000,6000,3000,3000,3000],//奖励
+        award:[{award:120000,type:0},
+            {award:40000,type:0},
+            {award:16000,type:0},
+            {award:8000,type:0},
+            {award:8000,type:0},
+            {award:8000,type:0},],//奖励
         room_count: -1,
         chushibeishu:15,
         seatCount: 3,
@@ -89,7 +101,12 @@ function dashi() {
         //明牌最大倍数
         mingpaiBeishu: 4,
         allAward:20,//总奖励
-        award:[120000,40000,16000,8000,8000,8000],//奖励
+        award:[{award:120000,type:0},
+            {award:40000,type:0},
+            {award:16000,type:0},
+            {award:8000,type:0},
+            {award:8000,type:0},
+            {award:8000,type:0},],//奖励
         room_count: -1,
         chushibeishu:15,
         seatCount: 3,
@@ -108,7 +125,30 @@ function dashi() {
 }
 
 function bisai_config(){
-    
-}
+    return [{img:"http://192.168.0.192:12345/photos/4.jpg",
+            type:"xinshou",
+            description:"满60人开始",
+            award:"1亿元现金",
 
+
+            fee:"200",},
+            {img:"http://192.168.0.192:12345/photos/4.jpg",
+            type:"jingying",
+            description:"满60人开始",
+            award:"1亿元现金",
+            fee:"2000",},
+            {img:"http://192.168.0.192:12345/photos/4.jpg",
+            type:"dashi",
+            description:"满60人开始",
+            award:"1亿元现金",
+            fee:"20000",},
+        ]
+}
+function getMatchConfig(type){
+    matchServer.getMatchConfig(type,function(err,result){
+        if(err){
+            
+        }
+    })
+}
 exports.config = config

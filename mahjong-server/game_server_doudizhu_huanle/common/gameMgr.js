@@ -95,10 +95,10 @@ exports.setMatchUsers = function(matchId,userId,key,value){
 
 //退赛
 exports.exitMatch = function(matchId,userId){
-    for(let i of matchMedia[matchId].users){
+    for(let i of matchList[matchId].users){
         if(i.userId==userId){
-            let index = matchMedia[matchId].users.indexOf(i)
-            return matchMedia[matchId].users.splice(index,1)
+            let index = matchList[matchId].users.indexOf(i)
+            return matchList[matchId].users.splice(index,1)
         }
     }
     return null

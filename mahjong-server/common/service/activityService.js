@@ -10,7 +10,7 @@ var playerService = require('./playerService');
 var uArray = require('../../utils/uArray');
 module.exports = {
 
-        /**
+    /**
      * 签到
      */
     signIn:function(player,days,grantCount,signInfo,last_sign_timeStamp,callback){

@@ -147,13 +147,13 @@ module.exports = {
      * @param {*} callback 
      */
     hadLeftClub2(left_user_id, callback) {
-        let sql1 = "update t_users set belongs_club=NULL from  where userid =?"
+        let sql1 = "update t_users set belongs_club=NULL  where userid =?"
         let data = [left_user_id]
         db.queryForAll(sql1,data,function(err,result){
             if(err||!result){
                 callback(err,null)
             }else{
-
+                callback(err,result)
             }
         })
 
