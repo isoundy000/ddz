@@ -22,9 +22,9 @@ function generatePoker() {
             poker.num = j;
             pokers.push(poker);
         }
-        
+
     }
-    let kings = [{ color: 0, num: 16 },{ color: 0, num: 17 }];
+    let kings = [{ color: 0, num: 16 }, { color: 0, num: 17 }];
     let p = pokers.concat(kings);
     shuffle(p);
     return p;
@@ -84,97 +84,97 @@ exports.deal = function (roomInfo) {
 
         playerPokerList.push(pokerSort(playerHolds));
     }
-    console.log("playerPokerList",playerPokerList)
-    return {pokers:playerPokerList,dipai:pokers}
+    console.log("playerPokerList", playerPokerList)
+    return { pokers: playerPokerList, dipai: pokers }
 }
 
 /**
  * 获取poker的牌型 
  */
 exports.getPokerType = function (pokers) {
-        let huojian = isHuoJian(pokers)
+    let huojian = isHuoJian(pokers)
     if (huojian) {
-        return {type:"huojian",pokers:huojian};
+        return { type: "huojian", pokers: huojian };
     }
     let iszhadan = isZhaDan(pokers)
     if (iszhadan) {
-        return {type:"zhadan",pokers:iszhadan};
+        return { type: "zhadan", pokers: iszhadan };
     }
-    let isdanzhang =  isDanZhang(pokers)
+    let isdanzhang = isDanZhang(pokers)
     if (isdanzhang) {
-        return {type:"danzhang",pokers:pokers[0].num};
+        return { type: "danzhang", pokers: pokers[0].num };
     }
     let isduizi = isDuizi(pokers)
     if (isduizi) {
-        return {type:"duizi",pokers:pokers[0].num};
+        return { type: "duizi", pokers: pokers[0].num };
     }
     let sanzhang = isSanZhang(pokers)
     if (sanzhang) {
-        return {type:"sanzhang",pokers:sanzhang};
+        return { type: "sanzhang", pokers: sanzhang };
     }
     let issanandone = isSanAndOne(pokers)
     if (issanandone) {
-        return {type:"sandaiyi",pokers:issanandone};
+        return { type: "sandaiyi", pokers: issanandone };
     }
     let issanandotwo = isSanAndTwo(pokers)
     if (issanandotwo) {
-        return {type:"sandaier",pokers:issanandotwo};
+        return { type: "sandaier", pokers: issanandotwo };
     }
     let DanShun = isDanShun(pokers)
     if (DanShun) {
-        return {type:"danshun",pokers:DanShun};
+        return { type: "danshun", pokers: DanShun };
     }
     let ShuangShun = isShuangShun(pokers)
     if (ShuangShun) {
-        return {type:"shuangshun",pokers:ShuangShun};
+        return { type: "shuangshun", pokers: ShuangShun };
     }
     let SanShun = isSanShun(pokers);
     if (SanShun) {
-        return {type:"sanshun",pokers:SanShun};
+        return { type: "sanshun", pokers: SanShun };
     }
     let feiji = isFeiji(pokers)
     if (feiji) {
         let keys = Object.keys(feiji);
-        let maxIndex = keys.length-1
-        return {type:"feiji",pokers:keys[maxIndex],len:keys.length};
+        let maxIndex = keys.length - 1
+        return { type: "feiji", pokers: keys[maxIndex], len: keys.length };
     }
     let SiAndTwo = isSiAndTwo(pokers)
     if (SiAndTwo) {
         let keys = Object.keys(SiAndTwo);
-        let maxIndex = keys.length-1;
-        return {type:"sidaier",pokers:keys[maxIndex],len:keys.length};
+        let maxIndex = keys.length - 1;
+        return { type: "sidaier", pokers: keys[maxIndex], len: keys.length };
     }
     return false;
 }
 
-function sortss(a,b){
+function sortss(a, b) {
 
-    return a-b
+    return a - b
 }
-function sortll(a,b){
-    return b-a
+function sortll(a, b) {
+    return b - a
 }
 /***
  * 获得玩家的炸弹
  */
 
-exports.getZhadan = function(pokers){
+exports.getZhadan = function (pokers) {
     let temp = {}
-    for(let i of pokers){
-        temp[i.num]=0;
+    for (let i of pokers) {
+        temp[i.num] = 0;
     }
-    for(let i of pokers){
-        temp[i.num] +=1;
+    for (let i of pokers) {
+        temp[i.num] += 1;
     }
     let keys = Object.keys(temp);
-    for(let i of keys){
-        if (temp[i]!==4){
+    for (let i of keys) {
+        if (temp[i] !== 4) {
             delete temp[i]
         }
     }
     let keys2 = Object.keys(temp);
     console.log(keys2)
-    for(let k=0;k<keys2.length;k++){
+    for (let k = 0; k < keys2.length; k++) {
         keys2[k] = parseInt(keys2[k])
     }
     console.log(keys2)
@@ -185,16 +185,16 @@ exports.getZhadan = function(pokers){
 /***
  * 获得玩家的火箭
  */
-exports.getHuojian = function(pokers){
+exports.getHuojian = function (pokers) {
     let temp = {}
-    let i=0;
+    let i = 0;
     let res = []
-    for(let i of pokers){
-        if(i.num ===16 || i.num ===17){
+    for (let i of pokers) {
+        if (i.num === 16 || i.num === 17) {
             res.push(i)
         }
     }
-    if(res.length !==2){
+    if (res.length !== 2) {
         return [];
     }
     return res;
@@ -209,7 +209,7 @@ exports.getHuojian = function(pokers){
  * 当weishu为1时，会获得所有连续的牌
  * 
  */
-exports.getSamePai = function(pokers,weishu,len,otherPokerMax){
+exports.getSamePai = function (pokers, weishu, len, otherPokerMax) {
     pokers = [].concat(pokers)
     console.log(pokers);
     // let jin;
@@ -218,249 +218,249 @@ exports.getSamePai = function(pokers,weishu,len,otherPokerMax){
     // }else{
     //     jin= [];
     // }
-    
+
     // for(let i of jin){
     //     commonUtil.remove(pokers,i);
     // }
     let temp = {}
     //初始化temp
-    for(let i of pokers){
+    for (let i of pokers) {
         //如果牌A在此数组内，为了方便先把牌A的值改为14
-        if(i.num === 1){
-            temp[14]=0;
+        if (i.num === 1) {
+            temp[14] = 0;
             continue;
         }
-        if(i.num === 2){
-            temp[15]=0;
+        if (i.num === 2) {
+            temp[15] = 0;
             continue;
-        }      
-        temp[i.num]=0;
+        }
+        temp[i.num] = 0;
     }
-    for(let i of pokers){
+    for (let i of pokers) {
         //如果牌A在此数组内，为了方便先把牌A的值改为14
-        if(i.num === 1){
-            temp[14]+=1;
+        if (i.num === 1) {
+            temp[14] += 1;
             continue;
         }
-        if(i.num === 2){
-            temp[15]+=1;
+        if (i.num === 2) {
+            temp[15] += 1;
             continue;
         }
-        temp[i.num] +=1;
+        temp[i.num] += 1;
     }
     let keys = Object.keys(temp);
 
-    for(let i of keys){
-        if (temp[i]!==weishu){
+    for (let i of keys) {
+        if (temp[i] !== weishu) {
             delete temp[i]
         }
     }
-    console.log("temp",temp)
+    console.log("temp", temp)
     //如果牌A在此数组内，为了方便先把牌A的值改为14
     let keys2 = Object.keys(temp).reverse();
-    if(keys2.length===0){
+    if (keys2.length === 0) {
         // console.log("keys.length",keys.length)
         return [];
     }
-    for(let i=0;i<keys2.length;i++){
+    for (let i = 0; i < keys2.length; i++) {
         keys2[i] = parseInt(keys2[i])
     }
-    console.log("keys2",keys2);
-    
-    let res=[]
-    let result =[];
+    console.log("keys2", keys2);
+
+    let res = []
+    let result = [];
     res.push(keys2[0]);
-    
-    for (let i=1;i<keys2.length;i++){
-        console.log(keys2[i]+1)
+
+    for (let i = 1; i < keys2.length; i++) {
+        console.log(keys2[i] + 1)
 
         // console.log(keys2[i-1])
-        console.log(keys2[i-1] === (keys2[i]+1))
-        if(keys2[i-1] === (keys2[i]+1)){
+        console.log(keys2[i - 1] === (keys2[i] + 1))
+        if (keys2[i - 1] === (keys2[i] + 1)) {
 
             res.push(keys2[i]);
-        }else{
+        } else {
 
             result.push(res);
-            res=[];
+            res = [];
             res.push(keys2[i])
         }
-        if(i === keys2.length-1 ){
+        if (i === keys2.length - 1) {
             result.push(res);
         }
 
     }
-    console.log("res1",res)
-    if(keys2.length <=1){
-        console.log("res2",res)
-        result.push(res)  
+    console.log("res1", res)
+    if (keys2.length <= 1) {
+        console.log("res2", res)
+        result.push(res)
     }
     return result;
 
 }
-exports.getAllSamePai = function(pokers,weishu){
+exports.getAllSamePai = function (pokers, weishu) {
     pokers = [].concat(pokers);
     console.log(pokers);
-    let jin = [16,17];
-    if(weishu ==1){
+    let jin = [16, 17];
+    if (weishu == 1) {
         jin.push(15)
     }
-    for(let i of jin){
-        for(let j of pokers){
-            if(j.num==i){
-                commonUtil.removeOne(pokers,j);
+    for (let i of jin) {
+        for (let j of pokers) {
+            if (j.num == i) {
+                commonUtil.removeOne(pokers, j);
             }
         }
-        
+
     }
     let temp = {}
     //初始化temp
-    for(let i of pokers){     
-        temp[i.num]=0;
+    for (let i of pokers) {
+        temp[i.num] = 0;
     }
-    for(let i of pokers){
-        temp[i.num] +=1;
+    for (let i of pokers) {
+        temp[i.num] += 1;
     }
     let keys = Object.keys(temp);
-    for(let i of keys){
-        if (temp[i]<weishu ||temp[i]==4){ //和上边那一个函数的不同点
+    for (let i of keys) {
+        if (temp[i] < weishu || temp[i] == 4) { //和上边那一个函数的不同点
             delete temp[i]
         }
     }
     console.log(temp)
     //如果牌A在此数组内，为了方便先把牌A的值改为14
     let keys2 = Object.keys(temp).reverse();
-    for(let i=0;i<keys2.length;i++){
+    for (let i = 0; i < keys2.length; i++) {
         keys2[i] = parseInt(keys2[i])
     }
-    console.log("keys2",keys2)
-    
-    let res=[]
-    let result =[];
+    console.log("keys2", keys2)
+
+    let res = []
+    let result = [];
     res.push(keys2[0]);
-    for (let i=1;i<keys2.length;i++){
+    for (let i = 1; i < keys2.length; i++) {
         // console.log(keys2[i]+1)
 
         // console.log(keys2[i-1])
-        console.log(keys2[i-1] === (keys2[i]+1))
-        if(keys2[i-1] === (keys2[i]+1)){
+        console.log(keys2[i - 1] === (keys2[i] + 1))
+        if (keys2[i - 1] === (keys2[i] + 1)) {
 
             res.push(keys2[i]);
-        }else{
+        } else {
             // console.log("res",res)
             result.push(res);
-            res=[];
+            res = [];
             res.push(keys2[i])
         }
-        if( keys2.length-1 ==i ){
+        if (keys2.length - 1 == i) {
             result.push(res);
         }
 
     }
-    if( keys2.length ==1 ){
+    if (keys2.length == 1) {
         result.push(res);
     }
     return result;
 
 }
 //如果一副符合的牌的长度大于要比较的牌就将此付牌截取的和要比较的牌一样的长度
-function getSomePokers(mypokers,pokers){
+function getSomePokers(mypokers, pokers) {
     var mypokers1 = [].concat(mypokers)
     let myLength = mypokers1.length;
     let otherLength = pokers.length;
     let differ = myLength - otherLength;
-    if(differ ===0){
+    if (differ === 0) {
         return mypokers;
     }
-    for(let i=0;i<differ;i++){
-        if(mypokers1[1].num>pokers[0].num){
-            mypokers1.splice(0,1)
-        }else{
-            mypokers1.splice((mypokers1.length-1),1)
+    for (let i = 0; i < differ; i++) {
+        if (mypokers1[1].num > pokers[0].num) {
+            mypokers1.splice(0, 1)
+        } else {
+            mypokers1.splice((mypokers1.length - 1), 1)
         }
 
     }
     return mypokers1
 
-    
+
 
 }
-function sortSS(a,b){
-    return a.num-b.num
+function sortSS(a, b) {
+    return a.num - b.num
 }
-function sortgg(a,b){
-    return a[0]-b[0]
+function sortgg(a, b) {
+    return a[0] - b[0]
 }
 /**
  * 根据牌获取比他大的牌
  * @param {pokers} pokers 
  */
-exports.getBiggerPokers = function(pokers,mepokers){
-    let mypokers =[].concat(mepokers)//.pokers;
+exports.getBiggerPokers = function (pokers, mepokers) {
+    let mypokers = [].concat(mepokers)//.pokers;
     let huojian = exports.getHuojian(mypokers);
     //参与比较两幅相同牌型牌 大小的值
-    
+
     let pokerType = exports.getPokerType(pokers);
-    if(!pokerType){
+    if (!pokerType) {
         console.log(pokerType)
         return []
     }
     console.log(pokerType);
     let otherPokerMax = pokerType.pokers;
-    console.log("otherPokerMax",otherPokerMax)
-    console.log("otherPokerMax1",typeof otherPokerMax)
-    if(pokerType.type === "huojian"){
-        
+    console.log("otherPokerMax", otherPokerMax)
+    console.log("otherPokerMax1", typeof otherPokerMax)
+    if (pokerType.type === "huojian") {
+
         return [];
     }
-    if(pokerType.type === "zhadan"){
+    if (pokerType.type === "zhadan") {
         let s = zhadan(mypokers);
         console.log(pokerType.type)
         return s;
     }
-    if(pokerType.type === "danzhang"){
+    if (pokerType.type === "danzhang") {
         // console.log(pokerType.type)
         // let myPokers1 = [].concat(mypokers);
         // console.log("myPokers1",myPokers1)
         let res = danzhang(mypokers);
-        console.log("res",res)
+        console.log("res", res)
         return res;
     }
-    if(pokerType.type ==="danshun"){
-        let shunzi = exports.getAllSamePai(mypokers,1);
-        console.log("danshun",shunzi)
+    if (pokerType.type === "danshun") {
+        let shunzi = exports.getAllSamePai(mypokers, 1);
+        console.log("danshun", shunzi)
         let res = [];
-        for(let i of shunzi){
-            for (j of i){
-                if (j==15){
+        for (let i of shunzi) {
+            for (j of i) {
+                if (j == 15) {
                     let index = i.indexOf(j);
-                    i.splice(index,1);
+                    i.splice(index, 1);
                 }
             }
         }
-        for(let i of shunzi){
-            if(i.length >= pokers.length && i[0]>otherPokerMax){
+        for (let i of shunzi) {
+            if (i.length >= pokers.length && i[0] > otherPokerMax) {
                 res.push(i);
             }
         }
-        if(res.length ===0){
+        if (res.length === 0) {
             return []
         }
-        let lastRes=[];
+        let lastRes = [];
         let temp = {};
-        for(let i of res){
+        for (let i of res) {
 
-                for(let j of mypokers){
-                    if(i.indexOf(j.num) !== -1 &&temp[j.num] !==1){
-                        temp[j.num] = 1
-                        lastRes.push(j);
-                    }
-                    
+            for (let j of mypokers) {
+                if (i.indexOf(j.num) !== -1 && temp[j.num] !== 1) {
+                    temp[j.num] = 1
+                    lastRes.push(j);
                 }
-            
-            
-            let su = getSomePokers(lastRes,pokers);
-            if(su.length === 0){
+
+            }
+
+
+            let su = getSomePokers(lastRes, pokers);
+            if (su.length === 0) {
                 let res = zhadan(mypokers);
                 return res;
             }
@@ -468,37 +468,37 @@ exports.getBiggerPokers = function(pokers,mepokers){
         }
 
     }
-    if(pokerType.type ==="shuangshun"){
-        let shunzi = exports.getAllSamePai(mypokers,2);
-        console.log("shunzi",shunzi)
+    if (pokerType.type === "shuangshun") {
+        let shunzi = exports.getAllSamePai(mypokers, 2);
+        console.log("shunzi", shunzi)
         let res = [];
-        for(let i of shunzi){
-            if((i.length)*2 >= pokers.length && i[0]>otherPokerMax){
+        for (let i of shunzi) {
+            if ((i.length) * 2 >= pokers.length && i[0] > otherPokerMax) {
                 res.push(i);
             }
         }
-        if(res.length ===0){
+        if (res.length === 0) {
             return []
         }
-        let lastRes=[];
+        let lastRes = [];
         let temp = {};
-        for(let i of mypokers){
-            temp[i.num]=0;
+        for (let i of mypokers) {
+            temp[i.num] = 0;
         }
-        for(let i of res){
+        for (let i of res) {
 
-                for(let j of mypokers){
-                    if(i.indexOf(j.num) !==-1 &&temp[j.num] !==2){
-                        temp[j.num] += 1
-                        lastRes.push(j);
-                    }
-                    
+            for (let j of mypokers) {
+                if (i.indexOf(j.num) !== -1 && temp[j.num] !== 2) {
+                    temp[j.num] += 1
+                    lastRes.push(j);
                 }
 
-            
-            let su = getSomePokers(lastRes,pokers);
-            console.log("su",su)
-            if(su.length === 0){
+            }
+
+
+            let su = getSomePokers(lastRes, pokers);
+            console.log("su", su)
+            if (su.length === 0) {
                 let res = zhadan(mypokers);
                 return res;
             }
@@ -506,36 +506,36 @@ exports.getBiggerPokers = function(pokers,mepokers){
         }
 
     }
-    if(pokerType.type ==="sanshun"){
-        let shunzi = exports.getAllSamePai(mypokers,3);
-        console.log("shunzi",shunzi)
+    if (pokerType.type === "sanshun") {
+        let shunzi = exports.getAllSamePai(mypokers, 3);
+        console.log("shunzi", shunzi)
         let res = [];
-        for(let i of shunzi){
-            if((i.length)*3 >= pokers.length && i[0]>otherPokerMax){
+        for (let i of shunzi) {
+            if ((i.length) * 3 >= pokers.length && i[0] > otherPokerMax) {
                 res.push(i);
             }
         }
-        if(res.length ===0){
+        if (res.length === 0) {
             return []
         }
-        let lastRes=[];
+        let lastRes = [];
         let temp = {};
-        for(let i of mypokers){
-            temp[i.num]=0;
+        for (let i of mypokers) {
+            temp[i.num] = 0;
         }
-        for(let i of res){
+        for (let i of res) {
 
-                for(let j of mypokers){
-                    if(i.indexOf(j.num) !== -1 &&temp[j.num] !==3){
-                        temp[j.num] += 1
-                        lastRes.push(j);
-                    }
-                    
+            for (let j of mypokers) {
+                if (i.indexOf(j.num) !== -1 && temp[j.num] !== 3) {
+                    temp[j.num] += 1
+                    lastRes.push(j);
                 }
-            
-            
-            let su = getSomePokers(lastRes,pokers);
-            if(su.length === 0){
+
+            }
+
+
+            let su = getSomePokers(lastRes, pokers);
+            if (su.length === 0) {
                 let res = zhadan(mypokers);
                 return res;
             }
@@ -543,144 +543,144 @@ exports.getBiggerPokers = function(pokers,mepokers){
         }
 
     }
-    if(pokerType.type === "duizi"){
+    if (pokerType.type === "duizi") {
         let mypokers1 = [].concat(mypokers)
         let d = duizi(mypokers1);
         return d
     }
-    if(pokerType.type === "sanzhang"){
+    if (pokerType.type === "sanzhang") {
         let sz = sanzhang(mypokers);
         return sz
     }
-    if(pokerType.type === "sandaiyi"){
+    if (pokerType.type === "sandaiyi") {
         let res = sanzhang(mypokers);
-        if(res.length ===0){
+        if (res.length === 0) {
             return []
         }
-        for(let i of res){
-            commonUtil.removeOne(mypokers,i)
+        for (let i of res) {
+            commonUtil.removeOne(mypokers, i)
         }
         let dz = danzhang(mypokers);
-        if(dz.length === 0){
+        if (dz.length === 0) {
             return [];
         }
         return res.concat(dz)
     }
-    if(pokerType.type === "sandaier"){
+    if (pokerType.type === "sandaier") {
         let res = sanzhang(mypokers);
-        for(let i of res){
-            commonUtil.removeOne(mypokers,i)
+        for (let i of res) {
+            commonUtil.removeOne(mypokers, i)
         }
 
-        let dz = duizi(mypokers);
-        if(dz.length === 0 || res.length ===0){
-            
+        let dz = duizi1(mypokers);
+        if (dz.length === 0 || res.length === 0) {
+
             return [];
         }
         return res.concat(dz)
     }
-    if(pokerType.type === "feiji"){
+    if (pokerType.type === "feiji") {
         let length = pokers.length;
-        let myfeiji = exports.getSamePai(mypokers,3);
+        let myfeiji = exports.getSamePai(mypokers, 3);
         let my = mypokers.sort(sortSS)
-        console.log("myfeiji",my)
-        if(myfeiji.length===0){
+        console.log("myfeiji", my)
+        if (myfeiji.length === 0) {
             return []
         }
         let res = [];
-        for(let i of myfeiji){
-            if(i.length >=pokerType.len){
+        for (let i of myfeiji) {
+            if (i.length >= pokerType.len) {
                 let newI = i.sort(sortll)
                 res.push(newI)
             }
         }
         let newRes = res.sort(sortSS);
-        if(newRes.length===0){
+        if (newRes.length === 0) {
             return [];
         }
-        console.log("newRes",newRes)
+        console.log("newRes", newRes)
         //如果飞机是带的单张牌
-        console.log("len",length)
-        if(length === pokerType.len*(3+1)){
+        console.log("len", length)
+        if (length === pokerType.len * (3 + 1)) {
             console.log("danpai")
-            for(let i of newRes){
+            for (let i of newRes) {
 
-                    let res = [];
-                    for(let k of i){
-                        for(let j of mypokers){
-                            if (j.num === k){
-                                res.push(j)
-                            }
+                let res = [];
+                for (let k of i) {
+                    for (let j of mypokers) {
+                        if (j.num === k) {
+                            res.push(j)
                         }
                     }
-                    
-                    let s = getSomePokers(res,pokers);
-                    commonUtil.remove(mypokers,s)
-                    let dz ;
+                }
 
-                        // for(let i =0;i<4;i++){
-                            let dz1 = danzhang(mypokers);
-                        //     console.log("dz1ssssssssss",dz1)
-                            s.push(dz1);
-                        // }
-                        
-                        
-                        for(let i=0;i<pokerType.len-1;i++){
-                            function loop(dz){
-                                let dz2 = danzhang(mypokers);
-                                if(dz2.length ===0){
-                                    return;
-                                }
-                                if(dz2[0].num !==dz[0].num){
-    
-                                    s.push(dz2);
-                                    return;
-                                }else{
-                                    return loop(dz2);
-                                }
-                            }
-                            loop(dz1);
+                let s = getSomePokers(res, pokers);
+                commonUtil.remove(mypokers, s)
+                let dz;
 
+                // for(let i =0;i<4;i++){
+                let dz1 = danzhang(mypokers);
+                //     console.log("dz1ssssssssss",dz1)
+                s.push(dz1);
+                // }
+
+
+                for (let i = 0; i < pokerType.len - 1; i++) {
+                    function loop(dz) {
+                        let dz2 = danzhang(mypokers);
+                        if (dz2.length === 0) {
+                            return;
                         }
+                        if (dz2[0].num !== dz[0].num) {
 
-                        
-                        
+                            s.push(dz2);
+                            return;
+                        } else {
+                            return loop(dz2);
+                        }
+                    }
+                    loop(dz1);
 
-                    return s
-                    
+                }
+
+
+
+
+                return s
+
 
             }
-        }else{
+        } else {
             console.log("duizi")
-            for(let i of newRes){
+            for (let i of newRes) {
 
-                if(i.length>=pokerType.len){
+                if (i.length >= pokerType.len) {
                     let res = [];
-                    for(let k of i){
-                        for(let j of mypokers){
-                            if (j.num === k){
+                    for (let k of i) {
+                        for (let j of mypokers) {
+                            if (j.num === k) {
                                 res.push(j)
                             }
                         }
                     }
-                    let dz ;
-                    dz= duizi(mypokers);
-                    
-                    let s = getSomePokers(res,pokers);
-                    commonUtil.remove(mypokers,s)
+                    let dz;
+                    dz = duizi(mypokers);
+
+                    let s = getSomePokers(res, pokers);
+                    commonUtil.remove(mypokers, s)
                     s.push(dz);
-                    console.log("s",s)
-                    for(let i=0;i<pokerType.len-1;i++){
-                        function loop(dz){
+                    console.log("s", s)
+                    for (let i = 0; i < pokerType.len - 1; i++) {
+                        function loop(dz) {
                             let dz2 = duizi(mypokers);
-                            if(dz2.length ===0){
+                            if (dz2.length === 0) {
                                 return;
                             }
-                            if(dz2[0].num !==dz[0].num){
+                            if (dz2[0].num !== dz[0].num) {
 
                                 s.push(dz2);
                                 return;
-                            }else{
+                            } else {
                                 return loop(dz2);
                             }
                         }
@@ -691,56 +691,56 @@ exports.getBiggerPokers = function(pokers,mepokers){
                 }
             }
         }
-        
+
     }
 
-    if(pokerType.type === "sidaier"){
+    if (pokerType.type === "sidaier") {
         let length = pokers.length;
-        let mysizhang = exports.getSamePai(mypokers,4);
-        commonUtil.remove(mypokers,mysizhang)
-        if(mysizhang.length ===0){
+        let mysizhang = exports.getSamePai(mypokers, 4);
+        commonUtil.remove(mypokers, mysizhang)
+        if (mysizhang.length === 0) {
             return []
         }
         let min = 15;
-        for(let i of mysizhang){
-            if(i.length === 1){
-                if(i[0] > otherPokerMax && i[0]<min){
-                    min =i[0];
+        for (let i of mysizhang) {
+            if (i.length === 1) {
+                if (i[0] > otherPokerMax && i[0] < min) {
+                    min = i[0];
                 }
-            }else{
-                for (let j of i){
-                    if(j>otherPokerMax && j<min){
+            } else {
+                for (let j of i) {
+                    if (j > otherPokerMax && j < min) {
                         min = j
                     }
                 }
             }
         }
-        if (min ===14){
+        if (min === 14) {
             return [];
         }
         let lastRes = [];
-        for(let i of mypokers){
-            if(i.num === min){
+        for (let i of mypokers) {
+            if (i.num === min) {
                 lastRes.push(i);
             }
-            
+
         }
-        if(pokers.length === 8){
+        if (pokers.length === 8) {
             let t;
             t = duizi(mypokers);
             lastRes.push(t);
 
 
-               function loop(dz){
+            function loop(dz) {
                 let dz2 = duizi(mypokers);
-                if(dz2.length ===0){
+                if (dz2.length === 0) {
                     return;
                 }
-                if(dz2[0].num !==dz[0].num){
+                if (dz2[0].num !== dz[0].num) {
 
                     lastRes.push(dz2);
                     return;
-                }else{
+                } else {
                     return loop(dz2);
                 }
             }
@@ -750,76 +750,76 @@ exports.getBiggerPokers = function(pokers,mepokers){
 
             return lastRes;
         }
-        if(pokers.length === 6){
+        if (pokers.length === 6) {
             let t;
             t = danzhang(mypokers);
             lastRes.push(t);
-                function loop(dz){
-                    let dz2 = danzhang(mypokers);
-                    if(dz2.length ===0){
-                        return;
-                    }
-                    if(dz2[0].num !==dz[0].num){
-
-                        lastRes.push(dz2);
-                        return;
-                    }else{
-                        return loop(dz2);
-                    }
+            function loop(dz) {
+                let dz2 = danzhang(mypokers);
+                if (dz2.length === 0) {
+                    return;
                 }
-                loop(t);
+                if (dz2[0].num !== dz[0].num) {
+
+                    lastRes.push(dz2);
+                    return;
+                } else {
+                    return loop(dz2);
+                }
+            }
+            loop(t);
 
 
-            
+
             return lastRes;
         }
-        
+
     }
 
-    function danzhang(mypokers){
+    function danzhang(mypokers) {
         let mypokers1 = mypokers.sort(sortSS);
-        let myDanPai = exports.getAllSamePai(mypokers,1);
-        console.log("myDanPai",myDanPai)
-        let res =[];
-        for (let i of myDanPai){
-            if(i.length<5){
+        let myDanPai = exports.getAllSamePai(mypokers, 1);
+        console.log("myDanPai", myDanPai)
+        let res = [];
+        for (let i of myDanPai) {
+            if (i.length < 5) {
                 let newI = i.sort(sortss)
                 res.push(newI);
             }
         }
         let min = 18;
-        console.log("res",res)
-        for(let i of res){
-            for(let j of i){
-                    if(j<min && j>otherPokerMax){
-                        min = j;
-                    }
+        console.log("res", res)
+        for (let i of res) {
+            for (let j of i) {
+                if (j < min && j > otherPokerMax) {
+                    min = j;
+                }
             }
         }
-        console.log("min",min)
+        console.log("min", min)
         let lastRes = []
-        
-        for(let i of mypokers){
-            if(i.num == min){
+
+        for (let i of mypokers) {
+            if (i.num == min) {
                 lastRes.push(i)
-                commonUtil.removeOne(mypokers,i);
+                commonUtil.removeOne(mypokers, i);
                 break;
             }
         }
-// console.log("my",mypokers1)
-// console.log("my",otherPokerMax)
-        if(lastRes.length ===0){
-            for(let i of mypokers1){
+        // console.log("my",mypokers1)
+        // console.log("my",otherPokerMax)
+        if (lastRes.length === 0) {
+            for (let i of mypokers1) {
                 // console.log("j",i.num,typeof i.num)
                 // console.log("otherPokerMax",otherPokerMax,typeof otherPokerMax)
-                if (i.num>otherPokerMax){
-                    commonUtil.removeOne(mypokers,i);
+                if (i.num > otherPokerMax) {
+                    commonUtil.removeOne(mypokers, i);
                     lastRes.push(i);
-                    console.log("lastRes111",lastRes)
+                    console.log("lastRes111", lastRes)
                     break;
                 }
             }
-            
+
         }
         // for(let i of lastRes){
         //     if(i.num ===14){
@@ -829,42 +829,42 @@ exports.getBiggerPokers = function(pokers,mepokers){
         //         i.num=2
         //     }
         // }
-        console.log("lastRes",lastRes)
-        commonUtil.remove(mypokers,lastRes)
+        console.log("lastRes", lastRes)
+        commonUtil.remove(mypokers, lastRes)
         return lastRes
 
     }
-    function sanzhang(mypokers){
+    function sanzhang(mypokers) {
         let mypokers1 = mypokers.sort(sortSS)
         let length = pokers.length;
-        console.log("mypokers",mypokers)
-        let myDuiZi = exports.getSamePai(mypokers,3);
-        console.log("myDuiZi",myDuiZi)
+        console.log("mypokers", mypokers)
+        let myDuiZi = exports.getSamePai(mypokers, 3);
+        console.log("myDuiZi", myDuiZi)
         let res = [];
-        for(let i of myDuiZi){
+        for (let i of myDuiZi) {
             let newI = i.sort(sortss)
             res.push(newI)
         }
-        
-        console.log("Res",res)
+
+        console.log("Res", res)
         let newRes = res.sort(sortgg);
-        console.log("newRes",newRes)
-        let lastRes=[];
+        console.log("newRes", newRes)
+        let lastRes = [];
         bf:
-        for(let i of newRes){
-            for(let j of i){
-                if(j>otherPokerMax){
-                    for(let k of mypokers){
-                        if (j===k.num){
+        for (let i of newRes) {
+            for (let j of i) {
+                if (j > otherPokerMax) {
+                    for (let k of mypokers) {
+                        if (j === k.num) {
                             lastRes.push(k);
-                            if(lastRes.length===3){
+                            if (lastRes.length === 3) {
                                 break bf;
                             }
-                            console.log("k",k)  
+                            console.log("k", k)
                         }
                     }
-                    commonUtil.remove(mypokers,lastRes);
-                    console.log("lastRes",lastRes)           
+                    commonUtil.remove(mypokers, lastRes);
+                    console.log("lastRes", lastRes)
                 }
             }
 
@@ -888,46 +888,46 @@ exports.getBiggerPokers = function(pokers,mepokers){
         //                     break;
         //                 }
         //             }
-                    
-                    
+
+
         //             break;
         //         }
         //     }
-            
+
         // }
-        console.log("lastRes",lastRes)
+        console.log("lastRes", lastRes)
         return lastRes
     }
-    function duizi(mypokers){
+    function duizi(mypokers) {
         let mypokers1 = mypokers.sort(sortSS)
         let length = pokers.length;
-        let myDuiZi = exports.getAllSamePai(mypokers,2);
-        console.log("myDuiZi",myDuiZi)
+        let myDuiZi = exports.getAllSamePai(mypokers, 2);
+        console.log("myDuiZi", myDuiZi)
         let res = [];
-        for(let i of myDuiZi){
+        for (let i of myDuiZi) {
             let newI = i.sort(sortss)
             res.push(newI)
         }
-        
-        console.log("Res",res)
+
+        console.log("Res", res)
         let newRes = res.sort(sortgg);
-        console.log("newRes",newRes)
-        let lastRes=[];
+        console.log("newRes", newRes)
+        let lastRes = [];
         bf:
-        for(let i of newRes){
-            for(let j of i){
-                if(j>otherPokerMax){
-                    for(let k of mypokers){
+        for (let i of newRes) {
+            for (let j of i) {
+                if (j > otherPokerMax) {
+                    for (let k of mypokers) {
                         // console.log("j",j)
-                        if (j===k.num){
+                        if (j === k.num) {
                             lastRes.push(k);
-                            if(lastRes.length===2){
+                            if (lastRes.length === 2) {
                                 break bf;
                             }
                         }
                     }
-                    
-                    console.log("lastRes",lastRes)           
+
+                    console.log("lastRes", lastRes)
                 }
             }
 
@@ -951,32 +951,32 @@ exports.getBiggerPokers = function(pokers,mepokers){
         //                     break;
         //                 }
         //             }
-                    
-                    
+
+
         //             break;
         //         }
         //     }
-            
+
         // }
 
-        console.log("lastRes",lastRes)
-        commonUtil.remove(mypokers,lastRes);
+        console.log("lastRes", lastRes)
+        commonUtil.remove(mypokers, lastRes);
         return lastRes
     }
-    function zhadan (mypokers){
-        let myZhaDan= exports.getZhadan(mypokers);
-        console.log("myZhaDan",myZhaDan)
-        if(myZhaDan.length ===0){
+    function zhadan(mypokers) {
+        let myZhaDan = exports.getZhadan(mypokers);
+        console.log("myZhaDan", myZhaDan)
+        if (myZhaDan.length === 0) {
             return huojian;
-            
+
         }
         let lastRes = []
         bf:
-        for(let i of myZhaDan){
-            for(let j of mypokers){
-                if(j.num===i){
+        for (let i of myZhaDan) {
+            for (let j of mypokers) {
+                if (j.num === i) {
                     lastRes.push(j);
-                    if(lastRes.length ===4){
+                    if (lastRes.length === 4) {
                         break bf;
                     }
                 }
@@ -986,155 +986,157 @@ exports.getBiggerPokers = function(pokers,mepokers){
         return lastRes
     }
 }
-exports.getSuijiPai=function(mypokers){
-    function sortLen(a,b){
-        return b.length-a.length
+
+function danzhang1(mypokers) {
+    mypokers = pokerSort(mypokers)
+    let res = [];
+    res.push(mypokers.pop());
+    return res
+}
+function duizi1(mypokers) {
+    let duizi = exports.getAllSamePai(mypokers, 2);
+    let temp = {}
+    let res = []
+
+
+    duizi.sort(sortgg);
+    console.log("duizi2", duizi)
+    let s = 0;
+    for (let i of mypokers) {
+
+        if (duizi[0]) {
+            if (i.num == duizi[0][0] && s < 2) {
+                s++;
+                res.push(i)
+            }
+        } else {
+            return []
+        }
+
+    }
+    console.log("duizi", res)
+    return res;
+}
+exports.getSuijiPai = function (mypokers) {
+    function sortLen(a, b) {
+        return b.length - a.length
     }
     mypokers = [].concat(mypokers)
-    function danshun(){
-        let shunzi = exports.getAllSamePai(mypokers,1);
-        console.log("danshun2",shunzi)
+    function danshun() {
+        let shunzi = exports.getAllSamePai(mypokers, 1);
+        console.log("danshun2", shunzi)
         let res = []
         let temp = {};
         let result = [];
 
         shunzi.sort(sortLen)
-        for(let i of shunzi){
-            if(i.length>5){
+        for (let i of shunzi) {
+            if (i.length > 5) {
                 result = i;
                 break;
             }
         }
-        for(let i of result){
-            for(let j of mypokers){
-                if(j.num==i &&temp[j.num] !==1){
+        for (let i of result) {
+            for (let j of mypokers) {
+                if (j.num == i && temp[j.num] !== 1) {
                     temp[j.num] = 1
                     res.push(j);
                 }
-                
+
             }
-    }
+        }
 
         return res
-        
+
     }
-    function shuangshun(){
-        let shunzi = exports.getAllSamePai(mypokers,2);
-        console.log("shuangshun",shunzi)
+    function shuangshun() {
+        let shunzi = exports.getAllSamePai(mypokers, 2);
+        console.log("shuangshun", shunzi)
         let res = [];
-        for(let i of shunzi){
-            if(i.length >= 3){
+        for (let i of shunzi) {
+            if (i.length >= 3) {
                 res.push(i);
             }
         }
-        if(res.length ===0){
+        if (res.length === 0) {
             return []
         }
         let temp = {}
-        let lastRes=[];
+        let lastRes = [];
         res.sort(sortLen)
-        for(let i of res[0]){
-            temp[i]=0
+        for (let i of res[0]) {
+            temp[i] = 0
         }
         // console.log("res[0]",res[0])
-        for(let i of res[0]){
-            for(let j of mypokers){
-                if(i==j.num && temp[i]!==2){
-                    temp[i]+=1
+        for (let i of res[0]) {
+            for (let j of mypokers) {
+                if (i == j.num && temp[i] !== 2) {
+                    temp[i] += 1
                     lastRes.push(j)
                 }
-                
+
             }
         }
         return lastRes
 
     }
-    function sanshun(){
-        let shunzi = exports.getAllSamePai(mypokers,3);
-        console.log("sanshun",shunzi)
+    function sanshun() {
+        let shunzi = exports.getAllSamePai(mypokers, 3);
+        console.log("sanshun", shunzi)
         let res = [];
-        for(let i of shunzi){
-            if(i.length >= 2){
+        for (let i of shunzi) {
+            if (i.length >= 2) {
                 res.push(i);
             }
         }
-        if(res.length ===0){
+        if (res.length === 0) {
             return []
         }
-        let temp={};
-        let lastRes=[];
+        let temp = {};
+        let lastRes = [];
         res.sort(sortLen)
-        for(let i of res[0]){
-            temp[i]=0
+        for (let i of res[0]) {
+            temp[i] = 0
         }
-        for(let i of res[0]){
-            for(let j of mypokers){
-                if(i==j.num && temp[i]!==3){
-                    temp[i]+=1
+        for (let i of res[0]) {
+            for (let j of mypokers) {
+                if (i == j.num && temp[i] !== 3) {
+                    temp[i] += 1
                     lastRes.push(j)
                 }
-                
+
             }
         }
         return lastRes
 
     }
-    function danzhang(){
-        mypokers = pokerSort(mypokers)
-        let res = [];
-         res.push(mypokers.pop());
-        return res
-    }
-    function duizi(){
-        let duizi = exports.getAllSamePai(mypokers,2);
-        let temp = {}
-        let res = []
-        
 
-        duizi.sort(sortgg);
-        console.log("duizi2",duizi)
-        let s = 0;
-        for(let i of mypokers){
-            
-            if(duizi[0]){
-                if(i.num == duizi[0][0] && s <2){
-                    s++;
-                    res.push(i)
-                }
-            }else{
-                return []
-            }
-
-        }
-        console.log("duizi",res)
-        return res;
-    }
     console.log("进入随机出牌了")
     let result = sanshun()
-    if(result &&result.length>0){
-        console.log("sanshun",result)
+    if (result && result.length > 0) {
+        console.log("sanshun", result)
         return result;
     }
-    result=shuangshun()
-    if(result &&result.length>0){
-        console.log("shuangshun",result)
+    result = shuangshun()
+    if (result && result.length > 0) {
+        console.log("shuangshun", result)
         return result
     }
     result = danshun()
-    console.log("danshun7",result)
-    if(result &&result.length>0){
-        console.log("danshun",result)
+    console.log("danshun7", result)
+    if (result && result.length > 0) {
+        console.log("danshun", result)
         return result
     }
-    result = duizi()
-    if(result &&result.length>0){
-        console.log("duizi",result)
+    result = duizi1(mypokers)
+    if (result && result.length > 0) {
+        console.log("duizi", result)
 
         return result
     }
-    result = danzhang()
-    if(result &&result.length>0){
-        console.log("danzhang",result)
+    result = danzhang1(mypokers)
+    if (result && result.length > 0) {
+        console.log("danzhang", result)
 
         return result
     }
@@ -1144,11 +1146,11 @@ exports.getSuijiPai=function(mypokers){
  */
 function isHuoJian(pokers) {
     pokers = pokerSort(pokers);
-    if(pokers.length ===2 && pokers[1].num==16){
+    if (pokers.length === 2 && pokers[1].num == 16) {
         return true;
     }
     return false;
-    
+
 }
 
 /**
@@ -1158,11 +1160,11 @@ function isHuoJian(pokers) {
 function isZhaDan(pokers) {
     pokers = pokerSort(pokers);
     let len = pokers.length
-    if(pokers.length === 4 && pokers[0].num===pokers[len-1].num){
+    if (pokers.length === 4 && pokers[0].num === pokers[len - 1].num) {
         return pokers[0].num;
     }
     return false;
-    
+
 }
 
 /**
@@ -1172,7 +1174,7 @@ function isZhaDan(pokers) {
 function isSanZhang(pokers) {
     pokers = pokerSort(pokers);
     let len = pokers.length;
-    if(pokers.length === 3 && pokers[0].num===pokers[len-1].num){
+    if (pokers.length === 3 && pokers[0].num === pokers[len - 1].num) {
         return pokers[0].num;
     }
     return false;
@@ -1188,7 +1190,7 @@ function isDuizi(pokers) {
     // console.log(len)
     // console.log(pokers[0].num)
     // console.log(pokers[len-1].num)
-    if(pokers.length == 2 && pokers[0].num==pokers[len-1].num){
+    if (pokers.length == 2 && pokers[0].num == pokers[len - 1].num) {
         return pokers[0].num
     }
     return false;
@@ -1200,7 +1202,7 @@ function isDuizi(pokers) {
  */
 function isDanZhang(pokers) {
     let len = pokers.length
-    if(pokers.length == 1){
+    if (pokers.length == 1) {
         return true;
     }
     return false;
@@ -1211,16 +1213,16 @@ function isDanZhang(pokers) {
  */
 function isSanAndTwo(pokers) {
     pokers = pokerSort(pokers);
-    if(pokers.length!==5){
+    if (pokers.length !== 5) {
         return false;
     }
-    if(pokers[0].num!==pokers[2].num){
-        if(pokers[1].num === pokers[0].num && pokers[2].num==pokers[4].num){
+    if (pokers[0].num !== pokers[2].num) {
+        if (pokers[1].num === pokers[0].num && pokers[2].num == pokers[4].num) {
             return pokers[4].num;
         }
     }
-    if(pokers[2].num!==pokers[3].num){
-        if(pokers[0].num === pokers[2].num && pokers[3].num ==pokers[4].num){
+    if (pokers[2].num !== pokers[3].num) {
+        if (pokers[0].num === pokers[2].num && pokers[3].num == pokers[4].num) {
             return pokers[0].num;
         }
     }
@@ -1232,16 +1234,16 @@ function isSanAndTwo(pokers) {
  */
 function isSanAndOne(pokers) {
     pokers = pokerSort(pokers);
-    if(pokers.length!==4){
+    if (pokers.length !== 4) {
         return false;
     }
-    if(pokers[0].num!==pokers[1].num){
-        if(pokers[1].num === pokers[3].num){
+    if (pokers[0].num !== pokers[1].num) {
+        if (pokers[1].num === pokers[3].num) {
             return pokers[1].num;
         }
     }
-    if(pokers[2].num!==pokers[3].num){
-        if(pokers[0].num === pokers[2].num){
+    if (pokers[2].num !== pokers[3].num) {
+        if (pokers[0].num === pokers[2].num) {
             return pokers[0].num;
         }
     }
@@ -1256,51 +1258,51 @@ function isFeiji(pokers) {
     let temp = {};
 
     //初始化temp
-    for(let i of pokers){
+    for (let i of pokers) {
         temp[i.num] = 0
     }
     // console.log(temp)
-    for(let i of pokers){
-        temp[i.num] +=1
+    for (let i of pokers) {
+        temp[i.num] += 1
     }
     console.log(temp)
     let keys = Object.keys(temp)
     //按照value的大小从大到小排序
-    function sorts(a,b){
+    function sorts(a, b) {
         return temp[a] < temp[b]
     }
     keys.sort(sorts)
 
-    if(temp[keys[0]]!==3){
+    if (temp[keys[0]] !== 3) {
         return false;
     }
     // console.log(1)
-    let temp2={}
+    let temp2 = {}
     //初始化temp2
-    for(let i in temp){
-        temp2[temp[i]]=0;
+    for (let i in temp) {
+        temp2[temp[i]] = 0;
     }
     // console.log(temp2)
-    for(let i in temp){
+    for (let i in temp) {
         temp2[temp[i]] += 1;
     }
-    console.log("temp2",temp2)
+    console.log("temp2", temp2)
     let keys2 = Object.keys(temp2)
-    if (keys2.length !==2){
+    if (keys2.length !== 2) {
         return false
     }
-    if(temp2[keys2[0]] !== temp2[keys2[1]]){
+    if (temp2[keys2[0]] !== temp2[keys2[1]]) {
         return false;
     }
     console.log("2")
 
-    for(let i of keys){
-        if(temp[i] !== 3){
+    for (let i of keys) {
+        if (temp[i] !== 3) {
             delete temp[i];
         }
-       
+
     }
-    if(Object.keys(temp).length!==2){
+    if (Object.keys(temp).length !== 2) {
         // console.log(temp,Object.keys(temp))
         return false;
     }
@@ -1313,71 +1315,71 @@ function isFeiji(pokers) {
 function isSiAndTwo(pokers) {
     pokers = pokerSort(pokers);
     // console.log(pokers.length)
-    if(pokers.length!==6 && pokers.length!==8){
+    if (pokers.length !== 6 && pokers.length !== 8) {
         return false;
     }
     let temp = {};
     //初始化temp
-    for(let i of pokers){
+    for (let i of pokers) {
         temp[i.num] = 0
     }
     // console.log(temp)
 
     let keys = Object.keys(temp)
-    if(keys.length !== 3){
+    if (keys.length !== 3) {
         return false;
     }
-    for(let i of pokers){
-        temp[i.num] +=1
+    for (let i of pokers) {
+        temp[i.num] += 1
     }
     // console.log(temp)
     //按照value的大小从大到小排序
-    function sorts(a,b){
+    function sorts(a, b) {
         return temp[a] < temp[b]
     }
     keys.sort(sorts)
 
-    if(temp[keys[0]]!==4){
+    if (temp[keys[0]] !== 4) {
         return false;
     }
-    let temp2={}
+    let temp2 = {}
     //初始化temp2
-    for(let i in temp){
-        temp2[temp[i]]=0;
+    for (let i in temp) {
+        temp2[temp[i]] = 0;
     }
     // console.log(temp2)
-    for(let i in temp){
+    for (let i in temp) {
         temp2[temp[i]] += 1;
     }
     // console.log(temp2)
     let keys2 = Object.keys(temp2)
-    if (keys2.length !==2){
+    if (keys2.length !== 2) {
         return false
     }
-    for(let i of keys){
-        if(temp[i] !== 4){
+    for (let i of keys) {
+        if (temp[i] !== 4) {
             delete temp[i];
         }
-        
+
     }
     return temp;
 }
 //是否是单顺
 function isDanShun(pokers) {
     pokers = pokerSort(pokers);
-    let limit = [15,16,17];
+    let limit = [15, 16, 17];
     let len = pokers.length
-    if(len<5){
+    if (len < 5) {
         return false;
     }
-    for(let i of pokers){
-        if(limit.indexOf(i.num) !== -1){
+    for (let i of pokers) {
+        if (limit.indexOf(i.num) !== -1) {
             return false;
         }
     }
     // console.log(pokers)
-    for(let i=1;i<len;i++){
-        if(pokers[i].num !== pokers[i-1].num -1){
+    for (let i = 1; i < len; i++) {
+        if (pokers[i].num !== pokers[i - 1].num - 1) {
             return false;
         }
     }
@@ -1388,28 +1390,28 @@ function isDanShun(pokers) {
  * 是否是双顺
  */
 
-function isShuangShun(pokers){
+function isShuangShun(pokers) {
     pokers = pokerSort(pokers);
     let limit = [15];
     let len = pokers.length
-    if(len<6 || len%2!==0){
+    if (len < 6 || len % 2 !== 0) {
         return false;
     }
-    for(let i of pokers){
-        if(limit.indexOf(i.num) !== -1){
+    for (let i of pokers) {
+        if (limit.indexOf(i.num) !== -1) {
             return false;
         }
     }
-    let bs = len/2;
+    let bs = len / 2;
     //判断是不是每一组数据是否相等
-    for(let i=0;i<bs;i++){
-        if(pokers[2*i].num !== pokers[2*i+1].num ){
+    for (let i = 0; i < bs; i++) {
+        if (pokers[2 * i].num !== pokers[2 * i + 1].num) {
             return false;
         }
     }
     //判断相邻两组是否相差一
-    for(let i=0;i<bs-1;i++){
-        if(pokers[2*i+1].num !== pokers[2*i+2].num+1 ){
+    for (let i = 0; i < bs - 1; i++) {
+        if (pokers[2 * i + 1].num !== pokers[2 * i + 2].num + 1) {
             return false;
         }
     }
@@ -1421,30 +1423,30 @@ function isShuangShun(pokers){
  * @param {*} pokers 
  */
 
-function isSanShun(pokers){
+function isSanShun(pokers) {
     pokers = pokerSort(pokers);
-    let limit = [2,14,15];
+    let limit = [2, 14, 15];
     let len = pokers.length
-    if(len<6 || len%3!==0){
+    if (len < 6 || len % 3 !== 0) {
         return false;
     }
     // console.log(pokers)
-    for(let i of pokers){
-        if(limit.indexOf(i.num) !== -1){
+    for (let i of pokers) {
+        if (limit.indexOf(i.num) !== -1) {
             return false;
         }
     }
     // console.log(pokers)
-    let bs = len/3;
+    let bs = len / 3;
     //判断是不是每一组数据是否相等
-    for(let i=0;i<bs;i++){
-        if(pokers[3*i].num !== pokers[3*i+1].num ){
+    for (let i = 0; i < bs; i++) {
+        if (pokers[3 * i].num !== pokers[3 * i + 1].num) {
             return false;
         }
     }
     //判断相邻两组是否相差一
-    for(let i=0;i<bs-1;i++){
-        if(pokers[3*i+2].num !== pokers[3*i+3].num+1 ){
+    for (let i = 0; i < bs - 1; i++) {
+        if (pokers[3 * i + 2].num !== pokers[3 * i + 3].num + 1) {
             return false;
         }
     }
@@ -1475,64 +1477,64 @@ function pokerSort(pokers) {
  */
 exports.compare = function (myPokers, otherPokers) {
 
-    let mytype= exports.getPokerType(myPokers);
+    let mytype = exports.getPokerType(myPokers);
     let otherType = exports.getPokerType(otherPokers);
     let myPokersType = mytype.type;
     let otherPokersType = otherType.type;
-    console.log("mytype",mytype)
-    console.log("otherPokers.length",otherPokers.length)
-    if(otherPokers.length==0 && mytype){
+    console.log("mytype", mytype)
+    console.log("otherPokers.length", otherPokers.length)
+    if (otherPokers.length == 0 && mytype) {
         return 1;
     }
-    console.log("mytype",mytype)
-    console.log("myPokersType",myPokersType)
-    if(!myPokersType){
+    console.log("mytype", mytype)
+    console.log("myPokersType", myPokersType)
+    if (!myPokersType) {
         return 2;
     }
-    if(myPokersType == "huojian"){
+    if (myPokersType == "huojian") {
         return 1
     }
-    if(otherPokersType == "huojian"){
+    if (otherPokersType == "huojian") {
         return -1
     }
-    if(myPokersType == "zhadan"){
-        if(otherPokersType !== "zhadan"){
+    if (myPokersType == "zhadan") {
+        if (otherPokersType !== "zhadan") {
             return 1
-        }else{
-            if(mytype.pokers > otherType.pokers){
+        } else {
+            if (mytype.pokers > otherType.pokers) {
                 return 1
-            }else if(mytype.pokers < otherType.pokers){
+            } else if (mytype.pokers < otherType.pokers) {
                 return -1
-            }else{
+            } else {
                 return 0
             }
         }
     }
-    if(otherPokersType == "zhadan"){
-        if(myPokersType !== "zhadan"){
+    if (otherPokersType == "zhadan") {
+        if (myPokersType !== "zhadan") {
             return -1
-        }else{
-            if(mytype.pokers > otherType.pokers){
+        } else {
+            if (mytype.pokers > otherType.pokers) {
                 return 1
-            }else if(mytype.pokers < otherType.pokers){
+            } else if (mytype.pokers < otherType.pokers) {
                 return -1
-            }else{
+            } else {
                 return 0
             }
         }
     }
-    if(myPokersType !== otherPokersType){
+    if (myPokersType !== otherPokersType) {
         return 0;
     }
-    if(myPokers.length !== otherPokers.length){
+    if (myPokers.length !== otherPokers.length) {
         return 0;
     }
-    if(mytype.pokers > otherType.pokers){
-        console.log("mytype.pokers："+mytype.pokers+"otherType.pokers："+otherType.pokers)
+    if (mytype.pokers > otherType.pokers) {
+        console.log("mytype.pokers：" + mytype.pokers + "otherType.pokers：" + otherType.pokers)
         return 1
-    }else if(mytype.pokers < otherType.pokers){
+    } else if (mytype.pokers < otherType.pokers) {
         return -1
-    }else{
+    } else {
         return 0;
     }
 
@@ -1545,23 +1547,23 @@ exports.compare = function (myPokers, otherPokers) {
 /**
  * 根据概率获取好牌
  */
-exports.getPokerByRadio=function(pokers,radio){
+exports.getPokerByRadio = function (pokers, radio) {
     //获取好牌
     let poker = null;
-    if(radio){
-        let random = commonUtil.randomFrom(0,100);
+    if (radio) {
+        let random = commonUtil.randomFrom(0, 100);
         //在概率范围内就发好牌
-        if(radio>random){
-            poker = pokers.splice(pokers.length-1,1);
-        }else{
+        if (radio > random) {
+            poker = pokers.splice(pokers.length - 1, 1);
+        } else {
             //随机挑选
-            let rd = commonUtil.randomFrom(0,pokers.length-1);
-            poker = pokers.splice(rd,1);
+            let rd = commonUtil.randomFrom(0, pokers.length - 1);
+            poker = pokers.splice(rd, 1);
         }
-    }else{
+    } else {
         //随机挑选
-        let rd = commonUtil.randomFrom(0,pokers.length-1);
-        poker = pokers.splice(rd,1);
+        let rd = commonUtil.randomFrom(0, pokers.length - 1);
+        poker = pokers.splice(rd, 1);
     }
     return poker[0];
 }
@@ -1570,10 +1572,10 @@ exports.getPokerByRadio=function(pokers,radio){
 /**
  * 对发出的牌，按牌型的大小进行排序
  */
-exports.sortPoker = function(oldPokers){
+exports.sortPoker = function (oldPokers) {
     var pokers = JSON.parse(JSON.stringify(oldPokers.concat()));
-    var sorted = pokers.sort(function(a,b){
-        return exports.compare(a,b);
+    var sorted = pokers.sort(function (a, b) {
+        return exports.compare(a, b);
     })
     return sorted;
 }
@@ -1582,9 +1584,9 @@ exports.sortPoker = function(oldPokers){
 /**
  * 手牌转换成牌型
  */
-exports.toPokerType = function(pokers){
+exports.toPokerType = function (pokers) {
     let types = [];
-    for(let i=0;i<pokers.length;i++){
+    for (let i = 0; i < pokers.length; i++) {
         let type = exports.getPokerType(pokers[i]);
         types.push(type.type);
     }

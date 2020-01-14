@@ -630,23 +630,23 @@ module.exports = {
      * 获得玩家玩的总局数
      */
     getAlljushu(user_id, callback) {
-        let sql = "select count(fk_player_id) from t_game_record where fk_player_id=?"
+        let sql = "select count(fk_player_id) as all_jushu from t_game_record where fk_player_id=?"
         db.queryForObject(sql, [user_id], callback)
     },
 
     /**
  * 获得玩家最高盈利
  */
-    getAlljushu(user_id, callback) {
-        let sql = "select sum(win_score) ,count(fk_player_id) from t_game_record where fk_player_id=? and win_score>0"
+    getMaxProfit(user_id, callback) {
+        let sql = "select sum(win_score) as sum_win,count(fk_player_id) as win_number from t_game_record where fk_player_id=? and win_score>0"
         db.queryForObject(sql, [user_id], callback)
     },
 
     /**
 * 获得玩家某日盈利
 */
-    getAlljushu(user_id, BeginTimestamp, EndTime, callback) {
-        let sql = "select sum(win_score) from t_game_record where fk_player_id=? and win_score>0 and play_duration>? and play_duration<?s"
+    getSomeDayProfit(user_id, BeginTimestamp, EndTime, callback) {
+        let sql = "select sum(win_score) as sum_win from t_game_record where fk_player_id=? and win_score>0 and play_duration>? and play_duration<?s"
         db.queryForObject(sql, [user_id, BeginTimestamp, EndTime], callback)
     },
 

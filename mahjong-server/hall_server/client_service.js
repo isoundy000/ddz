@@ -1210,17 +1210,57 @@ app.get("/get_zj", function (req, res) {
     });
 })
 
-//获取个人信息
-app.get("get_userInfo", function (req, res) {
+let getClientIp = function (req) {
+    return req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress ||
+        req.socket.remoteAddress ||
+        req.connection.socket.remoteAddress || '';
+};
+
+app.get("/get_userInfo", function (req, res) {
     let userId = req.query.userId
     let nowDay = dateUtil.getToday();
     //获取今天的时间串
-    let today = dateUtil.dateFormat(new Date(), 'yyyyMMdd');
+    let today = dateUtil.dateFormat(new Date(), 'yyyy-MM-dd');
     //获取昨天的时间串
-    let yesterday = dateUtil.getYesterdayTime('yyyyMMdd');
+    let yesterday = dateUtil.getYesterdayTime('yyyy-MM-dd');
     let nowBeginTimestamp = dateUtil.getBeginTimestamp(nowDay)
-    async.auto({
+    let nowEndTimestamp = dateUtil.getEndTimestamp(nowDay)
+    let yesterBeginTimestamp = dateUtil.getBeginTimestamp(yesterday)
+    let yesterEndTimestamp = dateUtil.getBeginTimestamp(yesterday)
 
+    console.log(getClientIp(req));
+    let ip = getClientIp(req).match(/\d+.\d+.\d+.\d+/);
+    console.log(ip);
+    ip = ip ? ip.join('.') : null;
+    console.log(ip);
+    async.auto({
+        getYesterDayProfile: function (callback) {
+            rechargeService.getSomeDayProfit(userId, yesterBeginTimestamp, yesterEndTimestamp, callback)
+        },
+        getToDayProfile: function (callback) {
+            rechargeService.getSomeDayProfit(userId, nowBeginTimestamp, nowEndTimestamp, callback)
+        },
+        getAllJushu: function (callback) {
+            rechargeService.getAlljushu(userId, callback)
+        },
+        getMaxProfit: function (callback) {
+            rechargeService.getMaxProfit(userId, callback)
+        }
+    }, function (err, result) {
+        if (err) {
+            return http.send(res, 1, "服务器异常")
+        }
+
+        let data = {}
+        let all_jushu = result.getAllJushu.all_jushu;
+        let win_num = result.getAllJushu.win_number;
+        data.maxProfit = result.getMaxProfit.sum_win;
+        data.yesProfit = result.getYesterDayProfile.sum_win
+        data.toProfit = result.getToDayProfile.sum_win
+        data.allJushu = all_jushu
+        data.winRate = win_num / all_jushu
+        return http.send(res, 1, "ok", { data: data })
     })
 })
 //获得俱乐部与我相关战绩

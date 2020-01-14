@@ -1027,7 +1027,7 @@ exports.qiangdizhu = function (socket, data) {
             if (roomInfo.noQiang % 3 == 0) {
                 roomInfo.noQiang = 0
                 let random = commonUtil.randomFrom(1, 3)
-                banker = roomInfo.seats[random]
+                let banker = roomInfo.seats[random]
                 roomInfo.setBanker(banker.userId)
             } else {
                 for (let i of roomInfo.seats) {
@@ -2215,8 +2215,9 @@ function match(matchId) {
         console.log("进入决赛了", jushu)
         if (jushu < 2) {
             console.log("进入决赛了2", jushu)
+            let nowJushu = jushu += 1
             for (let i of matchInfo.users) {
-                let nowJushu = jushu += 1
+
                 gameMgr.setMatchUsers(matchId, i.userId, "jushu", nowJushu)
             }
             if (jushu == 0) {
