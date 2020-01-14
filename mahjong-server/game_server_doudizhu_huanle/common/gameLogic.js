@@ -560,7 +560,7 @@ exports.getBiggerPokers = function (pokers, mepokers) {
         for (let i of res) {
             commonUtil.removeOne(mypokers, i)
         }
-        let dz = danzhang(mypokers);
+        let dz = danzhang1(mypokers);
         if (dz.length === 0) {
             return [];
         }
@@ -619,7 +619,7 @@ exports.getBiggerPokers = function (pokers, mepokers) {
                 let dz;
 
                 // for(let i =0;i<4;i++){
-                let dz1 = danzhang(mypokers);
+                let dz1 = danzhang1(mypokers);
                 //     console.log("dz1ssssssssss",dz1)
                 s.push(dz1);
                 // }
@@ -627,7 +627,7 @@ exports.getBiggerPokers = function (pokers, mepokers) {
 
                 for (let i = 0; i < pokerType.len - 1; i++) {
                     function loop(dz) {
-                        let dz2 = danzhang(mypokers);
+                        let dz2 = danzhang1(mypokers);
                         if (dz2.length === 0) {
                             return;
                         }
@@ -664,7 +664,7 @@ exports.getBiggerPokers = function (pokers, mepokers) {
                         }
                     }
                     let dz;
-                    dz = duizi(mypokers);
+                    dz = duizi1(mypokers);
 
                     let s = getSomePokers(res, pokers);
                     commonUtil.remove(mypokers, s)
@@ -672,7 +672,7 @@ exports.getBiggerPokers = function (pokers, mepokers) {
                     console.log("s", s)
                     for (let i = 0; i < pokerType.len - 1; i++) {
                         function loop(dz) {
-                            let dz2 = duizi(mypokers);
+                            let dz2 = duizi1(mypokers);
                             if (dz2.length === 0) {
                                 return;
                             }
@@ -727,12 +727,12 @@ exports.getBiggerPokers = function (pokers, mepokers) {
         }
         if (pokers.length === 8) {
             let t;
-            t = duizi(mypokers);
+            t = duizi1(mypokers);
             lastRes.push(t);
 
 
             function loop(dz) {
-                let dz2 = duizi(mypokers);
+                let dz2 = duizi1(mypokers);
                 if (dz2.length === 0) {
                     return;
                 }
@@ -752,10 +752,10 @@ exports.getBiggerPokers = function (pokers, mepokers) {
         }
         if (pokers.length === 6) {
             let t;
-            t = danzhang(mypokers);
+            t = danzhang1(mypokers);
             lastRes.push(t);
             function loop(dz) {
-                let dz2 = danzhang(mypokers);
+                let dz2 = danzhang1(mypokers);
                 if (dz2.length === 0) {
                     return;
                 }

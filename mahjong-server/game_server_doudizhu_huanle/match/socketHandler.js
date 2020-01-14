@@ -139,8 +139,8 @@ exports.login = async function (socket, data, config) {
 
     dealUseridErr(socket, userId)
     console.log("type", type)
-    let room_config = myConfig.config[type]
-    console.log("room_config", room_config)
+    let room_config = await myConfig.config[type]
+
     if (coins < room_config.minScoreLimit) {
         socket.emit("login_result", {
             errcode: 1,
@@ -1239,9 +1239,9 @@ exports.chupai = function (socket, data) {
             roomInfo.zhadanNum += 1;
             roomInfo.setPublicBeishu("zhadan", roomInfo.zhadanNum * 2)
         }
-        if (type.type === "huojian") {
-            roomInfo.setBeiShu(2);
-        }
+        // if (type.type === "huojian") {
+        //     roomInfo.setBeiShu(2);
+        // }
     }
     console.log("type.type;", type.type)
     result.pokerType = type.type;
@@ -1263,10 +1263,7 @@ exports.chupai = function (socket, data) {
     socket.emit("chupai_result", result);
     userMgr.broacastByRoomId('gb_compare_result', result, roomInfo.roomId);
     player.clearTimer();
-    // roomInfo.setLastPokers()
-    if (type == "zhadan" || type == "huojian") {
-        roomInfo.zhadanNum = roomInfo.zhadanNum + 1;
-    }
+
 
     getBeishu(roomInfo.roomId);
     let nextPlayer = roomInfo.getNextTurnPlayer(player.seatIndex);
@@ -1889,11 +1886,13 @@ exports.baoming = async function (socket, data) {
         })
         return;
     }
-    console.log("type", myConfig.config[type])
-    let usersNum = myConfig.config[type].usersNum
-    let fen = myConfig.config[type].chushifenshu
-    let difen = myConfig.config[type].diFen
-    let dizhu = myConfig.config[type].diZhu
+    let config = await myConfig.config[type]
+
+    console.log("type111111", myConfig.config[type])
+    let usersNum = config.usersNum
+    let fen = config.chushifenshu
+    let difen = config.diFen
+    let dizhu = config.diZhu
     let matchId = gameMgr.getOneMatch(type)
     console.log("matchId", matchId)
     if (matchId) {
@@ -2128,13 +2127,14 @@ function matchStart(matchId, roomId, nowdiFen, nowdiZhu, needStop) {
     }
 }
 
-function match(matchId) {
+async function match(matchId) {
     let matchInfo = gameMgr.getMatchInfo(matchId)
     console.log("matchInfo", matchInfo)
     let type = matchInfo.type
     console.log("type", type)
     console.log("type", matchInfo.type)
-    let config = myConfig.config[type]
+    let config = await myConfig.config[type]
+
     let jinjiConfig = config.jinji;
     let nowLevel = matchInfo.level;
     let nowJushu = matchInfo.jushu;
@@ -2145,7 +2145,6 @@ function match(matchId) {
     let stop = 0
     if (nowUsersLength > jinjiConfig[0]) {
         nowLevel = 0
-
     }
     if (nowUsersLength <= jinjiConfig[0] && nowUsersLength > jinjiConfig[1]) {
         nowLevel = 1

@@ -8,28 +8,25 @@ let config = {
     dashi: dashi(),
     bisai_config: bisai_config()
 }
-function xinshou() {
+async function xinshou() {
 
+    let data = await getMatchDb("xinshou")
+    let usersNum = data.min_user_num
     return {
         room_type: "xinshou",
-        diZhu: 10,
-        diFen: 12,
-        limitFen: 24,
+        diZhu: data.dizhu,
+        diFen: data.difen,
+        limitFen: data.limit_fen,
         maxGames: -1,//无限局数
         isPrivate: 0,
         type: "doudizhu",
 
         kindId: "200",
-        usersNum: 3,
+        usersNum: usersNum,
         jinji: [21, 12, 3],//晋级名次
-        chushifenshu: 4000,
-        allAward: 17000,//总奖励
-        award: [{ award: 120000, type: 0 },
-        { award: 40000, type: 0 },
-        { award: 16000, type: 0 },
-        { award: 8000, type: 0 },
-        { award: 8000, type: 0 },
-        { award: 8000, type: 0 },], //奖励
+        chushifenshu: data.chushifenshu,
+        allAward: data.award_name,//总奖励
+        award: data.award, //奖励
         //明牌最大倍数
         mingpaiBeishu: 4,
         room_count: -1,
@@ -37,9 +34,9 @@ function xinshou() {
         seatCount: 3,
         qiangfen: [1, 2, 3],
         //最低入场分数
-        minScoreLimit: 1000,
-        //最高入场分数
-        maxScoreLimit: 100000,
+        minScoreLimit: data.minScoreLimit,
+        // //最高入场分数
+        // maxScoreLimit: 100000,
         choushuiRate: 0.5,//房间抽水率(按照底注的50%抽水)
         READY_COUNTDOWN: 10 * 1000,    //等待准备超时时间（10S）
         OPT_COUNTDOWN: 10 * 1000,//操作超时时间 10s
@@ -48,38 +45,34 @@ function xinshou() {
     }
 
 }
-function jingying() {
+async function jingying() {
+    let data = await getMatchDb("jingying")
+    let usersNum = data.min_user_num
     return {
         room_type: "jingying",
-        diZhu: 40,
+        diZhu: data.dizhu,
+        diFen: data.difen,
+        limitFen: data.limit_fen,
         maxGames: -1,//无限局数
         isPrivate: 0,
-        jinji: [45, 27, 12, 3],//晋级名次
         type: "doudizhu",
-        kindId: "201",
-        isDaiKai: 0,
-        usersNum: 60,
-        chushifenshu: 4000,
+
+        kindId: "200",
+        usersNum: usersNum,
+        jinji: [21, 12, 3],//晋级名次
+        chushifenshu: data.chushifenshu,
+        allAward: data.award_name,//总奖励
+        award: data.award, //奖励
         //明牌最大倍数
         mingpaiBeishu: 4,
-        allAward: 47000,//总奖励
-        award: [{ award: 120000, type: 0 },
-        { award: 40000, type: 0 },
-        { award: 16000, type: 0 },
-        { award: 8000, type: 0 },
-        { award: 8000, type: 0 },
-        { award: 8000, type: 0 },],//奖励
         room_count: -1,
         chushibeishu: 15,
         seatCount: 3,
-        robot_count: 1,//房间机器人的数量
-        robotWinPR: 80,//机器人胜率
-        playerWinPR: 20,//玩家胜率
         qiangfen: [1, 2, 3],
         //最低入场分数
-        minScoreLimit: 5000,
-        //最高入场分数
-        maxScoreLimit: -1,
+        minScoreLimit: data.minScoreLimit,
+        // //最高入场分数
+        // maxScoreLimit: 100000,
         choushuiRate: 0.5,//房间抽水率(按照底注的50%抽水)
         READY_COUNTDOWN: 10 * 1000,    //等待准备超时时间（10S）
         OPT_COUNTDOWN: 10 * 1000,//操作超时时间 10s
@@ -89,35 +82,34 @@ function jingying() {
 
 }
 
-function dashi() {
+async function dashi() {
+    let data = await getMatchDb("dashi")
+    let usersNum = data.min_user_num
     return {
-        room_type: "dashi",
-        diZhu: 200,
+        room_type: "jingying",
+        diZhu: data.dizhu,
+        diFen: data.difen,
+        limitFen: data.limit_fen,
         maxGames: -1,//无限局数
         isPrivate: 0,
-        jinji: [45, 27, 12, 3],//晋级名次
-        chushifenshu: 4000,
         type: "doudizhu",
-        kindId: "202",
-        isDaiKai: 0,
-        usersNum: 60,
+
+        kindId: "200",
+        usersNum: usersNum,
+        jinji: [21, 12, 3],//晋级名次
+        chushifenshu: data.chushifenshu,
+        allAward: data.award_name,//总奖励
+        award: data.award, //奖励
         //明牌最大倍数
         mingpaiBeishu: 4,
-        allAward: 20,//总奖励
-        award: [{ award: 120000, type: 0 },
-        { award: 40000, type: 0 },
-        { award: 16000, type: 0 },
-        { award: 8000, type: 0 },
-        { award: 8000, type: 0 },
-        { award: 8000, type: 0 },],//奖励
         room_count: -1,
         chushibeishu: 15,
         seatCount: 3,
         qiangfen: [1, 2, 3],
         //最低入场分数
-        minScoreLimit: 20000,
-        //最高入场分数
-        maxScoreLimit: -1,
+        minScoreLimit: data.minScoreLimit,
+        // //最高入场分数
+        // maxScoreLimit: 100000,
         choushuiRate: 0.5,//房间抽水率(按照底注的50%抽水)
         READY_COUNTDOWN: 10 * 1000,    //等待准备超时时间（10S）
         OPT_COUNTDOWN: 10 * 1000,//操作超时时间 10s
@@ -127,29 +119,37 @@ function dashi() {
 
 }
 
-function bisai_config() {
+async function bisai_config() {
+    let jingying = await getMatchDb("jingying")
+    let xinshou = await getMatchDb("xinshou")
+    let dashi = await getMatchDb("dashi")
+    // console.log("jingying", jingying)
     return [{
-        img: "http://192.168.0.192:12345/photos/4.jpg",
+        img: xinshou.img,
         type: "xinshou",
-        description: "满60人开始",
-        award: "1亿元现金",
+        description: xinshou.description,
+        award: xinshou.award_name,
 
 
-        fee: "200",
+        fee: xinshou.fee,
     },
     {
-        img: "http://192.168.0.192:12345/photos/4.jpg",
+        img: jingying.img,
         type: "jingying",
-        description: "满60人开始",
-        award: "1亿元现金",
-        fee: "2000",
+        description: jingying.description,
+        award: jingying.award_name,
+
+
+        fee: jingying.fee,
     },
     {
-        img: "http://192.168.0.192:12345/photos/4.jpg",
+        img: dashi.img,
         type: "dashi",
-        description: "满60人开始",
-        award: "1亿元现金",
-        fee: "20000",
+        description: dashi.description,
+        award: dashi.award_name,
+
+
+        fee: dashi.fee,
     },
     ]
 }
@@ -165,8 +165,15 @@ function getMatchDb(type) {
     })
 
 }
-async function getMatchConfig(type) {
-    let config = await getMatchConfig(type)
-    console.log("config", config)
+function getMatchDb2(type, callback) {
+    matchServer.getMatchConfig(type, function (err, result) {
+        if (err) {
+            console.log(err)
+            return callback(err, null)
+        }
+        return callback(null, result)
+    })
+
 }
+
 exports.config = config

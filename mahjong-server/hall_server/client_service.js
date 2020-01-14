@@ -11,6 +11,7 @@ var ejs = require("ejs")
 let redis = require("../utils/redis");
 var uuid = require('node-uuid');
 let dateUtil = require("../utils/dateUtil")
+let bisaiConfig = require("../game_server_doudizhu_huanle/match/config_match")
 var playerService = require('../common/service/playerService');
 var rechargeService = require('../common/service/rechargeService');
 var commonService = require('../common/service/commonService');
@@ -1154,11 +1155,13 @@ app.get("/get_zj", function (req, res) {
         size = 200;
     }
     let nowBeginTimestamp = dateUtil.getBeginTimestamp(nowDay)
+    console.log("nowBeginTimestamp", nowBeginTimestamp)
     rechargeService.getZhanji(userId, nowBeginTimestamp, pagenum, size, function (err, result) {
-        let paodekuai = [];
-        let niuniu = [];
+        let classic = [];
+        let match = [];
         let re = {};
         let temp = {};
+        // console.log(result)
         if (err) {
             console.log(err)
             http.send(res, 1, "服务器异常请稍后重试")
@@ -1166,8 +1169,8 @@ app.get("/get_zj", function (req, res) {
             for (let i of result) {
                 let dict = {};
                 dict.roomId = i.roomId;
-                dict.time = dateUtil.timestampToDate(i.play_duration);
-                console.log(i.play_duration)
+
+                // console.log(i.play_duration)
                 // dict.seatCount = i.jushu;
                 dict.game_type = i.game_type;
                 dict.seatCount = i.seatCount;
@@ -1180,6 +1183,8 @@ app.get("/get_zj", function (req, res) {
                 users.win_score = i.win_score;
                 users.headimg = i.headimg;
                 users.jifen = i.jifen;
+                users.user_type = i.user_type
+                users.time = dateUtil.timestampToDate(i.play_duration);
                 // users.time = dateUtil.timestampToDate(i.record_time);
                 if (temp[roomId]) {
                     temp[roomId].usersInfo.push(users);
@@ -1196,15 +1201,20 @@ app.get("/get_zj", function (req, res) {
             // console.log(temp)
             for (let i in temp) {
 
-                if (temp[i].game_type == "game_server_paodekuai") {
-                    paodekuai.push(temp[i])
-                } else if (temp[i].game_type == "niuniu") {
-                    niuniu.push(temp[i]);
+                if (temp[i].game_type == "ddz_classic") {
+                    for (let j of temp[i].usersInfo) {
+                        classic.push(j)
+                    }
+
+                } else if (temp[i].game_type == "ddz_match") {
+                    for (let j of temp[i].usersInfo) {
+                        match.push(j)
+                    }
                 }
-                delete temp[i].game_type;
+                // delete temp[i].game_type;
             }
-            re.paodekuai = paodekuai;
-            re.niuniu = niuniu;
+            re.classic = classic;
+            re.match = match;
             http.send(res, 0, "ok", re)
         }
     });
@@ -1249,18 +1259,25 @@ app.get("/get_userInfo", function (req, res) {
         }
     }, function (err, result) {
         if (err) {
+            console.log(err)
             return http.send(res, 1, "服务器异常")
         }
 
         let data = {}
         let all_jushu = result.getAllJushu.all_jushu;
-        let win_num = result.getAllJushu.win_number;
+        let win_num = result.getMaxProfit.win_number;
+        console.log("win_num", win_num)
         data.maxProfit = result.getMaxProfit.sum_win;
         data.yesProfit = result.getYesterDayProfile.sum_win
         data.toProfit = result.getToDayProfile.sum_win
         data.allJushu = all_jushu
         data.winRate = win_num / all_jushu
-        return http.send(res, 1, "ok", { data: data })
+        for (let i in data) {
+            if (!data[i]) {
+                data[i] = 0
+            }
+        }
+        return http.send(res, 0, "ok", { data: data })
     })
 })
 //获得俱乐部与我相关战绩
@@ -3715,10 +3732,13 @@ app.get("/jubao", function (req, res) {
  * 获取比赛场场次信息
  * 
  */
-let bisaiConfig = require("../game_server_doudizhu_huanle/match/config_match")
+
 app.get("/get_bisai", function (req, res) {
     let config = bisaiConfig.config.bisai_config
-    return http.send(res, 0, "ok", { data: config })
+    config.then(function (data) {
+        return http.send(res, 0, "ok", { data: data })
+    })
+
 })
 /**
  * 根据玩家ID获取消息通知列表

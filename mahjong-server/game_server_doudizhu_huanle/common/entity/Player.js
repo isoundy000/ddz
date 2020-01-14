@@ -194,7 +194,7 @@ Player.prototype.settlement = async function (totalWin) {
 
     //保存消费详情
     await rechargeService.changeUserGoldsAndSaveConsumeRecordAsync(
-        this.userId, actualTotalWin, 'doudizhu', "coins",
+        this.userId, actualTotalWin, type, "coins",
         `[跑得快]房间号[${this.roomId}]输或赢的金币`, this.roomId, roomInfo.clubId
     );
 

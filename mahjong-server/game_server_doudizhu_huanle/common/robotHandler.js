@@ -14,14 +14,14 @@ var robotMgr = require('./robotMgr');
 /**
  * 机器人金币不足时退出游戏
  */
-exports.exit = function(userId){
-    if(!userId){
+exports.exit = function (userId) {
+    if (!userId) {
         return;
     }
     var robotSocket = userMgr.get(userId);
     var resData = {};
     resData.userId = userId;
-    exit(robotSocket,JSON.stringify(resData));
+    exit(robotSocket, JSON.stringify(resData));
     //使用过的机器人重新放回机器人队列中
     robotMgr.addRobot(userId);
 }
@@ -31,19 +31,19 @@ exports.exit = function(userId){
  * 用户准备 判断机器人是否达到自动退出条件，满足的话自动离开房间（判断属性  游戏时长、局数）
  * @param userId
  */
-exports.ready = function(userId) {
-    if(!userId){
-       return;
+exports.ready = function (userId) {
+    if (!userId) {
+        return;
     }
     var roomInfo = gameMgr.getRoomByUserId(userId);
-    if(!roomInfo){
+    if (!roomInfo) {
         return;
     }
     var player = roomInfo.getPlayerById(userId);
-    if(!player){
+    if (!player) {
         return;
     }
-    var playTime = dateUtil.getCurrentTimestapm()-player.beginGameTime;
+    var playTime = dateUtil.getCurrentTimestapm() - player.beginGameTime;
     var numOfGame = player.numOfGame;
 
     var robotSocket = userMgr.get(userId);
@@ -52,32 +52,32 @@ exports.ready = function(userId) {
     //玩家退出
 
     //多少局退出
-    var maxNumOfGame = commonUtil.randomFrom(10,40);
-    var maxPlayTime = commonUtil.randomFrom(10,40);
+    var maxNumOfGame = commonUtil.randomFrom(10, 40);
+    var maxPlayTime = commonUtil.randomFrom(10, 40);
     //玩家退出
-    if(playTime>maxPlayTime*60*60||numOfGame>maxNumOfGame){
-        exit(robotSocket,JSON.stringify(resData));
+    if (playTime > maxPlayTime * 60 * 60 || numOfGame > maxNumOfGame) {
+        exit(robotSocket, JSON.stringify(resData));
         //使用过的机器人重新放回机器人队列中
         robotMgr.addRobot(userId);
-    }else{
-        ready(robotSocket,JSON.stringify(resData));
+    } else {
+        ready(robotSocket, JSON.stringify(resData));
     }
 }
 
 /**
  * 收到轮到自己的消息时做出相应的操作
  */
-exports.qiangdizhu = function(socket,data){
-    if(typeof data ==="string"){
+exports.qiangdizhu = function (socket, data) {
+    if (typeof data === "string") {
         data = JSON.parse(data);
     }
     var userId = data.userId;
     var fen = data.fen;
-    if(!socket){
+    if (!socket) {
         socket = userMgr.getT(userId)
     }
-    if(!userId ||fen==undefined || fen==null){
-        return socket.emit('system_error', { errcode: 500, errmsg: '参数错误',flag:"qiangdizhu"});
+    if (!userId || fen == undefined || fen == null) {
+        return socket.emit('system_error', { errcode: 500, errmsg: '参数错误', flag: "qiangdizhu" });
     }
     // dealUseridErr(socket,userId);
     var roomInfo = gameMgr.getRoomByUserId(userId);
@@ -88,49 +88,49 @@ exports.qiangdizhu = function(socket,data){
     player.updateFenshu(fen);
     player.setState(player.PLAY_STATE.QIANGDIZHU);
     roomInfo.setState(roomInfo.GAME_STATE.QIANGDIZHU)
-    if(fen >roomInfo.minQiangFen){
+    if (fen > roomInfo.minQiangFen) {
         roomInfo.minQiangFen = fen;
     }
-    userMgr.broacastByRoomId("gb_qiangdizhu_result",{userId:userId,fen:fen},roomInfo.roomId)
-    if(fen == 3){
+    userMgr.broacastByRoomId("gb_qiangdizhu_result", { userId: userId, fen: fen }, roomInfo.roomId)
+    if (fen == 3) {
         roomInfo.setBanker(userId);
         roomInfo.setBeiShu(3);
         //设置抢地主倍数
         roomInfo.qiangdizhu = 3;
         let banker = roomInfo.getBanker();
         banker.addPokers(roomInfo.dipai);
-        console.log("banker.pokers",banker.pokers)
+        console.log("banker.pokers", banker.pokers)
         let bankPokers = pokerSort(banker.pokers);
         // roomInfo.setState(roomInfo.GAME_STATE.PLAYING);
         console.log(123)
 
         // userMgr.broacastByRoomId('gb_dizhu',{userId:userId,bankPokers:bankPokers,mingpai:banker.mingpai}, roomInfo.roomId);
         roomInfo.setState(roomInfo.GAME_STATE.JIABEI)
-        userMgr.broacastByRoomId('gb_dizhu',{userId:userId,bankPokers:bankPokers,gameState:roomInfo.gameState,countdown:roomInfo.JB_COUNTDOWN,mingpai:banker.mingpai}, roomInfo.roomId);
+        userMgr.broacastByRoomId('gb_dizhu', { userId: userId, bankPokers: bankPokers, gameState: roomInfo.gameState, countdown: roomInfo.JB_COUNTDOWN, mingpai: banker.mingpai }, roomInfo.roomId);
         console.log(1234)
         return;
     }
-    
-    if(roomInfo.isAllOpt(player.PLAY_STATE.QIANGDIZHU)){
-        if(roomInfo.minQiangFen==0){
+
+    if (roomInfo.isAllOpt(player.PLAY_STATE.QIANGDIZHU)) {
+        if (roomInfo.minQiangFen == 0) {
             roomInfo.noQiang += 1;
-            if(roomInfo.noQiang % 3 == 0){
-                let random = commonUtil.randomFrom(1,3)
+            if (roomInfo.noQiang % 3 == 0) {
+                let random = commonUtil.randomFrom(1, 3)
                 let banker = roomInfo.seats[random]
                 roomInfo.setBanker(banker.userId)
-            }else{
-                for (let i of roomInfo.seats){
+            } else {
+                for (let i of roomInfo.seats) {
                     i.reset();
                 }
                 faPai(roomInfo);
                 return;
             }
 
-        }else{
+        } else {
             let userId = roomInfo.findDiZhu();
 
             roomInfo.setBanker(userId);
-            
+
         }
         roomInfo.setBeiShu(fen);
         roomInfo.qiangdizhu = fen;
@@ -139,20 +139,20 @@ exports.qiangdizhu = function(socket,data){
         let bankPokers = pokerSort(banker.pokers);
         // roomInfo.setState(roomInfo.GAME_STATE.PLAYING);
         roomInfo.setState(roomInfo.GAME_STATE.JIABEI)
-        userMgr.broacastByRoomId('gb_dizhu',{userId:banker.userId,bankPokers:bankPokers,gameState:roomInfo.gameState,countdown:roomInfo.JB_COUNTDOWN,mingpai:banker.mingpai}, roomInfo.roomId);
+        userMgr.broacastByRoomId('gb_dizhu', { userId: banker.userId, bankPokers: bankPokers, gameState: roomInfo.gameState, countdown: roomInfo.JB_COUNTDOWN, mingpai: banker.mingpai }, roomInfo.roomId);
         console.log(1234)
-        for(let i of roomInfo.seats){
-            i.setTimer(function(){
+        for (let i of roomInfo.seats) {
+            i.setTimer(function () {
                 let socket = userMgr.get(i.userId)
-                exports.jiabei(socket,{userId:i.userId,beishu:1})
-            },roomInfo.JB_COUNTDOWN+5000);
-            if(i.isTuoguan==1){
+                exports.jiabei(socket, { userId: i.userId, beishu: 1 })
+            }, roomInfo.JB_COUNTDOWN + 5000);
+            if (i.isTuoguan == 1) {
                 let tuoguanSocket = userMgr.getT(i.userId)
-                tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState})
+                tuoguanSocket.emit("your_turn", { gameState: roomInfo.gameState })
             }
         }
-    }else{
-        checkDiZhuState(userId,roomInfo.roomId);
+    } else {
+        checkDiZhuState(userId, roomInfo.roomId);
     }
 }
 
@@ -170,17 +170,17 @@ function pokerSort(pokers) {
     return pokers;
 }
 //加倍超级几倍
-exports.jiabei = function(socket,data){
-    if(typeof data ==="string"){
+exports.jiabei = function (socket, data) {
+    if (typeof data === "string") {
         data = JSON.parse(data);
     }
     var userId = data.userId;
     var beishu = data.beishu;
-    if(!socket){
+    if (!socket) {
         socket = userMgr.getT(userId)
     }
-    if(!userId || beishu==undefined || beishu == null){
-        socket.emit('system_error', { errcode: 500, errmsg: '参数错误',flag:"jiabei" });
+    if (!userId || beishu == undefined || beishu == null) {
+        socket.emit('system_error', { errcode: 500, errmsg: '参数错误', flag: "jiabei" });
     }
     // dealUseridErr(socket,userId);
     var roomInfo = gameMgr.getRoomByUserId(userId);
@@ -188,67 +188,79 @@ exports.jiabei = function(socket,data){
     player.beishu = beishu;
     player.clearTimer();
     let banker = roomInfo.getBanker();
-    userMgr.broacastByRoomId("gb_jiabei",{beishu:beishu,userId:userId},roomInfo.roomId);
+    userMgr.broacastByRoomId("gb_jiabei", { beishu: beishu, userId: userId }, roomInfo.roomId);
     getBeishu(roomInfo.roomId)
-    if(beishu==0){
+    if (beishu == 0) {
         beishu = 1;
     }
 
     player.privateBeishu = beishu;
-    if(player.isBanker==0){
+    if (player.isBanker == 0) {
         roomInfo.nongminBeishu = beishu + roomInfo.nongminBeishu
     }
-    
+
     player.setState(player.OPT_STATE.JIABEI);
     let f = roomInfo.isAllOpt(player.OPT_STATE.JIABEI);
-    console.log("一个人加倍了",f)
-    if(f){
-        
+    console.log("一个人加倍了", f)
+    if (f) {
+
         let banker = roomInfo.getBanker()
         roomInfo.setCurrentTurn(banker.seatIndex)
         roomInfo.setState(roomInfo.GAME_STATE.PLAYING)
-        userMgr.broacastByRoomId("gb_turn",{gameState:roomInfo.GAME_STATE.CHUPAI,userId:banker.userId,countdown:roomInfo.OPT_COUNTDOWN},roomInfo.roomId)
-        roomInfo.nongminBeishu = roomInfo.nongminBeishu -1;
-        if(banker.isTuoguan==0){
-            banker.setTimer(optTimeOut(banker.userId),roomInfo.OPT_COUNTDOWN)
-        }else{
+        userMgr.broacastByRoomId("gb_turn", { gameState: roomInfo.GAME_STATE.CHUPAI, userId: banker.userId, countdown: roomInfo.OPT_COUNTDOWN }, roomInfo.roomId)
+        roomInfo.nongminBeishu = roomInfo.nongminBeishu - 1;
+        if (banker.isTuoguan == 0) {
+            banker.setTimer(optTimeOut(banker.userId), roomInfo.OPT_COUNTDOWN)
+        } else {
             let tuoguanSocket = userMgr.getT(banker.userId)
-            tuoguanSocket.emit("your_turn",{gameState:"playing"});
+            tuoguanSocket.emit("your_turn", { gameState: "playing" });
         }
     }
 }
 
 //获得所有相关倍数
-function getBeishu(roomId){
+function getBeishu(roomId) {
     let roomInfo = gameMgr.getRoomById(roomId);
     let beishus = roomInfo.publicBeishu;
     console.log(beishus)
-    let beishu =1;
-    for(let i in  beishus){
-        if(beishus[i]){
-            beishu = beishus[i] *beishu
+    let beishu = 1;
+    for (let i in beishus) {
+        if (beishus[i]) {
+            beishu = beishus[i] * beishu
         }
     }
     let nBeishu = {}
 
-    for(let i of roomInfo.seats){
-        nBeishu[i.userId]=i.privateBeishu;
+    for (let i of roomInfo.seats) {
+        nBeishu[i.userId] = i.privateBeishu;
     }
     let banker = roomInfo.getBanker();
     roomInfo.public = beishu;
-    
 
-    if(banker){
-        userMgr.broacastByRoomId("gb_beishu",{beishus:roomInfo.publicBeishu,public:roomInfo.public,privateBank:banker.privateBeishu,privateNongmin:roomInfo.nongminBeishu,nBeishu:nBeishu},roomId)
-    }else{
-        userMgr.broacastByRoomId("gb_beishu",{beishus:roomInfo.publicBeishu,public:roomInfo.public,privateBank:1,privateNongmin:roomInfo.nongminBeishu,nBeishu:nBeishu},roomId)
+
+    if (banker) {
+        userMgr.broacastByRoomId("gb_beishu", {
+            beishus: roomInfo.publicBeishu,
+            public: roomInfo.public,
+            privateBank: banker.privateBeishu,
+            privateNongmin: roomInfo.nongminBeishu,
+            nBeishu: nBeishu
+        }, roomId)
+    } else {
+        userMgr.broacastByRoomId("gb_beishu", {
+            beishus: roomInfo.publicBeishu,
+            public: roomInfo.public,
+            privateBank: 1,
+            privateNongmin: roomInfo.nongminBeishu,
+            nBeishu: nBeishu
+        }, roomId)
     }
-    
+
 }
 /**
  * 检查抢地主状态
  */
-function checkDiZhuState(userId,roomId) {
+function checkDiZhuState(userId, roomId) {
 
     var roomInfo = gameMgr.getRoomById(roomId);
     let player = roomInfo.getPlayerById(userId);
@@ -260,35 +272,35 @@ function checkDiZhuState(userId,roomId) {
     //console.log('*****获取到下家玩家信息*****');
     //console.log(nextTurnPlayer);
 
-    
+
     // //通知用户操作
     // userMgr.sendMsg(nextTurnPlayer.userId, 'your_turn', { userId: nextTurnPlayer.userId, countdown: roomInfo.OPT_COUNTDOWN,gameState:roomInfo.gameState});
     //设置下家操作的倒计时
     //设置玩家操作倒计时
     var timer = qiangdizhuTimeOut(nextTurnPlayer.userId);
-    nextTurnPlayer.setTimer(timer, roomInfo.OPT_COUNTDOWN,roomInfo.QDZ_COUNTDOWN+5000);
+    nextTurnPlayer.setTimer(timer, roomInfo.OPT_COUNTDOWN, roomInfo.QDZ_COUNTDOWN + 5000);
     // nextTurnPlayer.setState(nextTurnPlayer.PLAY_STATE.PLAYING);
-    if(nextTurnPlayer.isTuoguan==1){
+    if (nextTurnPlayer.isTuoguan == 1) {
         let nextSocket = userMgr.getT(nextTurnPlayer.userId);
-        nextSocket.emit("your_turn",{gameState:roomInfo.gameState})
+        nextSocket.emit("your_turn", { gameState: roomInfo.gameState })
     }
     //广播轮到操作的玩家信息
-    userMgr.broacastInRoom('gb_turn', {minQiangFen:roomInfo.minQiangFen, userId: nextTurnPlayer.userId, countdown: roomInfo.QDZ_COUNTDOWN,gameState:roomInfo.gameState }, nextTurnPlayer.userId,true);
+    userMgr.broacastInRoom('gb_turn', { minQiangFen: roomInfo.minQiangFen, userId: nextTurnPlayer.userId, countdown: roomInfo.QDZ_COUNTDOWN, gameState: roomInfo.gameState }, nextTurnPlayer.userId, true);
     roomInfo.setCurrentTurn(nextTurnPlayer.seatIndex);
 }
 
 /***
  * 发牌
  */
-function faPai(roomInfo){
+function faPai(roomInfo) {
     // let roomInfo = gameMgr.getRoomById(roomId);
-    
+
     let pokers = gameLogic.deal(roomInfo);
-    console.log("pokers",pokers)
+    console.log("pokers", pokers)
     let res = [];
-    let result={};
+    let result = {};
     let seats = roomInfo.seats;
-    for (let i in seats){
+    for (let i in seats) {
         let poker = {}
         poker.userId = seats[i].userId;
         poker.ismingpai = seats[i].mingpai;
@@ -296,13 +308,13 @@ function faPai(roomInfo){
         poker.pokers = pokers.pokers[i];
         seats[i].mopai(pokers.pokers[i]);
         res.push(poker)
-        console.log("res",res)
+        console.log("res", res)
     }
-    result.pokers=res;
+    result.pokers = res;
     result.dipai = pokers.dipai;
     roomInfo.dipai = pokers.dipai;
     result.qiangfen = roomInfo.qiangfen;
-    userMgr.broacastByRoomId('gb_begin_fapai',result, roomInfo.roomId);
+    userMgr.broacastByRoomId('gb_begin_fapai', result, roomInfo.roomId);
 
     // let randomNum = commonUtil.randomFrom(0,2);
     // roomInfo.setQiangfenNo1(roomInfo.seats[randomNum].userId);
@@ -310,76 +322,76 @@ function faPai(roomInfo){
     // roomInfo.setCurrentTurn(nextTurnPlayer.seatIndex);
     //（逆时针顺序）通知庄家的下家进行下注操作
     //根据玩家的数量计算发牌时间
-    var dealTimer =  3 * 1000;
+    var dealTimer = 3 * 1000;
     setTimeout(function () {
-        let randomNum = commonUtil.randomFrom(0,roomInfo.seats.length-1);
-        console.log("roomInfo.seats.length",roomInfo.seats.length)
+        let randomNum = commonUtil.randomFrom(0, roomInfo.seats.length - 1);
+        console.log("roomInfo.seats.length", roomInfo.seats.length)
         //通知用户操作
         let nextTurnPlayer = roomInfo.getPlayerById(roomInfo.seats[randomNum].userId);
-        
+
         nextTurnPlayer.setState(nextTurnPlayer.PLAY_STATE.QIANGDIZHU);
         roomInfo.setCurrentTurn(nextTurnPlayer.seatIndex);
         // //设置玩家操作倒计时
         var timer = qiangdizhuTimeOut(nextTurnPlayer.userId);
-        nextTurnPlayer.setTimer(timer, roomInfo.QDZ_COUNTDOWN+5000);
-        if(nextTurnPlayer.isTuoguan==1){
+        nextTurnPlayer.setTimer(timer, roomInfo.QDZ_COUNTDOWN + 5000);
+        if (nextTurnPlayer.isTuoguan == 1) {
             let tuoguanSocket = userMgr.getT(nextTurnPlayer.userId);
-            tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState})
+            tuoguanSocket.emit("your_turn", { gameState: roomInfo.gameState })
         }
         //广播轮到操作的玩家信息
 
-        userMgr.broacastInRoom('gb_turn', {userId:nextTurnPlayer.userId,minQiangFen: roomInfo.minQiangFen,first:roomInfo.jiaofenNO1,countdown: roomInfo.QDZ_COUNTDOWN,gameState:roomInfo.gameState }, nextTurnPlayer.userId, true);
+        userMgr.broacastInRoom('gb_turn', { userId: nextTurnPlayer.userId, minQiangFen: roomInfo.minQiangFen, first: roomInfo.jiaofenNO1, countdown: roomInfo.QDZ_COUNTDOWN, gameState: roomInfo.gameState }, nextTurnPlayer.userId, true);
     }, dealTimer);
 }
 
 //抢地主超时
-function qiangdizhuTimeOut(userId){
-    return function(){
+function qiangdizhuTimeOut(userId) {
+    return function () {
         let socket = userMgr.get(userId);
-        let data={userId:userId,fen:0}
-        exports.qiangdizhu(socket,data);
+        let data = { userId: userId, fen: 0 }
+        exports.qiangdizhu(socket, data);
     }
 }
 /**
  * 收到轮到自己的消息时做出相应的操作
  */
-exports.opt = function(userId,data){
+exports.opt = function (userId, data) {
     console.log("开始托管出牌")
-    if(!userId){
+    if (!userId) {
         return
     }
     var roomInfo = gameMgr.getRoomByUserId(userId);
-    if(!roomInfo){
+    if (!roomInfo) {
         return
     }
     let player = roomInfo.getPlayerById(userId);
     let socket = userMgr.get(userId);
     let sjPoker = roomInfo.lastPokers.pokers;
-    if(!socket){
+    if (!socket) {
         socket = userMgr.getT(userId);
     }
-    let data1 ={userId:userId,chupai:1}
-    let res = tishi(socket,data1);
-    console.log("tuoguan",userId,res)
+    let data1 = { userId: userId, chupai: 1 }
+    let res = tishi(socket, data1);
+    console.log("tuoguan", userId, res)
     let tuoguanSocket = userMgr.getT(userId)
-    console.log("roomInfo.lastPokers.userId",roomInfo.lastPokers.userId)
-    console.log("userId",userId)
-    if(roomInfo.lastPokers.userId == userId || !roomInfo.lastPokers.userId ){
+    console.log("roomInfo.lastPokers.userId", roomInfo.lastPokers.userId)
+    console.log("userId", userId)
+    if (roomInfo.lastPokers.userId == userId || !roomInfo.lastPokers.userId) {
         res = gameLogic.getSuijiPai(player.pokers);
-        console.log("suijipaiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",res);
+        console.log("suijipaiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", res);
     }
-    let data2 = {userId:userId,pokers:res}
-    console.log("data222222222222222222222222222222222",data2)
-    setTimeout(function(){
-        if(res.length !=0 ||roomInfo.lastPokers.pokers.length==0){
-            chupai(socket,data2);
-        }else{
-            buchu(socket,data2);
-    }
-    // userMgr.bindT(userId,tuoguanSocket);
-    // userMgr.bindT("real"+userId,socket)
+    let data2 = { userId: userId, pokers: res }
+    console.log("data222222222222222222222222222222222", data2)
+    setTimeout(function () {
+        if (res.length != 0 || roomInfo.lastPokers.pokers.length == 0) {
+            chupai(socket, data2);
+        } else {
+            buchu(socket, data2);
+        }
+        // userMgr.bindT(userId,tuoguanSocket);
+        // userMgr.bindT("real"+userId,socket)
 
-},2000)
+    }, 2000)
 
 }
 
@@ -387,35 +399,35 @@ exports.opt = function(userId,data){
  * 根据牌的类型获取操作项
  * 0:散牌，1:对子 2:顺子 3:金花 4:顺金 5:炸弹(三条)
  */
-function getOptByRadio(canOptList,pokerType){
+function getOptByRadio(canOptList, pokerType) {
     var strategy = getStrategyByPokerType(pokerType);
-    var opt = getResultByRadio(canOptList,strategy);
+    var opt = getResultByRadio(canOptList, strategy);
     return opt;
 }
 
 /**
  * 根据概率获取结果
  */
-function getResultByRadio(canOptList,strategy){
+function getResultByRadio(canOptList, strategy) {
     var sum = getRadioSum(strategy);
     var opt = null;
-    for(var i in strategy){
+    for (var i in strategy) {
         //获取 0-总数 之间的一个随随机整数
-        var random = parseInt(Math.random()*sum);
+        var random = parseInt(Math.random() * sum);
         ////如果在当前的概率范围内,得到的就是当前概率
-        if(random<strategy[i]){
+        if (random < strategy[i]) {
             opt = i;
             break;
-        }else {
+        } else {
             //否则减去当前的概率范围,进入下一轮循环
-            sum-=strategy[i]
+            sum -= strategy[i]
         }
     }
 
-    if(canOptList.indexOf(opt)>-1){
+    if (canOptList.indexOf(opt) > -1) {
         return opt;
-    }else{
-        return getResultByRadio(canOptList,strategy);
+    } else {
+        return getResultByRadio(canOptList, strategy);
     }
 }
 
@@ -423,10 +435,10 @@ function getResultByRadio(canOptList,strategy){
 /*
   获取权重的总和
  */
-function getRadioSum(strategy){
-    var sum=0;
-    for(var i in strategy){
-        sum+=strategy[i];
+function getRadioSum(strategy) {
+    var sum = 0;
+    for (var i in strategy) {
+        sum += strategy[i];
     }
     return sum;
 }
@@ -435,44 +447,44 @@ function getRadioSum(strategy){
 /**
  * 根据扑克的类型获取不同的操作策略
  */
-function getStrategyByPokerType(pokerType){
-     var strategy = {};
-     switch(pokerType){
-         case 5:
-             strategy = {'yazhu':95,'bipai':3,'qipai':0,'kanpai':10};
-             break;
-         case 4:
-             strategy = {'yazhu':90,'bipai':3,'qipai':0,'kanpai':15};
-             break;
-         case 3:
-             strategy = {'yazhu':85,'bipai':5,'qipai':2,'kanpai':20};
-             break;
-         case 2:
-             strategy = {'yazhu':80,'bipai':5,'qipai':3,'kanpai':25};
-             break;
-         case 1:
-             strategy = {'yazhu':65,'bipai':12,'qipai':8,'kanpai':20};
-             break;
-         default:
-             strategy = {'yazhu':50,'bipai':10,'qipai':10,'kanpai':30};
-     }
-     return strategy;
+function getStrategyByPokerType(pokerType) {
+    var strategy = {};
+    switch (pokerType) {
+        case 5:
+            strategy = { 'yazhu': 95, 'bipai': 3, 'qipai': 0, 'kanpai': 10 };
+            break;
+        case 4:
+            strategy = { 'yazhu': 90, 'bipai': 3, 'qipai': 0, 'kanpai': 15 };
+            break;
+        case 3:
+            strategy = { 'yazhu': 85, 'bipai': 5, 'qipai': 2, 'kanpai': 20 };
+            break;
+        case 2:
+            strategy = { 'yazhu': 80, 'bipai': 5, 'qipai': 3, 'kanpai': 25 };
+            break;
+        case 1:
+            strategy = { 'yazhu': 65, 'bipai': 12, 'qipai': 8, 'kanpai': 20 };
+            break;
+        default:
+            strategy = { 'yazhu': 50, 'bipai': 10, 'qipai': 10, 'kanpai': 30 };
+    }
+    return strategy;
 }
 
 
 async function exit(socket, data) {
-    if(typeof data ==="string"){
+    if (typeof data === "string") {
         data = JSON.parse(data);
     }
-    
+
     var userId = data.userId;
-    if(!userId){
+    if (!userId) {
         return;
     }
     //检查传过来的userId是否有误
-    let userid = await checkUserId(socket,userId);
-    console.log("userid",userid);
-    if(userid===1 || !userid ||userid!==userId){
+    let userid = await checkUserId(socket, userId);
+    console.log("userid", userid);
+    if (userid === 1 || !userid || userid !== userId) {
         socket.emit('system_error', { errcode: 500, errmsg: "传入的数据有误" });
         return;
     }
@@ -485,22 +497,22 @@ async function exit(socket, data) {
     if (!player) {
         return
     }
-    if(player.state !== player.PLAY_STATE.FREE ||player.state !== player.PLAY_STATE.FREE){
-        socket.emit('exit_result', { state:player.state,res:"no" })
+    if (player.state !== player.PLAY_STATE.FREE || player.state !== player.PLAY_STATE.FREE) {
+        socket.emit('exit_result', { state: player.state, res: "no" })
         return
     }
     //设置玩家离线
     player.setOnlineState(0);
     if (socket) {
-        socket.emit('exit_result', { state: player.state,res:"yes" });
-        console.log("exit",player)
+        socket.emit('exit_result', { state: player.state, res: "yes" });
+        console.log("exit", player)
         exports.disconnect(socket);
     }
     //如果玩家在开始准备阶段退出，判断是不是庄家，否则更换庄家
     if (player.state == player.PLAY_STATE.FREE || player.state == player.PLAY_STATE.READY) {
         //console.log('********exit玩家退出【'+player.userId+'】**********');
         //如果玩家已经准备了，则清除计时器
-        if(player.state == player.PLAY_STATE.READY){
+        if (player.state == player.PLAY_STATE.READY) {
             player.clearTimer();
         }
         //当前房间内的玩家数量
@@ -515,22 +527,22 @@ async function exit(socket, data) {
             gameMgr.exitRoom(userId);
             //解散房间
             //如果是代开房间，则不解散房间
-            if(roomInfo.isDaiKai==0){
+            if (roomInfo.isDaiKai == 0) {
                 gameMgr.destroy(roomInfo.roomId);
             }
-        }else{
+        } else {
             gameMgr.exitRoom(userId);
             if (player.isBanker) {
                 //console.log('********exit更换庄家**********');
 
-            var nextPlayer = roomInfo.changeBanker(player.seatIndex);
-            if(nextPlayer){
-                roomInfo.setBanker(nextPlayer.userId);
-            }
+                var nextPlayer = roomInfo.changeBanker(player.seatIndex);
+                if (nextPlayer) {
+                    roomInfo.setBanker(nextPlayer.userId);
+                }
             }
             //console.log('********玩家【'+userId+'】退出房间**********');
             //获取当前房间的庄家
-            userMgr.broacastByRoomId('gb_player_exit', { userId: userId,seats:roomInfo.seats }, roomInfo.roomId);
+            userMgr.broacastByRoomId('gb_player_exit', { userId: userId, seats: roomInfo.seats }, roomInfo.roomId);
 
             //游戏准备阶段，如果推出后所有玩家都已经准备了，则游戏开始
             if (roomInfo.gameState == roomInfo.GAME_STATE.READY) {
@@ -541,14 +553,14 @@ async function exit(socket, data) {
 }
 
 async function ready(socket, data) {
-    if(typeof data ==="string"){
+    if (typeof data === "string") {
         data = JSON.parse(data);
     }
     var userId = data.userId;
     var roomInfo = gameMgr.getRoomByUserId(userId);
     //console.log('************玩家准备*********' + userId);
     if (!userId || !roomInfo) {
-        socket.emit('system_error', { errcode: 500, errmsg: "参数错误" ,flag:"ready"});
+        socket.emit('system_error', { errcode: 500, errmsg: "参数错误", flag: "ready" });
         return;
     }
     // //检查传过来的userId是否有误
@@ -571,7 +583,7 @@ async function ready(socket, data) {
     }
 
     //金币过低
-    if(player.coins<roomInfo.diZhu*2){
+    if (player.coins < roomInfo.diZhu * 2) {
         socket.emit('system_error', { errcode: 500, errmsg: "金币不足" });
         return;
     }
@@ -584,7 +596,7 @@ async function ready(socket, data) {
     player.setState(player.PLAY_STATE.READY);
     socket.emit('ready_result', { errcode: 0, errmsg: "ok" });
     //通知房间内的其他玩家
-    userMgr.broacastInRoom('gb_player_has_ready', { userId: userId,sex:player.sex }, userId);
+    userMgr.broacastInRoom('gb_player_has_ready', { userId: userId, sex: player.sex }, userId);
 
     //当前房间的玩家
     let playerCount = roomInfo.getPlayerCount();
@@ -592,53 +604,53 @@ async function ready(socket, data) {
     let preparedPlayerCount = roomInfo.getPreparedPlayerCount();
 
     //先判断是否所有人都已经准备了
-    if(preparedPlayerCount == roomInfo.seatCount){
+    if (preparedPlayerCount == roomInfo.seatCount) {
         //如果倒计时还没结束，但玩家都准备了
-        if(roomInfo.countdown!=0){
+        if (roomInfo.countdown != 0) {
             roomInfo.clearTimer();
             roomInfo.countdown = 0;
         }
-        console.log("游戏将要开始前房内玩家数"+playerCount)
-        console.log("游戏将要开始前房内已准备的玩家数"+ preparedPlayerCount)
+        console.log("游戏将要开始前房内玩家数" + playerCount)
+        console.log("游戏将要开始前房内已准备的玩家数" + preparedPlayerCount)
         //直接开始游戏
         exports.gameBegin(roomInfo.roomId);
     }
 }
 
 //提示
-function tishi(socket,data){
+function tishi(socket, data) {
     let userId = data.userId;
     let chupai = data.chupai;
     let flag = data.flag;
-    if(socket&&!userId){
-        socket.emit("tishi_result",{errcode:1,errmsg:"参数错误",flag:"tishi"});
+    if (socket && !userId) {
+        socket.emit("tishi_result", { errcode: 1, errmsg: "参数错误", flag: "tishi" });
         return;
     }
     let roomInfo = gameMgr.getRoomByUserId(userId);
-    if(!roomInfo){
+    if (!roomInfo) {
         return [];
     }
     let lastPokers = roomInfo.lastPokers.pokers;
-    console.log("lastPokers",lastPokers)
-    let lastPokersType = gameLogic.getPokerType(lastPokers,userId);
+    console.log("lastPokers", lastPokers)
+    let lastPokersType = gameLogic.getPokerType(lastPokers, userId);
     let player = roomInfo.getPlayerById(userId);
-    let res = gameLogic.getBiggerPokers(lastPokers,player.pokers);
+    let res = gameLogic.getBiggerPokers(lastPokers, player.pokers);
 
-    function zhadan (mypokers){
-        let myZhaDan= gameLogic.getZhadan(mypokers);
-        console.log("myZhaDan",myZhaDan)
-        if(myZhaDan.length ===0){
+    function zhadan(mypokers) {
+        let myZhaDan = gameLogic.getZhadan(mypokers);
+        console.log("myZhaDan", myZhaDan)
+        if (myZhaDan.length === 0) {
             let huojian = gameLogic.getHuojian(mypokers)
             return huojian;
-            
+
         }
         let lastRes = []
         bf:
-        for(let i of myZhaDan){
-            for(let j of mypokers){
-                if(j.num===i){
+        for (let i of myZhaDan) {
+            for (let j of mypokers) {
+                if (j.num === i) {
                     lastRes.push(j);
-                    if(lastRes.length ===4){
+                    if (lastRes.length === 4) {
                         break bf;
                     }
                 }
@@ -646,7 +658,7 @@ function tishi(socket,data){
         }
         return lastRes
     }
-    if(res.length==0 && userId!== roomInfo.lastPokers.userId){
+    if (res.length == 0 && userId !== roomInfo.lastPokers.userId) {
 
         res = zhadan(player.pokers);
     }
@@ -654,115 +666,116 @@ function tishi(socket,data){
     data2.userId = userId;
     data2.pokers = res;
     //如果不是玩家主动点击提示则不通知
-    if(!chupai){
-        console.log("chupai乐乐乐乐尔乐饿了",chupai)
-        socket.emit("tishi_result",{data:data2});
+    if (!chupai) {
+        console.log("chupai乐乐乐乐尔乐饿了", chupai)
+        socket.emit("tishi_result", { data: data2 });
     }
-    console.log("res_tishi",res)
+    console.log("res_tishi", res)
     return res
 }
 //不出
-async function buchu(socket,data){
+async function buchu(socket, data) {
     let pokers = data.pokers;
     let userId = data.userId;
     let roomInfo = gameMgr.getRoomByUserId(userId)
-    if(socket&& !userId ){
-        socket.emit("chupai_result",{errcode:1,errmsg:"参数错误",flag:"buchu"});
+    if (socket && !userId) {
+        socket.emit("chupai_result", { errcode: 1, errmsg: "参数错误", flag: "buchu" });
         return;
     }
     // userMgr.bind(userId,socket)
     let player = roomInfo.getPlayerById(userId)
     let nextPlayer = roomInfo.getNextTurnPlayer(roomInfo.currentTurn);
-    console.log("nextPlaroomInfo.currentTurnyer",roomInfo.currentTurn)
-    console.log("nextPlayer",nextPlayer)
+    console.log("nextPlaroomInfo.currentTurnyer", roomInfo.currentTurn)
+    console.log("nextPlayer", nextPlayer)
     player.clearTimer();
     let nextSocket = userMgr.get(nextPlayer.userId);
-    let tishi_result = tishi(nextSocket,{userId:nextPlayer.userId,chupai:1});
+    let tishi_result = tishi(nextSocket, { userId: nextPlayer.userId, chupai: 1 });
     // console.log("nextSocketaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",nextSocket.userId) 
-    console.log("tishi",tishi_result)
+    console.log("tishi", tishi_result)
     let flag;
-    if(tishi_result.length==0){
-        flag=0
-    }else if(roomInfo.lastPokers.userId==nextPlayer.userId || tishi_result.length>0){
-        flag=1;
+    if (tishi_result.length == 0) {
+        flag = 0
+    } else if (roomInfo.lastPokers.userId == nextPlayer.userId || tishi_result.length > 0) {
+        flag = 1;
     }
-    
-    userMgr.broacastByRoomId('gb_buchu',{ userId: userId, countdown: roomInfo.OPT_COUNTDOWN,gameState:roomInfo.gameState }, roomInfo.roomId);
+
+    userMgr.broacastByRoomId('gb_buchu', { userId: userId, countdown: roomInfo.OPT_COUNTDOWN, gameState: roomInfo.gameState }, roomInfo.roomId);
     console.log("下一一一一一一一一一一一一一一一一一一一一一一一")
-    checkGameState(userId,roomInfo.roomId,flag);
+    checkGameState(userId, roomInfo.roomId, flag);
 }
 
-async function chupai(socket,data){
+async function chupai(socket, data) {
     let pokers = data.pokers;
     let userId = data.userId;
     // console.log("userId",userId)
     // console.log("pokers",pokers)
     // console.log(!socket)
-    if( socket&&(!userId || !pokers)){
-        socket.emit("chupai_result",{errcode:1,errmsg:"参数错误",flag:"chupai"});
+    if (socket && (!userId || !pokers)) {
+        socket.emit("chupai_result", { errcode: 1, errmsg: "参数错误", flag: "chupai" });
         return;
     }
     let result = {};
     let roomInfo = gameMgr.getRoomByUserId(userId);
-    if(!roomInfo){
-        socket.emit("chupai_result",{errcode:1,errmsg:"房间信息有误"})
+    if (!roomInfo) {
+        socket.emit("chupai_result", { errcode: 1, errmsg: "房间信息有误" })
     }
     // console.log("roomInfo",roomInfo)
     let lastPokers = roomInfo.lastPokers.pokers;
-    console.log("roomInfo.lastPokers",roomInfo.lastPokers)
+    console.log("roomInfo.lastPokers", roomInfo.lastPokers)
 
     // userMgr.bindT(userId,socket);
 
     let res = 1;
     //如果最新打出的牌的玩家和正在出牌的玩家不是同一个人则进行比牌操作
-    console.log("userId != roomInfo.lastPokers.userId",userId != roomInfo.lastPokers.userId)
-    console.log("userId ",userId )
-    console.log("roomInfo.lastPokers.userId",roomInfo.lastPokers.userId)
-    if(userId != roomInfo.lastPokers.userId){
-        res = gameLogic.compare(pokers,lastPokers,userId,roomInfo.lastPokers.userId);
+    console.log("userId != roomInfo.lastPokers.userId", userId != roomInfo.lastPokers.userId)
+    console.log("userId ", userId)
+    console.log("roomInfo.lastPokers.userId", roomInfo.lastPokers.userId)
+    if (userId != roomInfo.lastPokers.userId) {
+        res = gameLogic.compare(pokers, lastPokers, userId, roomInfo.lastPokers.userId);
     }
-    let MypokeType =  gameLogic.getPokerType(pokers)
-    if(!MypokeType){
+    let MypokeType = gameLogic.getPokerType(pokers)
+    if (!MypokeType) {
         res = 2;
     }
-    let type = gameLogic.getPokerType(pokers,userId);
+    let type = gameLogic.getPokerType(pokers, userId);
     let player = roomInfo.getPlayerById(userId);
     player.setState(player.PLAY_STATE.WAITTING);
     player.clearTimer();
-    if(type=="zhadan" || type =="huojian"){
-        roomInfo.zhadanNum = roomInfo.zhadanNum +1;
+    if (type == "zhadan" || type == "huojian") {
+        rroomInfo.zhadanNum += 1;
+        roomInfo.setPublicBeishu("zhadan", roomInfo.zhadanNum * 2)
     }
 
     getBeishu(roomInfo.roomId);
-    console.log("chupai player.seatIndex",player.seatIndex)
+    console.log("chupai player.seatIndex", player.seatIndex)
     roomInfo.setCurrentTurn(player.seatIndex)
-    if(res!==1){
+    if (res !== 1) {
         result.pokerType = "nothing";
-        buchu(socket,{userId:userId})
+        buchu(socket, { userId: userId })
         return;
-    }else{
-        if (!type){
-            buchu(socket,{userId:userId})
+    } else {
+        if (!type) {
+            buchu(socket, { userId: userId })
             return;
         }
         //更新最新打出的牌
-        roomInfo.setLastPokers(userId,pokers);
-        if(type.type == "zhadan" || type.type == "huojian"){
+        roomInfo.setLastPokers(userId, pokers);
+        if (type.type == "zhadan" || type.type == "huojian") {
             roomInfo.zhadanNum += 1;
-            roomInfo.zdBeishu = roomInfo.zhadanNum*2
+            roomInfo.zdBeishu = roomInfo.zhadanNum * 2
         }
         // if(type.type === "AAA"){
         //     roomInfo.setBeiShu(2);
         // }
     }
-    result.pokerType=type.type;
+    result.pokerType = type.type;
     result.res = res;
     let mypokers = [].concat(player.pokers);
     let allpokers = [].concat(roomInfo.shengyuPokers);
-    for(let i of pokers){
-        commonUtil.removeOne(mypokers,i);
-        console.log("length",mypokers.length,i)
-        commonUtil.removeOne(allpokers,i);
+    for (let i of pokers) {
+        commonUtil.removeOne(mypokers, i);
+        console.log("length", mypokers.length, i)
+        commonUtil.removeOne(allpokers, i);
     }
     player.updatePokers(mypokers)
     roomInfo.shengyuPokers = allpokers;
@@ -773,35 +786,35 @@ async function chupai(socket,data){
     result.beishu = roomInfo.beishu;
     let banker = roomInfo.getBanker();
     //把剩余的牌展示给庄家
-    // userMgr.sendMsg(banker.userId,"shengyu_pokers",roomInfo.shengyuPokers);
-    roomInfo.hongtao3IsEnd = true
-    userMgr.broacastByRoomId('gb_compare_result',result, roomInfo.roomId);
+    userMgr.sendMsg(banker.userId, "shengyu_pokers", roomInfo.shengyuPokers);
+
+    userMgr.broacastByRoomId('gb_compare_result', result, roomInfo.roomId);
     //根据当前玩家所出的牌判断下一家是不是屏蔽掉不出按钮
     player.setState(player.PLAY_STATE.WAITTING);
-    console.log("player.seatIndex",player.seatIndex)
+    console.log("player.seatIndex", player.seatIndex)
     let nextPlayer = roomInfo.getNextTurnPlayer(player.seatIndex);
-    
-    let nextSocket = userMgr.get(nextPlayer.userId);
-    let tishi_result = tishi(nextSocket,{userId:nextPlayer.userId,chupai:1});
 
-    console.log("roomInfo.lastpokers",roomInfo.lastPokers)
-    console.log("tishi",tishi_result)
+    let nextSocket = userMgr.get(nextPlayer.userId);
+    let tishi_result = tishi(nextSocket, { userId: nextPlayer.userId, chupai: 1 });
+
+    console.log("roomInfo.lastpokers", roomInfo.lastPokers)
+    console.log("tishi", tishi_result)
     let flag;
-    if(tishi_result.length==0){
-        flag=0
-    }else if(roomInfo.lastPokers.userId==nextPlayer.userId || tishi_result.length>0){
-        flag=1;
+    if (tishi_result.length == 0) {
+        flag = 0
+    } else if (roomInfo.lastPokers.userId == nextPlayer.userId || tishi_result.length > 0) {
+        flag = 1;
     }
-    
+
     //     for(let i of pokers){
     //     commonUtil.remove(player.pokers,i);
     //     commonUtil.remove(roomInfo.shengyuPokers,i);
     // }
 
     console.log("开始找一下个人了啊啊啊啊 啊啊啊啊啊啊啊啊啊啊啊啊啊啊  啊啊啊啊啊啊啊啊啊啊啊啊啊")
-    checkGameState(userId,roomInfo.roomId,flag);
-    
-    
+    checkGameState(userId, roomInfo.roomId, flag);
+
+
 }
 /**
  * 游戏结束，广播结算结果
@@ -809,15 +822,15 @@ async function chupai(socket,data){
 
 function gameOver(roomId) {
     var roomInfo = gameMgr.getRoomById(roomId);
-    console.log("gameover roomId",roomId)
-    for(let i of roomInfo.seats){
+    console.log("gameover roomId", roomId)
+    for (let i of roomInfo.seats) {
         i.clearTimer();//清除定时器
-        if(i.isTuoguan==1){
-            userMgr.broacastByRoomId("gb_qxtuoguan",{userId:i.userId},roomId)
-            i.isTuoguan=0;
+        if (i.isTuoguan == 1) {
+            userMgr.broacastByRoomId("gb_qxtuoguan", { userId: i.userId }, roomId)
+            i.isTuoguan = 0;
         }
     }
-    
+
     //计算输赢
     gameMgr.settlement(roomId);
     let winner = null;
@@ -845,12 +858,12 @@ function gameOver(roomId) {
             res.coins = player.coins;
             res.state = player.state;
             res.optState = player.optState;
-            res.banker =roomInfo.getBanker().userId;
+            res.banker = roomInfo.getBanker().userId;
             results.push(res);
         }
 
         //如果玩家的金币不足
-        if (player.coins < roomInfo.diZhu*2*5) {
+        if (player.coins < roomInfo.diZhu * 2 * 5) {
             userMgr.sendMsg(player.userId, 'coin_not_enough', { errcode: 500, errmsg: '金币不足,请充值后再继续游戏' });
             //踢除玩家
             //console.log('********玩家金币不足了**********');
@@ -861,7 +874,7 @@ function gameOver(roomId) {
     //两秒后提示结算
     setTimeout(function () {
         //console.log('*****gb_settlement_result*******');
-         //console.log(results);
+        //console.log(results);
         userMgr.broacastByRoomId('gb_settlement_result', results, roomId);
         //广播通知玩家开始准备
         //清除掉离线的玩家
@@ -873,16 +886,16 @@ function gameOver(roomId) {
                 var player = tempSeats[i];
 
                 var socket = userMgr.get(player.userId);
-                if (!socket||player.isOnline==0) {
+                if (!socket || player.isOnline == 0) {
                     //console.log('*******清理玩家【'+player.userId+'】********');
-                    if(!socket){
+                    if (!socket) {
                         socket = userMgr.getT(player.userId)
                         socket.userId = player.userId;
                     }
-                    (function(socket){
+                    (function (socket) {
                         let dataRes = {};
                         dataRes.userId = player.userId;
-                        exports.exit(socket,JSON.stringify(dataRes));
+                        exports.exit(socket, JSON.stringify(dataRes));
                     })(socket)
                 }
             }
@@ -890,7 +903,7 @@ function gameOver(roomId) {
             let data = {};
             data.numOfGame = roomInfo.numOfGame;
             data.countdown = roomInfo.READY_COUNTDOWN;
-            userMgr.broacastByRoomId('gb_begin_ready',data,roomId);
+            userMgr.broacastByRoomId('gb_begin_ready', data, roomId);
             //更新游戏局数
             roomInfo.updateNumOfGame();
             //设置房间的状态为准备状态
@@ -912,36 +925,36 @@ function gameOver(roomId) {
 /**
  * 发表情
  */
-exports.grantProp = async function(userId,toUserId){
+exports.grantProp = async function (userId, toUserId) {
     var roomInfo = gameMgr.getRoomByUserId(userId);
-    if(!roomInfo){
+    if (!roomInfo) {
         return;
     }
     var player = roomInfo.getPlayerById(userId);
-    if(!player){
+    if (!player) {
         return;
     }
     var robotSocket = userMgr.get(userId);
-    let propList = await commonService.getTableListAsync(null,null,"id,name", "t_shop_info", { type: 'prop' });
+    let propList = await commonService.getTableListAsync(null, null, "id,name", "t_shop_info", { type: 'prop' });
     //随机发送次数
-    let rdCount = commonUtil.randomFrom(0,1);
-    for(let i=0;i<rdCount;i++){
-        let time = commonUtil.randomFrom(1000,4000);
-        (function(rdtime) {
-            let rdIndex = commonUtil.randomFrom(0,propList.length-1);
+    let rdCount = commonUtil.randomFrom(0, 1);
+    for (let i = 0; i < rdCount; i++) {
+        let time = commonUtil.randomFrom(1000, 4000);
+        (function (rdtime) {
+            let rdIndex = commonUtil.randomFrom(0, propList.length - 1);
             let randomProp = propList[rdIndex];
 
             //屏蔽鸡蛋表情
-            if(randomProp.id==19||randomProp.name=='Egg'){
+            if (randomProp.id == 19 || randomProp.name == 'Egg') {
                 return;
             }
 
-            setTimeout(function() {
+            setTimeout(function () {
                 var resData = {};
                 resData.receiver = toUserId;
                 resData.prop_id = randomProp.id;
                 resData.prop_name = randomProp.name;
-                 grantProp(robotSocket,JSON.stringify(resData));
+                grantProp(robotSocket, JSON.stringify(resData));
             }, rdtime);
         })(time)// i是参数 对应着a
     }
@@ -951,22 +964,22 @@ exports.grantProp = async function(userId,toUserId){
 /**
  * 发快捷语音
  */
-exports.sendQuickChat = function(userId){
+exports.sendQuickChat = function (userId) {
     var roomInfo = gameMgr.getRoomByUserId(userId);
-    if(!roomInfo){
+    if (!roomInfo) {
         return;
     }
     var player = roomInfo.getPlayerById(userId);
-    if(!player){
+    if (!player) {
         return;
     }
-    if(player.state!=player.PLAY_STATE.FREE){
-        var rd = commonUtil.randomFrom(0,100);
+    if (player.state != player.PLAY_STATE.FREE) {
+        var rd = commonUtil.randomFrom(0, 100);
         //有百分之5的概率发快捷语音
-        if(rd>90){
-            var chatId = commonUtil.randomFrom(0,8);
+        if (rd > 90) {
+            var chatId = commonUtil.randomFrom(0, 8);
             var robotSocket = userMgr.get(userId);
-             quickChat(robotSocket,chatId);
+            quickChat(robotSocket, chatId);
         }
     }
 }
@@ -974,7 +987,7 @@ exports.sendQuickChat = function(userId){
 /**
  * 检查游戏是否可以结束，不能则通知下个玩家操作
  */
-function checkGameState(userId,roomId,chupai_flag) {
+function checkGameState(userId, roomId, chupai_flag) {
     var roomInfo = gameMgr.getRoomById(roomId);
     let player = roomInfo.getPlayerById(userId);
     roomInfo.setCurrentTurn(player.seatIndex)
@@ -1013,32 +1026,32 @@ function checkGameState(userId,roomId,chupai_flag) {
         let nextSocket = userMgr.getT(nextTurnPlayer.userId);
         // userMgr.broacastInRoom('gb_turn', { userId: nextTurnPlayer.userId, countdown: roomInfo.OPT_COUNTDOWN,gameState:roomInfo.gameState}, nextTurnPlayer.userId,true);
         // console.log("gb_turnssssssssssssssssssssssssssssssss",2,nextTurnPlayer.userId)
-        if(nextTurnPlayer.isTuoguan ==0){
+        if (nextTurnPlayer.isTuoguan == 0) {
             var timer = optTimeOut(nextTurnPlayer.userId);
             nextTurnPlayer.setTimer(timer, roomInfo.OPT_COUNTDOWN);
             nextTurnPlayer.setState(nextTurnPlayer.PLAY_STATE.PLAYING);
         }
-        if(nextTurnPlayer.isTuoguan==1){
-            console.log("nextTurnPlayer.userId",nextTurnPlayer.userId)
+        if (nextTurnPlayer.isTuoguan == 1) {
+            console.log("nextTurnPlayer.userId", nextTurnPlayer.userId)
             let nextSocket = userMgr.getT(nextTurnPlayer.userId);
-            if(!nextSocket){
+            if (!nextSocket) {
                 userMgr.bindT(nextTurnPlayer.userId)
                 nextSocket = userMgr.getT(nextTurnPlayer.userId);
             }
             try {
-                nextSocket.emit("your_turn",{gameState:roomInfo.gameState})
+                nextSocket.emit("your_turn", { gameState: roomInfo.gameState })
             } catch (error) {
                 console.log(error)
-                
+
             }
         }
         //广播轮到操作的玩家信息
-        if(chupai_flag==0){
-            userMgr.broacastInRoom('gb_turn', { userId: nextTurnPlayer.userId, countdown: roomInfo.OPT_COUNTDOWN,gameState:roomInfo.GAME_STATE.BUCHU ,flag:"tuoguan"}, nextTurnPlayer.userId,true);
-        }else if(chupai_flag==1){
-            userMgr.broacastInRoom('gb_turn', { userId: nextTurnPlayer.userId, countdown: roomInfo.OPT_COUNTDOWN,gameState:roomInfo.GAME_STATE.CHUPAI ,flag:"tuoguan"}, nextTurnPlayer.userId,true);
-        }else{
-            userMgr.broacastInRoom('gb_turn', { userId: nextTurnPlayer.userId, countdown: roomInfo.OPT_COUNTDOWN,gameState:roomInfo.gameState ,flag:"tuoguan"}, nextTurnPlayer.userId,true);
+        if (chupai_flag == 0) {
+            userMgr.broacastInRoom('gb_turn', { userId: nextTurnPlayer.userId, countdown: roomInfo.OPT_COUNTDOWN, gameState: roomInfo.GAME_STATE.BUCHU, flag: "tuoguan" }, nextTurnPlayer.userId, true);
+        } else if (chupai_flag == 1) {
+            userMgr.broacastInRoom('gb_turn', { userId: nextTurnPlayer.userId, countdown: roomInfo.OPT_COUNTDOWN, gameState: roomInfo.GAME_STATE.CHUPAI, flag: "tuoguan" }, nextTurnPlayer.userId, true);
+        } else {
+            userMgr.broacastInRoom('gb_turn', { userId: nextTurnPlayer.userId, countdown: roomInfo.OPT_COUNTDOWN, gameState: roomInfo.gameState, flag: "tuoguan" }, nextTurnPlayer.userId, true);
         }
     }
 }
@@ -1048,39 +1061,39 @@ function checkGameState(userId,roomId,chupai_flag) {
  */
 function optTimeOut(userId) {
     return function () {
-        
+
         console.log('*********玩家【' + userId + '】操作超时*********');
         //发送操作超时事件
         userMgr.sendMsg(userId, 'opt_timeout', { userId: userId });
         var userSocket = userMgr.get(userId);
         let roomInfo = gameMgr.getRoomByUserId(userId);
-        var data = {errcode:0,errmsg:"ok",userId:userId};
-        
+        var data = { errcode: 0, errmsg: "ok", userId: userId };
+
         let tuoguanSocket = userMgr.getT(userId);
         let player = roomInfo.getPlayerById(userId)
-        player.isTuoguan=1;
-        tuoguanSocket.emit("your_turn",{gameState:roomInfo.gameState})
+        player.isTuoguan = 1;
+        tuoguanSocket.emit("your_turn", { gameState: roomInfo.gameState })
 
-        userMgr.broacastByRoomId("gb_tuoguan",data,roomInfo.roomId);
+        userMgr.broacastByRoomId("gb_tuoguan", data, roomInfo.roomId);
     }
 }
 /**
  * 检测是否只剩一个机器人
  */
-exports.checkCanExit = function(userId){
+exports.checkCanExit = function (userId) {
     var roomInfo = gameMgr.getRoomByUserId(userId);
-    if(!roomInfo){
+    if (!roomInfo) {
         return;
     }
     let playerCount = roomInfo.getPlayerCount();
-    if(playerCount==1){
-        let time = commonUtil.randomFrom(5000,10000);
+    if (playerCount == 1) {
+        let time = commonUtil.randomFrom(5000, 10000);
         var robotSocket = userMgr.get(userId);
         var resData = {};
         resData.userId = userId;
-        setTimeout(function(){
-             exit(robotSocket,JSON.stringify(resData));
-        },time);
+        setTimeout(function () {
+            exit(robotSocket, JSON.stringify(resData));
+        }, time);
     }
 }
 
@@ -1090,7 +1103,7 @@ exports.checkCanExit = function(userId){
  * @param {*} socket
  * @param {*} data
  */
- function chat(socket, data) {
+function chat(socket, data) {
     var chatContent = data;
     userMgr.broacastInRoom('chat_push', { sender: socket.userId, content: chatContent }, socket.userId, true);
 }
@@ -1099,12 +1112,12 @@ exports.checkCanExit = function(userId){
  * @param {*} socket
  * @param {*} data
  */
- async function quickChat(socket, data) {
+async function quickChat(socket, data) {
     var userId = socket.userId;
     //检查传过来的userId是否有误
-let userid = await checkUserId(socket,userId);
-    console.log("userid",userid);
-    if(userid===1 || !userid ||userid!==userId){
+    let userid = await checkUserId(socket, userId);
+    console.log("userid", userid);
+    if (userid === 1 || !userid || userid !== userId) {
         socket.emit('system_error', { errcode: 500, errmsg: "传入的数据有误" });
         return;
     }
@@ -1125,12 +1138,12 @@ let userid = await checkUserId(socket,userId);
  * @param {*} socket
  * @param {*} data
  */
- async function voiceMsg(socket, data) {
+async function voiceMsg(socket, data) {
     var userId = socket.userId;
     //检查传过来的userId是否有误
-    let userid = await checkUserId(socket,userId);
-    console.log("userid",userid);
-    if(userid===1 || !userid ||userid!==userId){
+    let userid = await checkUserId(socket, userId);
+    console.log("userid", userid);
+    if (userid === 1 || !userid || userid !== userId) {
         socket.emit('system_error', { errcode: 500, errmsg: "传入的数据有误" });
         return;
     }
@@ -1150,7 +1163,7 @@ let userid = await checkUserId(socket,userId);
  * @param {*} socket
  * @param {*} data
  */
- function emoji(socket, data) {
+function emoji(socket, data) {
     var phizId = data;
     userMgr.broacastInRoom('emoji_push', { sender: socket.userId, content: phizId }, socket.userId, true);
 }
@@ -1159,16 +1172,16 @@ let userid = await checkUserId(socket,userId);
  * @param {*} socket
  * @param {*} data
  */
- async function grantProp(socket, data) {
+async function grantProp(socket, data) {
     params = JSON.parse(data);
-    if (socket ||!socket.userId || !params.receiver || !params.prop_id || !params.prop_name) {
+    if (socket || !socket.userId || !params.receiver || !params.prop_id || !params.prop_name) {
         userMgr.sendMsg(socket.userId, "notice", '操作失败');
         return;
     }
     //检查传过来的userId是否有误
-    let userid = await checkUserId(socket,userId);
-    console.log("userid",userid);
-    if(userid===1 || !userid ||userid!==userId){
+    let userid = await checkUserId(socket, userId);
+    console.log("userid", userid);
+    if (userid === 1 || !userid || userid !== userId) {
         socket.emit('system_error', { errcode: 500, errmsg: "传入的数据有误" });
         return;
     }
@@ -1194,17 +1207,17 @@ let userid = await checkUserId(socket,userId);
             if (res.price == 0) {
                 ret.coins = player.coins;
                 userMgr.broacastInRoom("grant_prop_push", ret, socket.userId, true);
-            }else{
-                if(player.coins<res.price){
-                    socket.emit('system_error',{errcode:500,errmsg:'金币不足，无法使用该道具'})
-                }else{
+            } else {
+                if (player.coins < res.price) {
+                    socket.emit('system_error', { errcode: 500, errmsg: '金币不足，无法使用该道具' })
+                } else {
                     let propPrice = res.price;
                     rechargeService.changeUserCoins(socket.userId, -res.price, (err, res) => {
                         if (err || !res) {
                             userMgr.sendMsg(socket.userId, "notice", '操作失败');
                             return
                         }
-                        player.updateCoins(player.coins-propPrice);
+                        player.updateCoins(player.coins - propPrice);
                         ret.coins = player.coins;
                         userMgr.broacastInRoom("grant_prop_push", ret, socket.userId, true);
                     })

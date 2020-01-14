@@ -605,7 +605,7 @@ module.exports = {
             if (err) (
                 callback(err)
             )
-            let sql = `select fk_player_id,username,play_duration,win_score,game.jifen,game.roomId,jushu,game_type,seatCount,users.headimg from t_game_record as game,t_users as users 
+            let sql = `select fk_player_id,username,play_duration,win_score,game.jifen,game.roomId,jushu,game_type,seatCount,users.headimg,game.user_type from t_game_record as game,t_users as users 
             where game.roomId in ? 
             and play_duration>=? 
             and users.userid=game.fk_player_id
@@ -646,7 +646,7 @@ module.exports = {
 * 获得玩家某日盈利
 */
     getSomeDayProfit(user_id, BeginTimestamp, EndTime, callback) {
-        let sql = "select sum(win_score) as sum_win from t_game_record where fk_player_id=? and win_score>0 and play_duration>? and play_duration<?s"
+        let sql = "select sum(win_score) as sum_win from t_game_record where fk_player_id=? and win_score>0 and play_duration>? and play_duration<?"
         db.queryForObject(sql, [user_id, BeginTimestamp, EndTime], callback)
     },
 
