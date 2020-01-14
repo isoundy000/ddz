@@ -74,10 +74,10 @@ module.exports = {
                         args.push(userId);
                         //console.log("******充值完成，更新玩家信息：" + sql);
                         db.update(sql, args, callback);
-                    }else{
+                    } else {
                         var error = {};
                         error.msg = 'order has changed';
-                        callback(null,error);
+                        callback(null, error);
                     }
                 } else {
                     var error = {};
@@ -112,12 +112,12 @@ module.exports = {
         db.update(sql, args, callback);
     },
 
-        /**
-     * 修改玩家积分
-     * @param {*} user_id 玩家id
-     * @param {*} change_count 修改数量
-     * @param {*} callback 
-     */
+    /**
+ * 修改玩家积分
+ * @param {*} user_id 玩家id
+ * @param {*} change_count 修改数量
+ * @param {*} callback 
+ */
     changeUserJifen(user_id, change_count, callback) {
         let sql = "update t_users set jifen=jifen+? where userid=?";
         let args = [];
@@ -211,7 +211,7 @@ module.exports = {
      *  @param {string} treasure_type 货币类型 "coins"、"gems
      * @param {boolean} not_change 是否在数据库修改金币
      */
-    async changeUserGoldsAndSaveBankStatementAsync(user_id, change_count, change_type, remark, treasure_type, not_change,uid,lv) {
+    async changeUserGoldsAndSaveBankStatementAsync(user_id, change_count, change_type, remark, treasure_type, not_change, uid, lv) {
         return new Promise(async (resolve, reject) => {
             try {
                 if (treasure_type != "coins" && treasure_type != "gems") {
@@ -349,10 +349,10 @@ module.exports = {
      * @param {*} remark 备注，写明变化原因
      * @param {*} callback 
      */
-    async changeUserGoldsAndSaveConsumeRecordAsync(user_id, consume_count, consume_game, consume_type, remark,roomId,clubId) {
+    async changeUserGoldsAndSaveConsumeRecordAsync(user_id, consume_count, consume_game, consume_type, remark, roomId, clubId) {
         return new Promise(async (resolve, reject) => {
             try {
-                if (consume_type != "coins" && consume_type != "gems" &&consume_type != "jifen") {
+                if (consume_type != "coins" && consume_type != "gems" && consume_type != "jifen") {
                     reject("consume_type:参数错误" + consume_type);
                     return;
                 }
@@ -371,7 +371,7 @@ module.exports = {
                         else if (consume_type == "gems") {
                             self.changeUserGems(user_id, consume_count, cb);
                         }
-                        else if(consume_type == "jifen") {
+                        else if (consume_type == "jifen") {
                             self.changeUserJifen(user_id, consume_count, cb);
                         }
                     },
@@ -385,7 +385,7 @@ module.exports = {
                         }
                         else if (consume_type == "gems") {
                             consume_record.consume_before = user_info.gems;
-                        }else if(consume_type == "jifen"){
+                        } else if (consume_type == "jifen") {
                             consume_record.consume_before = user_info.jifen;
                         }
                         consume_record.consume_count = consume_count;
@@ -414,19 +414,19 @@ module.exports = {
             console.log(`rechargeService:G:391 ${err}`);
         })
     },
-        /**
-     * 存储游戏场中总的金币输赢的信息
-     * @param {*} user_id 玩家ID
-     * @param {*} consume_count 消费金额
-     * @param {*} consume_game 在哪个游戏里的消费 zzmj 郑州麻将 hjmj 获嘉麻将  xlch  血流成河  xzdd 血战到底
-     * @param {*} consume_type 消费类型 coins 金币消费
-     * @param {*} remark 备注，写明变化原因
-     * @param {*} callback 
-     */
-    async changeUserGoldsAndSaveConsumeRecordAsyncA(user_id, consume_count, consume_game, consume_type, remark,all) {
+    /**
+ * 存储游戏场中总的金币输赢的信息
+ * @param {*} user_id 玩家ID
+ * @param {*} consume_count 消费金额
+ * @param {*} consume_game 在哪个游戏里的消费 zzmj 郑州麻将 hjmj 获嘉麻将  xlch  血流成河  xzdd 血战到底
+ * @param {*} consume_type 消费类型 coins 金币消费
+ * @param {*} remark 备注，写明变化原因
+ * @param {*} callback 
+ */
+    async changeUserGoldsAndSaveConsumeRecordAsyncA(user_id, consume_count, consume_game, consume_type, remark, all) {
         return new Promise(async (resolve, reject) => {
             try {
-                if (consume_type != "coins" && consume_type != "gems" &&consume_type != "jifen") {
+                if (consume_type != "coins" && consume_type != "gems" && consume_type != "jifen") {
                     reject("consume_type:参数错误" + consume_type);
                     return;
                 }
@@ -445,7 +445,7 @@ module.exports = {
                         else if (consume_type == "gems") {
                             self.changeUserGems(user_id, consume_count, cb);
                         }
-                        else if(consume_type == "jifen") {
+                        else if (consume_type == "jifen") {
                             self.changeUserJifen(user_id, consume_count, cb);
                         }
                     },
@@ -459,7 +459,7 @@ module.exports = {
                         }
                         else if (consume_type == "gems") {
                             consume_record.consume_before = user_info.gems;
-                        }else if(consume_type == "jifen"){
+                        } else if (consume_type == "jifen") {
                             consume_record.consume_before = user_info.jifen;
                         }
                         consume_record.consume_count = consume_count;
@@ -527,16 +527,16 @@ module.exports = {
         db.queryForList(1, 20, sql, args, callback);
     },
 
-        /**
-     * 获取战绩
-     * @param {*} user_id 
-     * @param {*} callback 
-     */
-    getMeClubZhanji(user_id,BeginTimestamp,pagenum,size,club_id, callback) {
+    /**
+ * 获取战绩
+ * @param {*} user_id 
+ * @param {*} callback 
+ */
+    getMeClubZhanji(user_id, BeginTimestamp, pagenum, size, club_id, callback) {
         let sql0 = "select roomId from t_game_record where play_duration>=? and fk_player_id=? and club_id=?"
-        let args = [BeginTimestamp,user_id,club_id];
-        db.queryForAll( sql0, args, function(err,res){
-            if(err)(
+        let args = [BeginTimestamp, user_id, club_id];
+        db.queryForAll(sql0, args, function (err, res) {
+            if (err) (
                 callback(err)
             )
             let sql = `select fk_player_id,username,play_duration,win_score,game.jifen,game.roomId,jushu,game_type,seatCount,users.headimg from t_game_record as game,t_users as users 
@@ -546,30 +546,30 @@ module.exports = {
             and game.sum_all = 1
             order by record_time DESC`
             let res2 = []
-            for (let i of res){
+            for (let i of res) {
                 res2.push(i.roomId)
             }
-            if(res2.length==0){
-                callback(err,[])
+            if (res2.length == 0) {
+                callback(err, [])
                 return;
             }
             // console.log("res2",res2)
-            let args2 = [[res2],BeginTimestamp];
+            let args2 = [[res2], BeginTimestamp];
             db.queryForList(pagenum, size, sql, args2, callback);
         });
 
     },
 
-            /**
-     * 获取俱乐部所有战绩
-     * @param {*} user_id 
-     * @param {*} callback 
-     */
-    getClubZhanji(BeginTimestamp,pagenum,size,club_id, callback) {
+    /**
+* 获取俱乐部所有战绩
+* @param {*} user_id 
+* @param {*} callback 
+*/
+    getClubZhanji(BeginTimestamp, pagenum, size, club_id, callback) {
         let sql0 = "select roomId from t_game_record where play_duration>=? and club_id=?"
-        let args = [BeginTimestamp,club_id];
-        db.queryForAll( sql0, args, function(err,res){
-            if(err)(
+        let args = [BeginTimestamp, club_id];
+        db.queryForAll(sql0, args, function (err, res) {
+            if (err) (
                 callback(err)
             )
             let sql = `select fk_player_id,username,play_duration,win_score,game.jifen,game.roomId,jushu,game_type,seatCount,users.headimg from t_game_record as game,t_users as users 
@@ -579,52 +579,77 @@ module.exports = {
             and game.sum_all = 1
             order by record_time DESC`
             let res2 = []
-            for (let i of res){
+            for (let i of res) {
                 res2.push(i.roomId)
             }
-            if(res2.length==0){
-                callback(err,[])
+            if (res2.length == 0) {
+                callback(err, [])
                 return;
             }
             // console.log("res2",res2)
-            let args2 = [[res2],BeginTimestamp];
+            let args2 = [[res2], BeginTimestamp];
             db.queryForList(pagenum, size, sql, args2, callback);
         });
 
     },
 
-            /**
-     * 获取俱乐部与我相关的战绩
-     * @param {*} user_id 
-     * @param {*} callback 
-     */
-    getZhanji(user_id,BeginTimestamp,pagenum,size, callback) {
+    /**
+* 获取俱乐部与我相关的战绩
+* @param {*} user_id 
+* @param {*} callback 
+*/
+    getZhanji(user_id, BeginTimestamp, pagenum, size, callback) {
         let sql0 = "select roomId from t_game_record where play_duration>=? and fk_player_id=?"
-        let args = [BeginTimestamp,user_id];
-        db.queryForAll( sql0, args, function(err,res){
-            if(err)(
+        let args = [BeginTimestamp, user_id];
+        db.queryForAll(sql0, args, function (err, res) {
+            if (err) (
                 callback(err)
             )
             let sql = `select fk_player_id,username,play_duration,win_score,game.jifen,game.roomId,jushu,game_type,seatCount,users.headimg from t_game_record as game,t_users as users 
             where game.roomId in ? 
             and play_duration>=? 
             and users.userid=game.fk_player_id
-            and game.sum_all = 1
             order by record_time DESC`
             let res2 = []
-            for (let i of res){
+            for (let i of res) {
                 res2.push(i.roomId)
             }
-            if(res2.length==0){
-                callback(err,[])
+            if (res2.length == 0) {
+                callback(err, [])
                 return;
             }
             // console.log("res2",res2)
-            let args2 = [[res2],BeginTimestamp];
+            let args2 = [[res2], BeginTimestamp];
             db.queryForList(pagenum, size, sql, args2, callback);
         });
 
     },
+
+
+    /**
+     * 获得玩家玩的总局数
+     */
+    getAlljushu(user_id, callback) {
+        let sql = "select count(fk_player_id) from t_game_record where fk_player_id=?"
+        db.queryForObject(sql, [user_id], callback)
+    },
+
+    /**
+ * 获得玩家最高盈利
+ */
+    getAlljushu(user_id, callback) {
+        let sql = "select sum(win_score) ,count(fk_player_id) from t_game_record where fk_player_id=? and win_score>0"
+        db.queryForObject(sql, [user_id], callback)
+    },
+
+    /**
+* 获得玩家某日盈利
+*/
+    getAlljushu(user_id, BeginTimestamp, EndTime, callback) {
+        let sql = "select sum(win_score) from t_game_record where fk_player_id=? and win_score>0 and play_duration>? and play_duration<?s"
+        db.queryForObject(sql, [user_id, BeginTimestamp, EndTime], callback)
+    },
+
     /**
      * 保存银行流水记录
      */

@@ -26,30 +26,30 @@ let qian_time;//前一次登录时间
 var dateTemp = new Date().getDate() //日期暂存
 setInterval(() => {
     var currentDate = new Date().getDate()//当前几号
-    if(currentDate>dateTemp){
+    if (currentDate > dateTemp) {
 
-        activityService.updateFlag(function(err,result){
-            if(err){
+        activityService.updateFlag(function (err, result) {
+            if (err) {
                 console.log("mysql出错")
             }
         })
 
     }
-    activityService.getALLSignIn(function(err,result){
-        if(err){
+    activityService.getALLSignIn(function (err, result) {
+        if (err) {
             console.log("mysql 出错")
         }
         let nowTime = new Date().getTime();
-        for(let i of result){
-            let timeDiff = nowTime-i.last_sign_timeStamp;
-            let dayDiff = timeDiff/3600/24
-            if(dayDiff>=1){
+        for (let i of result) {
+            let timeDiff = nowTime - i.last_sign_timeStamp;
+            let dayDiff = timeDiff / 3600 / 24
+            if (dayDiff >= 1) {
                 let signInfo = JSON.parse(i.signInfo)
-                for(let i in signInfo){
-                    if(signInfo[i]==-1){
-                        signInfo[i]=0;
+                for (let i in signInfo) {
+                    if (signInfo[i] == -1) {
+                        signInfo[i] = 0;
                         signInfo = JSON.stringify(signInfo)
-                        activityService.updateSignInfo(signInfo,i.player_id)
+                        activityService.updateSignInfo(signInfo, i.player_id)
                     }
                 }
             }
@@ -109,33 +109,33 @@ app.all('*', function (req, res, next) {
     next();
 });
 //防重复登录
-function checkSession(req,res,callback){
+function checkSession(req, res, callback) {
     let session = req.query.session;
     let userId = req.query.userId;
-    console.log("校验session",session);
-    if(session){
-        redis.get("session"+userId,function(err,value){
-            if(err){
-    
-                playerService.getUserSessionByUserId(userId,function(err,value){
-                    if(err){
+    console.log("校验session", session);
+    if (session) {
+        redis.get("session" + userId, function (err, value) {
+            if (err) {
+
+                playerService.getUserSessionByUserId(userId, function (err, value) {
+                    if (err) {
                         http.send(res, 1, "服务器错误,请稍后重试");
                         callback(1)
                         return;
                     }
-                    if(session!==value.session){
+                    if (session !== value.session) {
                         console.log("登录异常")
                         console.log(session)
                         console.log(value.session)
                         console.log(value)
-                        http.send(res,1,"登录1异常",{exit:1})
+                        http.send(res, 1, "登录1异常", { exit: 1 })
                         callback(1)
                         return;
                     }
                 })
             }
-            if(session!==value){
-                http.send(res,1,"登录异常",{exit:1})
+            if (session !== value) {
+                http.send(res, 1, "登录异常", { exit: 1 })
                 console.log(session)
                 console.log(value)
                 console.log("登录异常2")
@@ -146,45 +146,45 @@ function checkSession(req,res,callback){
         })
     }
 
-    
+
 }
 //检查登录间隔是否大于一天
-app.get("/check_login_jiange",function(req,res){
+app.get("/check_login_jiange", function (req, res) {
     let userId = req.query.userId
-    checkSession(req,res,function(err){
-        if(err){
+    checkSession(req, res, function (err) {
+        if (err) {
             return;
         }
-        playerService.getUserBaseInfo(userId,function(err,result){
-            if(err){
-                http.send(res,1,"获取最新登录时间出错")
+        playerService.getUserBaseInfo(userId, function (err, result) {
+            if (err) {
+                http.send(res, 1, "获取最新登录时间出错")
             }
-            if (qian_time){
+            if (qian_time) {
                 let ltime = result.last_login_time
-                let jg = parseInt(ltime,10)-parseInt(qian_time,10)
-                let d = Math.floor(jg/3600/24)
-                let is = d<1
-                activityService.getSignIn(userId,function(err,result){
-                    if (err){
-                        http.send(res,1,"获取签到次数出错")
+                let jg = parseInt(ltime, 10) - parseInt(qian_time, 10)
+                let d = Math.floor(jg / 3600 / 24)
+                let is = d < 1
+                activityService.getSignIn(userId, function (err, result) {
+                    if (err) {
+                        http.send(res, 1, "获取签到次数出错")
                     }
-                    if(result){
+                    if (result) {
                         var days = result.current_sign_in
                         console.log(days)
-                        if(!days){days=0}
-                    }else{
-                        days=0
+                        if (!days) { days = 0 }
+                    } else {
+                        days = 0
                     }
                     console.log(days)
-                    http.send(res,0,"ok",{is:is,days:days})
+                    http.send(res, 0, "ok", { is: is, days: days })
                 })
-                
-        
+
+
             }
         });
     });
 
-    
+
 })
 /**
  * 用户登录
@@ -235,24 +235,24 @@ app.get('/login', function (req, res) {
                                 user_data.club_id = user_data.belongs_club;
                                 user_data.ip = ip;
                                 // flag = true;
-                                
-                                activityService.getSignIn(userId,function(err,result){
-                                    if (err){
-                                        http.send(res,1,"获取flag出错")
+
+                                activityService.getSignIn(userId, function (err, result) {
+                                    if (err) {
+                                        http.send(res, 1, "获取flag出错")
                                     }
-                                    if(result){
+                                    if (result) {
                                         var flag = result.flag
-                                        
-                                        if(!flag){flag="true"}
-                                    }else{
-                                        flag="true"
+
+                                        if (!flag) { flag = "true" }
+                                    } else {
+                                        flag = "true"
                                     }
                                     user_data.flag = flag;
                                     console.log(flag)
                                     http.send(res, 0, "ok", user_data);
                                 })
-                                
-                                
+
+
                             }
                         })
                     } else {
@@ -269,7 +269,7 @@ app.get('/login', function (req, res) {
     })
 });
 
-app.get("/enter_room",async (req,res)=>{
+app.get("/enter_room", async (req, res) => {
     var userId = parseInt(req.query.userId);
     var name = req.query.name;
     var roomId = req.query.roomId;
@@ -285,47 +285,47 @@ app.get("/enter_room",async (req,res)=>{
         http.send(res, 1, "invalid parameters");
         return;
     }
-    
+
     console.log("enter_roomm")
-    let room_type =await commonService.getTableValuesAsync("room_type","t_rooms",{id:roomId});
-    
-    if ( !room_type ) {
+    let room_type = await commonService.getTableValuesAsync("room_type", "t_rooms", { id: roomId });
+
+    if (!room_type) {
         http.send(res, 1, "房间不存在");
         return;
     }
-    if(room_type.room_type === "niuniu"){
+    if (room_type.room_type === "niuniu") {
         let niuniu = configs.coinNIUNIU();
         let ip = niuniu.HALL_IP;
         let port = niuniu.HTTP_PORT;
-        let url = "http://"+ip+":"+port+"/enter_room";
-        http.get2(url,{roomId:roomId,userId:userId,headimg:headimg,name:name,gems:gems,coins:coins,sex:sex,is_robot:is_robot,ctrl_param:ctrl_param},false,function(err,data){
-            if(err){
-                http.send(res,1,err)
+        let url = "http://" + ip + ":" + port + "/enter_room";
+        http.get2(url, { roomId: roomId, userId: userId, headimg: headimg, name: name, gems: gems, coins: coins, sex: sex, is_robot: is_robot, ctrl_param: ctrl_param }, false, function (err, data) {
+            if (err) {
+                http.send(res, 1, err)
             }
-            console.log("room_type",room_type)
+            console.log("room_type", room_type)
             // let data1 = JSON.parse(data)
             data.room_type = "niuniu"
-        res.send(data);
-        return;
+            res.send(data);
+            return;
         });
     }
-    if(room_type.room_type === "paodekuai"){
+    if (room_type.room_type === "paodekuai") {
         let paodekuai = configs.game_server_paodekuai();
         let ip = paodekuai.HALL_IP;
         let port = paodekuai.HTTP_PORT;
-        let url = "http://"+ip+":"+port+"/enter_room";
-        http.get2(url,{roomId:roomId,userId:userId,headimg:headimg,name:name,gems:gems,coins:coins,sex:sex,is_robot:is_robot,ctrl_param:ctrl_param},false,function(err,data){
-            if(err){
-                http.send(res,1,err)
+        let url = "http://" + ip + ":" + port + "/enter_room";
+        http.get2(url, { roomId: roomId, userId: userId, headimg: headimg, name: name, gems: gems, coins: coins, sex: sex, is_robot: is_robot, ctrl_param: ctrl_param }, false, function (err, data) {
+            if (err) {
+                http.send(res, 1, err)
                 return;
             }
-            console.log("room_type",room_type)
+            console.log("room_type", room_type)
             // let data1 = JSON.parse(data)
             data.room_type = "paodekuai"
-        res.send(data);
+            res.send(data);
         });
     }
-    
+
 })
 app.get('/create_user', function (req, res) {
     if (!check_account(req, res)) {
@@ -381,7 +381,7 @@ app.get('/create_private_room', async (req, res) => {
                 http.send(res, 1, "不是代理,无法代开房间");
                 return
             }
-            room_service.createRoom(account, userId, conf,sex, function (err, data) {
+            room_service.createRoom(account, userId, conf, sex, function (err, data) {
                 if (err == 0 && data != null) {
                     rechargeService.changeUserGoldsAndSaveConsumeRecord(userId, -data.cost, _conf.type,
                         "gems", `[${GameType[_conf.type]}]房间号[${data.roomId}]代开扣除的房卡`, (err, results) => {
@@ -545,7 +545,7 @@ app.get('/enter_private_room', async function (req, res) {
         //     }
         // }
         //金币结算是否足够进入
-        if (room_conf.jinbijiesuan && user_info.roomid != room_results.id && room_conf.kindId != "008" && room_conf.kindId != "009"&& room_conf.kindId != "010") {
+        if (room_conf.jinbijiesuan && user_info.roomid != room_results.id && room_conf.kindId != "008" && room_conf.kindId != "009" && room_conf.kindId != "010") {
             if (user_info.coins < room_conf.limit_coins) {
                 http.send(res, 1, "金币不足无法进入");
                 return;
@@ -564,13 +564,13 @@ app.get('/enter_private_room', async function (req, res) {
                 };
 
                 //特殊处理闲逸牛牛的密码房
-                if(room_conf.password){
+                if (room_conf.password) {
                     ret.password = room_conf.password;
                 }
 
                 ret.sign = crypto.md5(roomId + ret.token + ret.time + config.hall_server().ROOM_PRI_KEY);
                 http.send(res, 0, "ok", ret);
-            }else {
+            } else {
                 http.send(res, errcode, enterInfo);
             }
         });
@@ -615,7 +615,7 @@ app.get('/enter_private_room', async function (req, res) {
 /**
  * 检测房间游戏是否正在游戏中(针对麻将房，代理解散代开房间)
  */
-app.get('/check_room_is_gaming',async (req, res)=>{
+app.get('/check_room_is_gaming', async (req, res) => {
     if (!check_account(req, res)) {
         return;
     }
@@ -624,15 +624,15 @@ app.get('/check_room_is_gaming',async (req, res)=>{
         http.send(res, -1, "参数错误")//"room_id没传");
         return;
     }
-    let roomInfo = await commonService.getTableValuesAsync('*', 't_rooms', {id: room_id,});
-    if(!roomInfo){
+    let roomInfo = await commonService.getTableValuesAsync('*', 't_rooms', { id: room_id, });
+    if (!roomInfo) {
         http.send(res, -1, "房间不存在，或已被解散")//"room_id没传");
         return;
     }
     let playerCount = 0;
     for (var i = 0; i < 4; i++) {
         var userId = roomInfo["user_id" + i];
-        if(userId&&userId!=0){
+        if (userId && userId != 0) {
             playerCount++;
         }
     }
@@ -1033,7 +1033,7 @@ app.get("/authenticated", async (req, res) => {
         http.send(res, 1, "参数错误");
         return;
     }
-    if(account.indexOf('guest_')>-1){
+    if (account.indexOf('guest_') > -1) {
         http.send(res, 1, "网页注册用户不支持认证");
         return;
     }
@@ -1053,7 +1053,7 @@ app.get("/authenticated", async (req, res) => {
 
     //判断手机号是否已被使用
     let userInfo = await commonService.getTableValuesAsync("*", "t_userinfo", { phone: phone });
-    if(userInfo){
+    if (userInfo) {
         http.send(res, 1, "该手机号已被使用,请更换手机号重新提交认证");
         return;
     }
@@ -1138,33 +1138,33 @@ app.get('/get_bank_statement', (req, res) => {
     })
 })
 //获取战绩
-app.get("/get_zj",function(req,res){
+app.get("/get_zj", function (req, res) {
     let userId = req.query.userId;
     let nowDay = dateUtil.getToday();
     let pagenum = req.query.pagenum;
     let size = req.query.size;
-    if(!userId){
-        http.send(res,1,"参数错误")
+    if (!userId) {
+        http.send(res, 1, "参数错误")
         return
     }
-    if(!pagenum){
-        pagenum=1;
+    if (!pagenum) {
+        pagenum = 1;
     }
-    if(!size){
+    if (!size) {
         size = 200;
     }
     let nowBeginTimestamp = dateUtil.getBeginTimestamp(nowDay)
-    rechargeService.getZhanji(userId,nowBeginTimestamp,pagenum,size,function(err,result){
+    rechargeService.getZhanji(userId, nowBeginTimestamp, pagenum, size, function (err, result) {
         let paodekuai = [];
         let niuniu = [];
-        let re={};
+        let re = {};
         let temp = {};
-        if(err){
+        if (err) {
             console.log(err)
-            http.send(res,1,"服务器异常请稍后重试")
-        }else{
-            for(let i of result){
-                let dict={};
+            http.send(res, 1, "服务器异常请稍后重试")
+        } else {
+            for (let i of result) {
+                let dict = {};
                 dict.roomId = i.roomId;
                 dict.time = dateUtil.timestampToDate(i.play_duration);
                 console.log(i.play_duration)
@@ -1174,70 +1174,84 @@ app.get("/get_zj",function(req,res){
                 dict.jushu = i.jushu;
                 let roomId = i.roomId;
                 let userId = i.fk_player_id;
-                let users={};
+                let users = {};
                 users.userId = userId;
                 users.name = crypto.fromBase64(i.username);
                 users.win_score = i.win_score;
                 users.headimg = i.headimg;
                 users.jifen = i.jifen;
                 // users.time = dateUtil.timestampToDate(i.record_time);
-                if(temp[roomId]){
+                if (temp[roomId]) {
                     temp[roomId].usersInfo.push(users);
-                }else{
+                } else {
                     temp[roomId] = dict;
-                    temp[roomId].usersInfo=[];
+                    temp[roomId].usersInfo = [];
 
                     temp[roomId].usersInfo.push(users);
-                    
+
                 }
-                
-                
+
+
             }
             // console.log(temp)
-            for (let i in temp){
-                
-                if(temp[i].game_type =="game_server_paodekuai"){
+            for (let i in temp) {
+
+                if (temp[i].game_type == "game_server_paodekuai") {
                     paodekuai.push(temp[i])
-                }else if(temp[i].game_type =="niuniu"){
+                } else if (temp[i].game_type == "niuniu") {
                     niuniu.push(temp[i]);
                 }
                 delete temp[i].game_type;
             }
             re.paodekuai = paodekuai;
-            re.niuniu=niuniu;
-            http.send(res,0,"ok",re)
+            re.niuniu = niuniu;
+            http.send(res, 0, "ok", re)
         }
     });
 })
+
+//获取个人信息
+app.get("get_userInfo", function (req, res) {
+    let userId = req.query.userId
+    let nowDay = dateUtil.getToday();
+    //获取今天的时间串
+    let today = dateUtil.dateFormat(new Date(), 'yyyyMMdd');
+    //获取昨天的时间串
+    let yesterday = dateUtil.getYesterdayTime('yyyyMMdd');
+    let nowBeginTimestamp = dateUtil.getBeginTimestamp(nowDay)
+    async.auto({
+
+    })
+})
 //获得俱乐部与我相关战绩
-app.get("/get_me_club_zj",function(req,res){
+app.get("/get_me_club_zj", function (req, res) {
     let userId = req.query.userId;
     let club_id = req.query.clubId
     let nowDay = dateUtil.getToday();
     let pagenum = req.query.pagenum;
     let size = req.query.size;
-    if(!userId){
-        http.send(res,1,"参数错误")
+    if (!userId) {
+        http.send(res, 1, "参数错误")
         return
     }
-    if(!pagenum){
-        pagenum=1;
+    if (!pagenum) {
+        pagenum = 1;
     }
-    if(!size){
+    if (!size) {
         size = 200;
     }
     let nowBeginTimestamp = dateUtil.getBeginTimestamp(nowDay)
-    rechargeService.getMeClubZhanji(userId,nowBeginTimestamp,pagenum,size,club_id,function(err,result){
+    rechargeService.getMeClubZhanji(userId, nowBeginTimestamp, pagenum, size, club_id, function (err, result) {
         let paodekuai = [];
         let niuniu = [];
-        let re={};
+        let re = {};
         let temp = {};
-        if(err){
+        if (err) {
             console.log(err)
-            http.send(res,1,"服务器异常请稍后重试")
-        }else{
-            for(let i of result){
-                let dict={};
+            http.send(res, 1, "服务器异常请稍后重试")
+        } else {
+            for (let i of result) {
+                let dict = {};
                 dict.roomId = i.roomId;
                 dict.time = dateUtil.timestampToDate(i.play_duration);
                 console.log(i.play_duration)
@@ -1247,43 +1261,43 @@ app.get("/get_me_club_zj",function(req,res){
                 dict.jushu = i.jushu;
                 let roomId = i.roomId;
                 let userId = i.fk_player_id;
-                let users={};
+                let users = {};
                 users.userId = userId;
                 users.name = crypto.fromBase64(i.username);
                 users.win_score = i.win_score;
                 users.headimg = i.headimg;
                 users.jifen = i.jifen;
                 // users.time = dateUtil.timestampToDate(i.record_time);
-                if(temp[roomId]){
+                if (temp[roomId]) {
                     temp[roomId].usersInfo.push(users);
-                }else{
+                } else {
                     temp[roomId] = dict;
-                    temp[roomId].usersInfo=[];
+                    temp[roomId].usersInfo = [];
 
                     temp[roomId].usersInfo.push(users);
-                    
+
                 }
-                
-                
+
+
             }
             // console.log(temp)
-            for (let i in temp){
-                
-                if(temp[i].game_type =="game_server_paodekuai"){
+            for (let i in temp) {
+
+                if (temp[i].game_type == "game_server_paodekuai") {
                     paodekuai.push(temp[i])
-                }else if(temp[i].game_type =="niuniu"){
+                } else if (temp[i].game_type == "niuniu") {
                     niuniu.push(temp[i]);
                 }
                 delete temp[i].game_type;
             }
             re.paodekuai = paodekuai;
-            re.niuniu=niuniu;
-            http.send(res,0,"ok",re)
+            re.niuniu = niuniu;
+            http.send(res, 0, "ok", re)
         }
     });
 })
 
-app.get("/update_club",function(req,res){
+app.get("/update_club", function (req, res) {
     let clubId = req.query.clubId
     let club_name = req.query.club_name
     let club_manifesto = req.query.club_manifesto
@@ -1291,44 +1305,44 @@ app.get("/update_club",function(req,res){
     let status = req.query.status
     let check = req.query.check
     let private = req.query.private
-    if(!clubId|| !club_name|| !norank|| !status|| !check ||!private){
-        return http.send(res,1,"参数错误")
+    if (!clubId || !club_name || !norank || !status || !check || !private) {
+        return http.send(res, 1, "参数错误")
     }
-    club_server.updateClub(clubId,club_name,club_manifesto,norank,status,check,private,function(err,data){
-        if(err || !data){
-            return http.send(res,1,"服务器出错，请稍后再试")
+    club_server.updateClub(clubId, club_name, club_manifesto, norank, status, check, private, function (err, data) {
+        if (err || !data) {
+            return http.send(res, 1, "服务器出错，请稍后再试")
         }
-        return http.send(res,1,"修改成功")
+        return http.send(res, 1, "修改成功")
     })
 })
 //获得俱乐部与我相关战绩
-app.get("/get_club_zj",function(req,res){
+app.get("/get_club_zj", function (req, res) {
     let club_id = req.query(clubId)
     let nowDay = dateUtil.getToday();
     let pagenum = req.query.pagenum;
     let size = req.query.size;
-    if(!userId){
-        http.send(res,1,"参数错误")
+    if (!userId) {
+        http.send(res, 1, "参数错误")
         return
     }
-    if(!pagenum){
-        pagenum=1;
+    if (!pagenum) {
+        pagenum = 1;
     }
-    if(!size){
+    if (!size) {
         size = 200;
     }
     let nowBeginTimestamp = dateUtil.getBeginTimestamp(nowDay)
-    rechargeService.getClubZhanji(nowBeginTimestamp,pagenum,size,club_id,function(err,result){
+    rechargeService.getClubZhanji(nowBeginTimestamp, pagenum, size, club_id, function (err, result) {
         let paodekuai = [];
         let niuniu = [];
-        let re={};
+        let re = {};
         let temp = {};
-        if(err){
+        if (err) {
             console.log(err)
-            http.send(res,1,"服务器异常请稍后重试")
-        }else{
-            for(let i of result){
-                let dict={};
+            http.send(res, 1, "服务器异常请稍后重试")
+        } else {
+            for (let i of result) {
+                let dict = {};
                 dict.roomId = i.roomId;
                 dict.time = dateUtil.timestampToDate(i.play_duration);
                 console.log(i.play_duration)
@@ -1338,195 +1352,195 @@ app.get("/get_club_zj",function(req,res){
                 dict.jushu = i.jushu;
                 let roomId = i.roomId;
                 let userId = i.fk_player_id;
-                let users={};
+                let users = {};
                 users.userId = userId;
                 users.name = crypto.fromBase64(i.username);
                 users.win_score = i.win_score;
                 users.headimg = i.headimg;
                 users.jifen = i.jifen;
                 // users.time = dateUtil.timestampToDate(i.record_time);
-                if(temp[roomId]){
+                if (temp[roomId]) {
                     temp[roomId].usersInfo.push(users);
-                }else{
+                } else {
                     temp[roomId] = dict;
-                    temp[roomId].usersInfo=[];
-                    temp[roomId].usersInfo.push(users);   
+                    temp[roomId].usersInfo = [];
+                    temp[roomId].usersInfo.push(users);
                 }
             }
             // console.log(temp)
-            for (let i in temp){
-                
-                if(temp[i].game_type =="game_server_paodekuai"){
+            for (let i in temp) {
+
+                if (temp[i].game_type == "game_server_paodekuai") {
                     paodekuai.push(temp[i])
-                }else if(temp[i].game_type =="niuniu"){
+                } else if (temp[i].game_type == "niuniu") {
                     niuniu.push(temp[i]);
                 }
                 delete temp[i].game_type;
             }
             re.paodekuai = paodekuai;
-            re.niuniu=niuniu;
-            http.send(res,0,"ok",re)
+            re.niuniu = niuniu;
+            http.send(res, 0, "ok", re)
         }
     });
 })
 
 //获得俱乐部大赢家信息
-app.get("/get_club_winner",function(req,res){
+app.get("/get_club_winner", function (req, res) {
     let clubId = req.query.clubId;
     console.log(clubId)
-    if(!clubId){
-        return http.send(res,1,"参数错误");
+    if (!clubId) {
+        return http.send(res, 1, "参数错误");
     }
-    club_server.getWinNum(clubId,function(err,data){
-        if(err || !data){
+    club_server.getWinNum(clubId, function (err, data) {
+        if (err || !data) {
             console.log(err)
-            return http.send(res,1,"服务器出错，请稍后再试");
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
 
-        return http.send(res,0,"ok",data)
+        return http.send(res, 0, "ok", data)
     })
 
 })
 
 //获得俱乐部土豪榜信息
-app.get("/get_club_fail",function(req,res){
+app.get("/get_club_fail", function (req, res) {
     let clubId = req.query.clubId;
-    if(!clubId){
-        return http.send(res,1,"参数错误");
+    if (!clubId) {
+        return http.send(res, 1, "参数错误");
     }
-    club_server.getFailNum(clubId,function(err,data){
-        if(err || !data){
-            return http.send(res,1,"服务器出错，请稍后再试");
+    club_server.getFailNum(clubId, function (err, data) {
+        if (err || !data) {
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
-        return http.send(res,0,"ok",data)
+        return http.send(res, 0, "ok", data)
     })
 
 })
 
 //获得俱乐部积分榜信息
-app.get("/get_club_jifen",function(req,res){
+app.get("/get_club_jifen", function (req, res) {
     let clubId = req.query.clubId;
-    if(!clubId){
-        return http.send(res,1,"参数错误");
+    if (!clubId) {
+        return http.send(res, 1, "参数错误");
     }
-    club_server.getWinJifen(clubId,function(err,data){
-        if(err || !data){
-            return http.send(res,1,"服务器出错，请稍后再试");
+    club_server.getWinJifen(clubId, function (err, data) {
+        if (err || !data) {
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
-        return http.send(res,0,"ok",data)
+        return http.send(res, 0, "ok", data)
     })
 
 })
 
 //获得俱乐部负分榜信息
-app.get("/get_club_fufen",function(req,res){
+app.get("/get_club_fufen", function (req, res) {
     let clubId = req.query.clubId;
-    if(!clubId){
-        return http.send(res,1,"参数错误");
+    if (!clubId) {
+        return http.send(res, 1, "参数错误");
     }
-    club_server.getFaiJifen(clubId,function(err,data){
-        if(err || !data){
-            return http.send(res,1,"服务器出错，请稍后再试");
+    club_server.getFaiJifen(clubId, function (err, data) {
+        if (err || !data) {
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
-        return http.send(res,0,"ok",data)
+        return http.send(res, 0, "ok", data)
     })
 
 })
 //获得长时间未登陆的玩家
-app.get("/get_endTime_users",function(req,res){
+app.get("/get_endTime_users", function (req, res) {
     let clubId = req.query.clubId;
-    if(!clubId){
-        return http.send(res,1,"参数错误")
+    if (!clubId) {
+        return http.send(res, 1, "参数错误")
     }
-    let timeSapce = 3600*24*7
-    clubMgrService.getTimeOutUser(timeSapce,clubId,function(err,data){
-        if(err || !data){
-            return http.send(res,1,"服务器出错，请稍后再试");
+    let timeSapce = 3600 * 24 * 7
+    clubMgrService.getTimeOutUser(timeSapce, clubId, function (err, data) {
+        if (err || !data) {
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
-        for(let i of data){
+        for (let i of data) {
             i.name = crypto.fromBase64(i.name);
             i.last_login_time = dateUtil.timestampToDate(i.last_login_time)
         }
-        return http.send(res,0,"ok",data)
+        return http.send(res, 0, "ok", data)
     })
 })
 
 
 //获得所有俱乐部成员
-app.get("/get_all_club_users",function(req,res){
+app.get("/get_all_club_users", function (req, res) {
     let clubId = req.query.clubId;
-    if(!clubId){
-        return http.send(res,1,"参数错误")
+    if (!clubId) {
+        return http.send(res, 1, "参数错误")
     }
-    agentService.getAllClubUserInfoByClubId(clubId,function(err,data){
-        if(err || !data){
+    agentService.getAllClubUserInfoByClubId(clubId, function (err, data) {
+        if (err || !data) {
             console.log(err)
-            return http.send(res,1,"服务器出错，请稍后再试");
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
-        for(let i of data){
+        for (let i of data) {
             i.name = crypto.fromBase64(i.name);
             i.last_login_time = dateUtil.timestampToDate(i.last_login_time)
         }
-        return http.send(res,0,"ok",data)
+        return http.send(res, 0, "ok", data)
     });
 })
 
 //获得俱乐部已开的游戏房间信息
-app.get("/get_club_rooms",function(req,res){
+app.get("/get_club_rooms", function (req, res) {
     let clubId = req.query.clubId
-    if(!clubId){
-        return http.send(res,1,"参数错误")
+    if (!clubId) {
+        return http.send(res, 1, "参数错误")
 
     }
-    clubMgrService.getRoomUsersByClubid(clubId,function(err,result){
-        if(err){
+    clubMgrService.getRoomUsersByClubid(clubId, function (err, result) {
+        if (err) {
             console.log(err)
-            return http.send(res,1,"服务器异常")
+            return http.send(res, 1, "服务器异常")
         }
-        return http.send(res,0,"ok",result)
+        return http.send(res, 0, "ok", result)
     })
 })
 //快速组队
-app.get("/dash_team",(req,res)=>{
-    let args={
-        clubId : req.query.clubId,
-        userId : parseInt(req.query.userId),
-        name : req.query.name,
+app.get("/dash_team", (req, res) => {
+    let args = {
+        clubId: req.query.clubId,
+        userId: parseInt(req.query.userId),
+        name: req.query.name,
         // sign : req.query.sign,
-        gems : req.query.gems,
-        coins : req.query.coins,
-        headimg : req.query.headimg,
-        sex : req.query.sex,
-        is_robot : req.query.is_robot,
+        gems: req.query.gems,
+        coins: req.query.coins,
+        headimg: req.query.headimg,
+        sex: req.query.sex,
+        is_robot: req.query.is_robot,
     }
-    if(!args.clubId){
-        return http.send(res,1,"参数错误")
+    if (!args.clubId) {
+        return http.send(res, 1, "参数错误")
 
     }
     let hall_Server = configs.hall_server();
-    clubMgrService.getRoomUsersByClubid(args.clubId,function(err,result){
-        if(err){
+    clubMgrService.getRoomUsersByClubid(args.clubId, function (err, result) {
+        if (err) {
             console.log(err)
-            return http.send(res,1,"服务器异常")
+            return http.send(res, 1, "服务器异常")
         }
         // return http.send(res,1,"ok",result)
-        if(result.length==0){
-            return http.send(res,1,"无空余房间")
+        if (result.length == 0) {
+            return http.send(res, 1, "无空余房间")
         }
         // console.log("result",result)
         result = result.rooms
-        for(let i in result){
+        for (let i in result) {
             // console.log("result[i]",result[i])
-            if(result[i].seatCount>result[i].users.length){
+            if (result[i].seatCount > result[i].users.length) {
                 args.roomId = parseInt(i);
-                let url = "http://"+hall_Server.HALL_IP+":"+hall_Server.CLEINT_PORT+"/enter_room"
-                return http.get2(url,args,false,function(err,data){
-                    if(err){
-                        return http.send(res,1,"服务器异常，请稍后再试")
+                let url = "http://" + hall_Server.HALL_IP + ":" + hall_Server.CLEINT_PORT + "/enter_room"
+                return http.get2(url, args, false, function (err, data) {
+                    if (err) {
+                        return http.send(res, 1, "服务器异常，请稍后再试")
                     }
-                    if(data.errcode==0){
-                        http.send(res,0,"ok",{room_type:data.room_type,roomId:i})
-                    }else{
+                    if (data.errcode == 0) {
+                        http.send(res, 0, "ok", { room_type: data.room_type, roomId: i })
+                    } else {
                         res.send(data)
                     }
                 })
@@ -1536,121 +1550,121 @@ app.get("/dash_team",(req,res)=>{
 })
 
 //获得审核列表
-app.get("/get_apply_club_users",function(req,res){
+app.get("/get_apply_club_users", function (req, res) {
     let clubId = req.query.clubId;
     let userId = req.query.userId;
-    if(!clubId || !userId){
-        return http.send(res,1,"参数错误")
+    if (!clubId || !userId) {
+        return http.send(res, 1, "参数错误")
     }
-    club_server.getClubPermission(clubId,userId,function(err,data){
-        if(err || !data){
-            return http.send(res,1,"服务器出错，请稍后再试");
+    club_server.getClubPermission(clubId, userId, function (err, data) {
+        if (err || !data) {
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
         // return http.send(res,0,"ok",data)
-        if(data.userType==0){
-            return http.send(res,1,"您没有权限");
+        if (data.userType == 0) {
+            return http.send(res, 1, "您没有权限");
         }
-        club_server.getApplyListByClubId(clubId,function(err,data){
-            if(err || !data){
-                return http.send(res,1,"服务器出错，请稍后再试");
+        club_server.getApplyListByClubId(clubId, function (err, data) {
+            if (err || !data) {
+                return http.send(res, 1, "服务器出错，请稍后再试");
             }
-            for(let i of data){
+            for (let i of data) {
                 i.apply_username = crypto.fromBase64(i.apply_username);
                 i.apply_time = dateUtil.timestampToDate(i.apply_time)
             }
-            return http.send(res,0,"ok",data)
+            return http.send(res, 0, "ok", data)
         })
     })
 })
 
-app.get("/get_club_tongji",function(req,res){
+app.get("/get_club_tongji", function (req, res) {
     let clubId = req.query.clubId;
-    if(!clubId){
-        return http.send(res,1,"参数错误")
+    if (!clubId) {
+        return http.send(res, 1, "参数错误")
     }
-    club_server.getTongjiClub(clubId,function(err,value){
-        if(err ){
-            return http.send(res,1,"服务器出错，请稍后再试");
+    club_server.getTongjiClub(clubId, function (err, value) {
+        if (err) {
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
 
-        return http.send(res,0,"ok",value)
+        return http.send(res, 0, "ok", value)
     })
 
 })
 //同意玩家加入俱乐部
-app.get("/agree_join",function(req,res){
-    let  applyId= req.query.applyId;
-    if(!applyId){
-        return http.send(res,1,"参数错误")
+app.get("/agree_join", function (req, res) {
+    let applyId = req.query.applyId;
+    if (!applyId) {
+        return http.send(res, 1, "参数错误")
     }
-    club_server.agreeJoinClub(applyId,function(err,data){
-        if(err || !data){
-            return http.send(res,1,"服务器出错，请稍后再试");
+    club_server.agreeJoinClub(applyId, function (err, data) {
+        if (err || !data) {
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
-        if(data ==1){
-            return http.send(res,0,"玩家第一次加入俱乐部，赠送房卡");
+        if (data == 1) {
+            return http.send(res, 0, "玩家第一次加入俱乐部，赠送房卡");
         }
-        if(data==0){
-            return http.send(res,0,"成功");
+        if (data == 0) {
+            return http.send(res, 0, "成功");
         }
     })
 })
 
 //踢出俱乐部
-app.get("/hadLeftClub",function(req,res){
-    clubService.hadLeftClub(req,res)
+app.get("/hadLeftClub", function (req, res) {
+    clubService.hadLeftClub(req, res)
 })
 //拒绝玩家加入俱乐部
-app.get("/refuse_join",function(req,res){
-    let  applyId= req.query.applyId;
-    if(!applyId){
-        return http.send(res,1,"参数错误")
+app.get("/refuse_join", function (req, res) {
+    let applyId = req.query.applyId;
+    if (!applyId) {
+        return http.send(res, 1, "参数错误")
     }
-    club_server.refuseJoinClub(applyId,function(err,data){
-        if(err || !data){
-            return http.send(res,1,"服务器出错，请稍后再试");
+    club_server.refuseJoinClub(applyId, function (err, data) {
+        if (err || !data) {
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
-        if(data ==1){
-            return http.send(res,0,"成功");
+        if (data == 1) {
+            return http.send(res, 0, "成功");
         }
-        if(data==0){
-            return http.send(res,0,"失败");
+        if (data == 0) {
+            return http.send(res, 0, "失败");
         }
     })
 })
 
 //转让俱乐部
-app.get("/zhuanrang_club",function(req,res){
+app.get("/zhuanrang_club", function (req, res) {
     console.log(123132)
-    let  userId = req.query.userId;
+    let userId = req.query.userId;
     let clubId = req.query.clubId;
     let adminId = req.query.adminId;
-    if(!clubId || !userId){
-        return http.send(res,1,"参数错误")
+    if (!clubId || !userId) {
+        return http.send(res, 1, "参数错误")
     }
-    club_server.updateClubCreate(clubId,userId,adminId,function(err,data){
-        if(err || !data){
+    club_server.updateClubCreate(clubId, userId, adminId, function (err, data) {
+        if (err || !data) {
             console.log(err)
-            return http.send(res,1,"服务器出错，请稍后再试");
+            return http.send(res, 1, "服务器出错，请稍后再试");
         }
         console.log(data)
-        return http.send(res,1,"转让成功");
+        return http.send(res, 1, "转让成功");
     })
 })
 
-app.get("/update_userType",function(req,res){
+app.get("/update_userType", function (req, res) {
 
     let userId = req.query.userId;
     let clubId = req.query.clubId;
-    if(!userId || !clubId){
-        return http.send(res,1,"参数错误")
+    if (!userId || !clubId) {
+        return http.send(res, 1, "参数错误")
     }
-    clubMgrService.updateClueUserType(clubId,userId,1,function(err,data){
-        if(err){
+    clubMgrService.updateClueUserType(clubId, userId, 1, function (err, data) {
+        if (err) {
             console.log(err)
-            return http.send(res,1,"内部错误")
+            return http.send(res, 1, "内部错误")
         }
-        return http.send(res,1,"成功")
+        return http.send(res, 1, "成功")
     })
 })
 
@@ -1659,16 +1673,16 @@ app.get('/get_wx_kefu', (req, res) => {
     // if (!check_account(req, res)) {
     //     return;
     // }
-    
-    globalCfgService.getweixinCfg(function(err,result){
-        if(err){
+
+    globalCfgService.getweixinCfg(function (err, result) {
+        if (err) {
             console.log(err);
             return;
         }
-        http.send(res, 0, 'ok', {result:result});
+        http.send(res, 0, 'ok', { result: result });
         // console.log(result)
     })
-        
+
 
 })
 
@@ -1704,7 +1718,7 @@ app.get('/bind_recommender', (req, res) => {
         return;
     }
 
-    if(account.indexOf('guest_')>-1){
+    if (account.indexOf('guest_') > -1) {
         http.send(res, 1, "网页注册用户不支持绑定推荐人")
         return;
     }
@@ -1765,7 +1779,7 @@ app.get('/bind_recommender', (req, res) => {
                     rechargeService.changeUserGoldsAndSaveBankStatement(user_info.userid, send_golds, 4, `您绑定了推荐人${recommender_info.userid}，赠送金币`, "coins", callback);
                 },
                 //检测赠送抽奖次数
-                grantLuckDraw:async function(callback){
+                grantLuckDraw: async function (callback) {
                     //判断推荐的人数是否达到赠送条件  每推荐10人赠送一次抽奖次数
                     let recommendPlayerCount = await activityService.getRecommendPlayerCountAsync(recommender);
                     let queryParam = {};
@@ -1774,21 +1788,21 @@ app.get('/bind_recommender', (req, res) => {
                     let rewardCount = await activityService.getAwardedLuckDrawTimesAsync(queryParam);
 
                     //每满10人送一次抽奖
-                    if((recommendPlayerCount-rewardCount*10)>0&&(recommendPlayerCount-rewardCount*10)%10==0){
+                    if ((recommendPlayerCount - rewardCount * 10) > 0 && (recommendPlayerCount - rewardCount * 10) % 10 == 0) {
                         var rewardEntity = {};
                         rewardEntity.player_id = recommender;
                         rewardEntity.status = 0;
                         rewardEntity.remark = '推荐玩家满10人奖励';
                         rewardEntity.type = 1;
-                        rewardEntity.record_time = new Date().getTime()/1000;
-                        activityService.grantLuckDraw(rewardEntity,callback);
-                    }else{
-                        callback(null,1);
+                        rewardEntity.record_time = new Date().getTime() / 1000;
+                        activityService.grantLuckDraw(rewardEntity, callback);
+                    } else {
+                        callback(null, 1);
                     }
-                    
+
                 }
             }, (err, results) => {
-                if ( results == null) {
+                if (results == null) {
                     console.log(err);
                     http.send(res, 1, "内部错误。")
                     return
@@ -2014,34 +2028,34 @@ app.get('/get_user_info', async (req, res) => {
 //////////////////////@clubService 2018-06-30 update by hyw//////////////////////////////////////
 //玩家通俱乐部ID加入俱乐部
 //创建俱乐部
-app.get("/create_club",(req,res) =>{
-    clubService.createClubRoom(req,res)
+app.get("/create_club", (req, res) => {
+    clubService.createClubRoom(req, res)
 })
-app.get("/get_all_club_info",(req,res) =>{
+app.get("/get_all_club_info", (req, res) => {
     let userId = req.query.userId;
-    if(!userId){
-        return http.send(res,1,"参数错误")
+    if (!userId) {
+        return http.send(res, 1, "参数错误")
     }
-    club_server.getClubInfoByUserId(userId,function(err,result){
-        if(err){
+    club_server.getClubInfoByUserId(userId, function (err, result) {
+        if (err) {
             console.log(err)
-            return http.send(res,1,"服务器异常，请稍后重试")
+            return http.send(res, 1, "服务器异常，请稍后重试")
         }
-        for(let i of result){
+        for (let i of result) {
             i.name = crypto.fromBase64(i.name)
         }
-        console.log("result",result)
-        return http.send(res,0,"ok",{res:result})
+        console.log("result", result)
+        return http.send(res, 0, "ok", { res: result })
     })
 })
 
-app.get("/getClubInfoByclubId",function(req,res){
+app.get("/getClubInfoByclubId", function (req, res) {
     let club_id = req.query.clubId;
-    console.log("clubId",club_id)
-    if(!club_id){
-        return http.send(res,1,"参数错误")
+    console.log("clubId", club_id)
+    if (!club_id) {
+        return http.send(res, 1, "参数错误")
     }
-    clubService.getClubInfo(req,res);
+    clubService.getClubInfo(req, res);
 })
 app.get('/join_club_by_club_id', (req, res) => {
     if (!check_account(req, res)) {
@@ -2055,107 +2069,107 @@ app.get('/join_club_by_club_id', (req, res) => {
         http.send(res, 1, "参数错误")
         return
     }
-    console.log("club_id13",club_id)
-    clubMgrService.getClubInfoByClubId(club_id,function(err,data){
-        if(err){
-            return http.send(res,1,"服务器异常，请稍后重试")
-        }
-        if(data && data.check==0){
-            clubMgrService.getClubIdByuserId(user_id,function(err,value){
-                console.log(value);
-                if(err){
-                    callback(err,null)
-                }else{
-                    console.log("value",value[0].clubId)
-                    for(let i of value){
-                        console.log("i",i.clubId)
-                        if(i.clubId==club_id){
-                            return http.send(res,1,"你已在此俱乐部，请勿重复申请")
-                        }
-                        
-                    }
-                    clubService.joinClubByClubId(req,res);
-                }
-            })
-            
-        }else{
-                //发送俱乐部加入申请
-    console.log("发送俱乐部加入申请")
-    async.auto({
-        getUsersJoinedClub:function(callback){
-            clubMgrService.getClubIdByuserId(user_id,function(err,value){
-                console.log(value);
-                if(err){
-                    callback(err,null)
-                }else{
-                    // console.log("value",value)
-                    for(let i of value){
-                        console.log("i",i.clubId==club_id)
-                        console.log("i",i.clubId)
-                        console.log("i",club_id)
-                        if(i.clubId==club_id){
-                            return http.send(res,1,"你已在此俱乐部，请勿重复申请")
-                        }
-                    }
-                        console.log("jixu")
-                        callback(null,value)
-
-                }
-            })
-        },
-        getPlayerInfo:["getUsersJoinedClub",function (result,callback) {
-            playerService.getPlyaerInfoById(user_id, callback);
-        }],
-        //查看是否有未處理的加入俱樂部申請
-        isApplying:["getPlayerInfo",function (result,callback) {
-            clubMgrService.isApplying(user_id, club_id, callback);
-        }], 
-        saveApply: ['getPlayerInfo', 'isApplying', function (result, callback) {
-            //說明正在申請中
-            if (result.isApplying > 0) {
-                callback(null, 500);
-            } else {
-                var playerInfo = result.getPlayerInfo;
-                var applyEntity = {};
-                applyEntity.club_id = club_id;
-                applyEntity.apply_user = playerInfo.userid;
-                applyEntity.apply_username = playerInfo.name;
-                applyEntity.apply_time = dateUtil.getCurrentTimestapm();
-                clubMgrService.applyJoinClub(applyEntity, callback);
-            }
-        }]
-    }, function (err, resData) {
+    console.log("club_id13", club_id)
+    clubMgrService.getClubInfoByClubId(club_id, function (err, data) {
         if (err) {
-            console.log(err);
-            http.send(res, 1, "服务器错误,请稍后重试")
-            return;
-        } else {
-            if (resData.saveApply == 500) {
-                http.send(res, 0, "您已经提交了加入申请，请耐心等待管理员审核")
-            } else {
-                if (resData.saveApply.affectedRows > 0) {
-                    http.send(res, 0, "加入申请已提交，请耐心等待管理员审核")
-                } else {
-                    http.send(res, 1, "申请加入失败，请稍后重试")
-                }
-            }
+            return http.send(res, 1, "服务器异常，请稍后重试")
         }
-    });
+        if (data && data.check == 0) {
+            clubMgrService.getClubIdByuserId(user_id, function (err, value) {
+                console.log(value);
+                if (err) {
+                    callback(err, null)
+                } else {
+                    console.log("value", value[0].clubId)
+                    for (let i of value) {
+                        console.log("i", i.clubId)
+                        if (i.clubId == club_id) {
+                            return http.send(res, 1, "你已在此俱乐部，请勿重复申请")
+                        }
+
+                    }
+                    clubService.joinClubByClubId(req, res);
+                }
+            })
+
+        } else {
+            //发送俱乐部加入申请
+            console.log("发送俱乐部加入申请")
+            async.auto({
+                getUsersJoinedClub: function (callback) {
+                    clubMgrService.getClubIdByuserId(user_id, function (err, value) {
+                        console.log(value);
+                        if (err) {
+                            callback(err, null)
+                        } else {
+                            // console.log("value",value)
+                            for (let i of value) {
+                                console.log("i", i.clubId == club_id)
+                                console.log("i", i.clubId)
+                                console.log("i", club_id)
+                                if (i.clubId == club_id) {
+                                    return http.send(res, 1, "你已在此俱乐部，请勿重复申请")
+                                }
+                            }
+                            console.log("jixu")
+                            callback(null, value)
+
+                        }
+                    })
+                },
+                getPlayerInfo: ["getUsersJoinedClub", function (result, callback) {
+                    playerService.getPlyaerInfoById(user_id, callback);
+                }],
+                //查看是否有未處理的加入俱樂部申請
+                isApplying: ["getPlayerInfo", function (result, callback) {
+                    clubMgrService.isApplying(user_id, club_id, callback);
+                }],
+                saveApply: ['getPlayerInfo', 'isApplying', function (result, callback) {
+                    //說明正在申請中
+                    if (result.isApplying > 0) {
+                        callback(null, 500);
+                    } else {
+                        var playerInfo = result.getPlayerInfo;
+                        var applyEntity = {};
+                        applyEntity.club_id = club_id;
+                        applyEntity.apply_user = playerInfo.userid;
+                        applyEntity.apply_username = playerInfo.name;
+                        applyEntity.apply_time = dateUtil.getCurrentTimestapm();
+                        clubMgrService.applyJoinClub(applyEntity, callback);
+                    }
+                }]
+            }, function (err, resData) {
+                if (err) {
+                    console.log(err);
+                    http.send(res, 1, "服务器错误,请稍后重试")
+                    return;
+                } else {
+                    if (resData.saveApply == 500) {
+                        http.send(res, 0, "您已经提交了加入申请，请耐心等待管理员审核")
+                    } else {
+                        if (resData.saveApply.affectedRows > 0) {
+                            http.send(res, 0, "加入申请已提交，请耐心等待管理员审核")
+                        } else {
+                            http.send(res, 1, "申请加入失败，请稍后重试")
+                        }
+                    }
+                }
+            });
         }
     })
 
 })
 
-app.get("/getAllUsersByclubId",function(req,res){
+app.get("/getAllUsersByclubId", function (req, res) {
     let clubId = req.query.clubId
-    if(!clubId){
-        return http.send(res,1,"参数错误")
+    if (!clubId) {
+        return http.send(res, 1, "参数错误")
     }
-    club_server.getRoomUsersByClubid(clubId,function(err,data){
-        if(err){
-            return http.send(res,1,"服务器异常，请稍后重试")
+    club_server.getRoomUsersByClubid(clubId, function (err, data) {
+        if (err) {
+            return http.send(res, 1, "服务器异常，请稍后重试")
         }
-        return http.send(res,0,"ok",data)
+        return http.send(res, 0, "ok", data)
     })
 })
 
@@ -2525,7 +2539,7 @@ app.get('/grant_coins', async function (req, res) {
             }
 
             //zhang
-            if ((senderInfo.coins-grant_count) < 100000) {
+            if ((senderInfo.coins - grant_count) < 100000) {
                 http.send(res, 1, "账户中至少需要剩余10万金币!")
                 return
             }
@@ -2830,17 +2844,17 @@ app.get('/get_signin_record', function (req, res) {
             if (result) {
                 var signInConfigs = result.signInConfigs;
                 var lastSignIn = result.lastSignIn;
-                console.log("lastSignIn",lastSignIn)
-                if(!lastSignIn){
+                console.log("lastSignIn", lastSignIn)
+                if (!lastSignIn) {
                     var signInfo;
-                }else{
+                } else {
                     var signInfo = lastSignIn.signInfo;
-                    console.log("signInfo1",signInfo)
+                    console.log("signInfo1", signInfo)
                 }
-                console.log("signInfo",signInfo)
-                if(!signInfo){
-                    signInfo={1:-1,2:-1,3:-1,4:-1,5:-1,6:-1,7:-1}
-                }else{
+                console.log("signInfo", signInfo)
+                if (!signInfo) {
+                    signInfo = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1 }
+                } else {
                     signInfo = JSON.parse(signInfo)
                 }
                 console.log(123)
@@ -2887,24 +2901,24 @@ app.get('/get_signin_record', function (req, res) {
                 returnData.today_sign_flag = today_sign_in_flag;
                 returnData.sign_record = signInConfigs;
                 returnData.signTimes = 1;
-                returnData.coins = (signTimes+1) *200;
-                let num=0;
-                for(let i in signInfo){
-                    if (signInfo[i]==1){
-                        num=i;
+                returnData.coins = (signTimes + 1) * 200;
+                let num = 0;
+                for (let i in signInfo) {
+                    if (signInfo[i] == 1) {
+                        num = i;
                     }
                 }
-                if(num==7){
-                    num=0
+                if (num == 7) {
+                    num = 0
                 }
-                for(let i in signInfo){
-                    if(i>num){
+                for (let i in signInfo) {
+                    if (i > num) {
                         signInfo[i] = -1
                     }
                 }
 
                 returnData.signInfo = signInfo;
-                returnData.now = num+1;
+                returnData.now = num + 1;
                 http.send(res, 0, "ok", returnData)
             } else {
                 http.send(res, 1, "未获取签到配置信息");
@@ -2928,7 +2942,7 @@ app.get('/sign_in', function (req, res) {
         return
     }
     //连续第几天
-    
+
     let days = req.query.days;
     if (days == null) {
         http.send(res, 1, "参数错误")
@@ -2939,7 +2953,7 @@ app.get('/sign_in', function (req, res) {
     console.log('*****第【' + days + '】天签到');
     //获取今天的时间串
     let today = dateUtil.dateFormat(new Date(), 'yyyyMMdd');
-    let coins=0;
+    let coins = 0;
     async.auto({
         //获取玩家信息
         playerInfo: function (callback) {
@@ -2965,7 +2979,7 @@ app.get('/sign_in', function (req, res) {
 
             console.log('获取的签到配置信息:' + JSON.stringify(signInConfig));
 
-            
+
             var award = signInConfig.award || 0;
 
             var lastSignInTime = null;
@@ -2978,67 +2992,67 @@ app.get('/sign_in', function (req, res) {
                 first_sign_time = lastSignIn.first_sign_time//第一天签到的时间
             }
 
-            console.log(lastSignInTime,today,)
+            console.log(lastSignInTime, today)
             if (lastSignInTime == today) {
                 http.send(res, 1, "你在逗我吗?今天你已经签到过了呀!");
                 return
             } else {
                 if (playerInfo) {
-                    if(!signInfo ||!first_sign_time){
+                    if (!signInfo || !first_sign_time) {
                         first_sign_time = new Date().getTime();
 
-                        signInfo={1:-1,2:-1,3:-1,4:-1,5:-1,6:-1,7:-1}
-                    }else{
+                        signInfo = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1 }
+                    } else {
                         signInfo = JSON.parse(signInfo)
                     }
-                        let num = 0;
-                        console.log("signInfo",signInfo)
-                        for(let i in signInfo){
-                            console.log(signInfo[i])
-                            if(signInfo[i]!==-1){
-                                num=i
-                                break;
-                            }
+                    let num = 0;
+                    console.log("signInfo", signInfo)
+                    for (let i in signInfo) {
+                        console.log(signInfo[i])
+                        if (signInfo[i] !== -1) {
+                            num = i
+                            break;
                         }
-                        num = parseInt(num)+1
-                        console.log(num,days)
-                        if(num!=days){
-                            http.send(res, 1, "请点击正确的天数");
-                            return;
+                    }
+                    num = parseInt(num) + 1
+                    console.log(num, days)
+                    if (num != days) {
+                        http.send(res, 1, "请点击正确的天数");
+                        return;
+                    }
+                    // signInfo[days]=1;
+                    for (let i in signInfo) {
+                        if (i == days) {
+                            signInfo[i] = 1;
                         }
-                        // signInfo[days]=1;
-                        for(let i in signInfo){
-                            if(i==days){
-                                signInfo[i]=1;
-                            }
-                        }
+                    }
                     let last_sign_timeStamp = new Date().getTime();
-                    signInfo= JSON.stringify(signInfo);
+                    signInfo = JSON.stringify(signInfo);
                     coins = playerInfo.coins
-                    console.log("signInfo",signInfo)
-                    
-                    activityService.signIn(playerInfo, days, award, signInfo,last_sign_timeStamp,function (err, signInRes) {
+                    console.log("signInfo", signInfo)
+
+                    activityService.signIn(playerInfo, days, award, signInfo, last_sign_timeStamp, function (err, signInRes) {
                         if (err) {
                             console.log("zheli")
                             console.log(err);
                             http.send(res, 1, "服务器错误,请稍后重试");
                             return
                         } else {
-                            activityService.updateFST(first_sign_time,userId,function(err,data){
-                                console.log("err",err)
+                            activityService.updateFST(first_sign_time, userId, function (err, data) {
+                                console.log("err", err)
                             });
-                            activityService.updateFlag("false",function(err,result){
-                                if(err){
+                            activityService.updateFlag("false", function (err, result) {
+                                if (err) {
                                     http.send(res, 1, "mysql 错误,请稍后重试");
                                     return;
                                 }
-                                if(result){
-                                    award = coins+award
-                                    http.send(res, 0, "签到成功",{flag:"false",award:award});
+                                if (result) {
+                                    award = coins + award
+                                    http.send(res, 0, "签到成功", { flag: "false", award: award });
                                     return;
                                 }
                             })
-                            
+
                         }
                     });
                 } else {
@@ -3047,20 +3061,20 @@ app.get('/sign_in', function (req, res) {
                     return
                 }
             }
-            
+
             let nowTime = new Date().getTime();
-            let timeDiff =nowTime- first_sign_time;
-            let dayDiff = timeDiff/3600/24/1000;
-            if(dayDiff>=7){
-                activityService.updateFST(0,userId,function(err,resu){
-                    if(err){
-                        
+            let timeDiff = nowTime - first_sign_time;
+            let dayDiff = timeDiff / 3600 / 24 / 1000;
+            if (dayDiff >= 7) {
+                activityService.updateFST(0, userId, function (err, resu) {
+                    if (err) {
+
                         http.send(res, 1, "mysql 错误,请稍后重试");
                         return;
                     }
                 })
             }
-            
+
         }
     });
 });
@@ -3627,10 +3641,10 @@ app.get('/get_sys_notice', function (req, res) {
 
 });
 
-app.get("/jubao",function(req,res){
+app.get("/jubao", function (req, res) {
     let userId = req.query.userId;
     let content = req.query.content;
-    if(content==null || content==""){
+    if (content == null || content == "") {
         http.send(res, 1, "请填写举报内容")
         return;
     }
@@ -3638,17 +3652,17 @@ app.get("/jubao",function(req,res){
         http.send(res, 1, "请求参数不完整")
         return;
     }
-    if(content.length>255){
+    if (content.length > 255) {
         http.send(res, 1, "内容过长请删减为最多255个字符")
         return;
     }
-    let dict = {userId:userId,content:content}
-    commonService.savejubao(dict,function(err,result){
-        if(err){
+    let dict = { userId: userId, content: content }
+    commonService.savejubao(dict, function (err, result) {
+        if (err) {
             http.send(res, 1, "服务器异常请稍后重试")
             return;
         }
-        if(result.affectedRows>0){
+        if (result.affectedRows > 0) {
             http.send(res, 1, "举报成功")
             return;
         }
@@ -3662,10 +3676,10 @@ app.get("/jubao",function(req,res){
  * 
  */
 let bisaiConfig = require("../game_server_doudizhu_huanle/match/config_match")
- app.get("/get_bisai",function(req,res){
-     let config = bisaiConfig.config.bisai_config
-     return http.send(res,0,"ok",{data:config})
- })
+app.get("/get_bisai", function (req, res) {
+    let config = bisaiConfig.config.bisai_config
+    return http.send(res, 0, "ok", { data: config })
+})
 /**
  * 根据玩家ID获取消息通知列表
  */
@@ -3837,9 +3851,9 @@ app.get('/deal_join_apply', function (req, res) {
 });
 
 
-app.get("/destroy_club",function(req,res){
+app.get("/destroy_club", function (req, res) {
     let userId = req.query.userId;
-    
+
 })
 /**
  * 俱乐部中获取转账信息列表
@@ -3970,18 +3984,18 @@ app.get('/set_user_manifesto', async (req, res) => {
  * 根据roomId 获取房间配置信息
  *
  */
-app.get('/get_room_info',async (req, res)=>{
+app.get('/get_room_info', async (req, res) => {
     if (!check_account(req, res)) {
         return;
     }
     let roomId = req.query.roomId;
-    if(!roomId){
+    if (!roomId) {
         http.send(res, 1, "参数错误");
         return;
     }
 
     let roomResult = await commonService.getTableValuesAsync("*", "t_rooms", { id: roomId });
-    if(!roomResult){
+    if (!roomResult) {
         http.send(res, 1, "房间不存在");
         return;
     }
@@ -4077,16 +4091,16 @@ app.get('/get_public_rooms', async (req, res) => {
  * @returns {Promise.<void>}
  */
 async function getSeatlessPlayerCount(ip, port, roomId) {
-	let sign = crypto.md5(roomId + config.hall_server().ROOM_PRI_KEY);
-	return new Promise((resolve, reject) => {
-		http.get(ip, port, '/ws/get_seatless_count', {roomId: roomId, sign: sign }, function (ret, data) {
-			if (data) {
-				resolve(data);
-			} else {
-				reject('getOnlinePlayerList：请求子服务器错误');
-			}
-		});
-	})
+    let sign = crypto.md5(roomId + config.hall_server().ROOM_PRI_KEY);
+    return new Promise((resolve, reject) => {
+        http.get(ip, port, '/ws/get_seatless_count', { roomId: roomId, sign: sign }, function (ret, data) {
+            if (data) {
+                resolve(data);
+            } else {
+                reject('getOnlinePlayerList：请求子服务器错误');
+            }
+        });
+    })
 }
 
 //获取佣金
@@ -4206,7 +4220,7 @@ app.get('/ti_xian', async (req, res) => {
     /**
      * 只能周二提现
      */
-    if(dateUtil.getWeekDayStr()!='星期二'){
+    if (dateUtil.getWeekDayStr() != '星期二') {
         http.send(res, 1, "每周周二才能提现!");
         return
     }
@@ -4292,7 +4306,7 @@ app.get('/get_game_status', async function (req, res) {
     let gameList = await gameService.getGameStatusAsync();
     let data = {};
     data.rows = gameList;
-    http.send(res, 0,'ok' ,data);
+    http.send(res, 0, 'ok', data);
 });
 
 
@@ -4300,7 +4314,7 @@ app.get('/get_game_status', async function (req, res) {
 /**
  * 根据游戏ID获取房间的状态
  */
-app.get('/get_room_status',async function (req, res) {
+app.get('/get_room_status', async function (req, res) {
     if (!check_account(req, res)) {
         http.send(res, 1, "非法请求")
         return
@@ -4311,7 +4325,7 @@ app.get('/get_room_status',async function (req, res) {
         http.send(res, 1, "请求参数错误")
         return
     }
-    let roomList = await commonService.getTableListAsync(null,null,'*','t_room_info',{game_id:gameId});
+    let roomList = await commonService.getTableListAsync(null, null, '*', 't_room_info', { game_id: gameId });
     let data = {};
     data.rows = roomList;
     http.send(res, 0, data);
@@ -4334,14 +4348,14 @@ app.get('/get_choujiang_config', function (req, res) {
     async.auto({
         //可抽奖次数
         lottery_draw_times: function (callback) {
-            activityService.getCanChouJiangTimes(userId,callback);
+            activityService.getCanChouJiangTimes(userId, callback);
         },
         //转盘配置
         roulette_config: function (callback) {
             activityService.getNewYearRouletteConfig(callback);
         },
         //中奖名单
-        winning_list:function(callback){
+        winning_list: function (callback) {
             activityService.getWinningList(callback);
         }
     }, function (err, result) {
@@ -4368,7 +4382,7 @@ app.get('/do_choujiang', async function (req, res) {
         return;
     }
     let canLuckDrawTimes = await activityService.getCanChouJiangTimesAsync(userId);
-    if(canLuckDrawTimes==0){
+    if (canLuckDrawTimes == 0) {
         http.send(res, 1, "您的抽奖次数已使用完毕，请参与游戏或推荐玩家来获得更多的抽奖次数！")
         return;
     }
@@ -4384,17 +4398,17 @@ app.get('/do_choujiang', async function (req, res) {
                 //获取今日已被抽取的金币量
                 var todayTotalGrantCoins = activityService.getTodayTotalGrantCoinAsync();
                 //如果超过限额量，则只可抽中房卡,否则按照配置的概率赠送
-                if(todayTotalGrantCoins>=8660000){
-                     var gemsRoulette = [];
+                if (todayTotalGrantCoins >= 8660000) {
+                    var gemsRoulette = [];
                     for (var i = 0; i < configs.length; i++) {
                         //奖品类型 0 金币 1 房卡
-                        if(configs[i].prize_type==1){
+                        if (configs[i].prize_type == 1) {
                             gemsRoulette.push(configs[i]);
                         }
                     }
-                    var randomNum = commonUtil.randomFrom(0,gemsRoulette.length-1);
+                    var randomNum = commonUtil.randomFrom(0, gemsRoulette.length - 1);
                     rouletteConfig = gemsRoulette[randomNum];
-                }else{
+                } else {
                     //总概率基数
                     var totalPro = 0;
                     //每个奖品的概率区间
@@ -4462,8 +4476,8 @@ app.get('/do_choujiang', async function (req, res) {
                                 }
                             },
                             //扣除抽奖次数
-                            deductLuckDrawTimes:function(callback){
-                                activityService.deductChouJiangTimes(userId,callback);
+                            deductLuckDrawTimes: function (callback) {
+                                activityService.deductChouJiangTimes(userId, callback);
                             }
                         }, async function (err, result) {
                             if (err) {

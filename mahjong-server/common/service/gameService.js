@@ -81,7 +81,7 @@ module.exports = {
      * @param {*} seat_index 
      * @param {*} callback 
      */
-    updateUserExitRoom(user_id,seat_index, callback) {
+    updateUserExitRoom(user_id, seat_index, callback) {
         let i = parseInt(seat_index);
         if (Number.isNaN(i)) {
             return;
@@ -91,12 +91,12 @@ module.exports = {
         db.update(sql, args, callback);
     },
 
-        /**
-     * 百人牛牛删除玩家数据
-     * @param {*} user_id 
-     * @param {*} seat_index 
-     * @param {*} callback 
-     */
+    /**
+ * 百人牛牛删除玩家数据
+ * @param {*} user_id 
+ * @param {*} seat_index 
+ * @param {*} callback 
+ */
     updateUserExitRoomN(user_id, roomId, callback) {
         // let i = parseInt(seat_index);
         // if (Number.isNaN(i)) {
@@ -104,13 +104,13 @@ module.exports = {
         // }
         let sql0 = "select seats from t_rooms where id = ?; ";
         const args = uArray.push(roomId);
-        db.queryForObject(sql0, args, function(err,data){
-            if(!err){
+        db.queryForObject(sql0, args, function (err, data) {
+            if (!err) {
                 let seats = JSON.parse(data.seats);
                 delete seats[user_id];
                 seats = JSON.stringify(seats);
                 let sql = `update t_rooms r, t_users u set r.seats = ?,u.roomid = NULL where r.id =? and u.userid = ?;`
-                let args = uArray.push(seats, roomId,user_id);
+                let args = uArray.push(seats, roomId, user_id);
                 db.update(sql, args, callback);
             }
         })
@@ -417,30 +417,30 @@ module.exports = {
      * @param {*} win_score 输赢分值
      * @param {*} callback 
      */
-    saveGameRecord(player_id, username, game_type, create_ime, win_score,seatcount,roomId,jushu,sum_all,club_id,callback) {
-        let sql = 'insert into t_game_record(fk_player_id, username, game_type, play_duration, win_score, record_time,seatcount,roomId,jushu,sum_all,club_id) values(?,?,?,?,?,?,?,?,?,?,?)'
+    saveGameRecord(player_id, username, game_type, create_ime, win_score, seatcount, roomId, jushu, sum_all, club_id, user_type, callback) {
+        let sql = 'insert into t_game_record(fk_player_id, username, game_type, play_duration, win_score, record_time,seatcount,roomId,jushu,sum_all,club_id,user_type) values(?,?,?,?,?,?,?,?,?,?,?,?)'
         const record_time = uTime.now();
         const play_duration = record_time - create_ime;
         const name = crypto.toBase64(username);
-        const args = uArray.push(player_id, name, game_type, play_duration, win_score, record_time,seatcount,roomId,jushu,sum_all,club_id)
+        const args = uArray.push(player_id, name, game_type, play_duration, win_score, record_time, seatcount, roomId, jushu, sum_all, club_id, user_type)
         db.save(sql, args, callback)
     },
 
-        /**
-     * 玩家游戏积分记录存储
-     * @param {*} player_id 玩家ID
-     * @param {*} username 玩家昵称
-     * @param {*} game_type 游戏类别 hjmj 获嘉麻将 zzmj 郑州麻将
-     * @param {*} create_ime 创建时间
-     * @param {*} jifen 输赢分值
-     * @param {*} callback 
-     */
-    saveGameJiFenRecord(player_id, username, game_type, create_ime, jifen,seatcount,roomId,jushu,sum_all,club_id, callback) {
+    /**
+ * 玩家游戏积分记录存储
+ * @param {*} player_id 玩家ID
+ * @param {*} username 玩家昵称
+ * @param {*} game_type 游戏类别 hjmj 获嘉麻将 zzmj 郑州麻将
+ * @param {*} create_ime 创建时间
+ * @param {*} jifen 输赢分值
+ * @param {*} callback 
+ */
+    saveGameJiFenRecord(player_id, username, game_type, create_ime, jifen, seatcount, roomId, jushu, sum_all, club_id, callback) {
         let sql = 'insert into t_game_record(fk_player_id, username, game_type, play_duration, jifen, record_time,seatcount,roomId,jushu,sum_all,club_id) values(?,?,?,?,?,?,?,?,?,?,?)'
         const record_time = uTime.now();
         const play_duration = record_time - create_ime;
         const name = crypto.toBase64(username);
-        const args = uArray.push(player_id, name, game_type, play_duration, jifen, record_time,seatcount,roomId,jushu,sum_all,club_id)
+        const args = uArray.push(player_id, name, game_type, play_duration, jifen, record_time, seatcount, roomId, jushu, sum_all, club_id)
         db.save(sql, args, callback)
     },
     /**

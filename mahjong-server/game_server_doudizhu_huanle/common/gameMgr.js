@@ -46,18 +46,21 @@ exports.getMatchList = function () {
     return matchList;
 }
 
+exports.getMatchInfo = function (matchId) {
+    return matchList[matchId]
+}
 //获取未开始人数未满的比赛场
 //usersnum该比赛场额定人数
-exports.getOneMatch = function(type){
-    for(let i in matchList){
-        if(matchList[i].status==0 && matchList[i].users.length<matchList[i].usersNum && matchList[i].type ==type ){
+exports.getOneMatch = function (type) {
+    for (let i in matchList) {
+        if (matchList[i].status == 0 && matchList[i].users.length < matchList[i].usersNum && matchList[i].type == type) {
             return i
         }
     }
     return null
 }
 //得到当前比赛场的人数
-exports.getUsersNum = function(matchId){
+exports.getUsersNum = function (matchId) {
     return matchList[matchId].users.length
 }
 
@@ -65,53 +68,70 @@ exports.getUsersNum = function(matchId){
  * 得到一个比赛场内所有的玩家信息
  */
 //得到当前比赛场的人
-exports.getMatchUsers = function(matchId){
+exports.getMatchUsers = function (matchId) {
     return matchList[matchId].users
 }
 
 //加入比赛场
-exports.joinMatch = function(matchId,userId,fen,name){
-    if(matchList[matchId].users.length>=matchList[matchId].usersNum){
+exports.joinMatch = function (matchId, userId, fen, name) {
+    if (matchList[matchId].users.length >= matchList[matchId].usersNum) {
         return 0
     }
-    let data = {userId:userId,fen:fen,status:0,name:name}
+    let data = { userId: userId, fen: fen, status: 0, name: name, jushu: 0, level: 0 }
     matchList[matchId].users.push(data)
+    return 1
+}
+
+exports.getRandomUser = function (matchId) {
+    let randomUsers = []
+    for (let i of matchList[matchId].users) {
+        if (i.status == 0) {
+            randomUsers.push(i)
+        }
+    }
+    return randomUsers
+}
+
+//改变比赛场信息
+exports.setMatchInfo = function (matchId, key, value) {
+
+    matchList[matchId][key] = value
     return 1
 }
 
 //改变比赛场用户信息
-exports.setMatchUsers = function(matchId,userId,key,value){
+exports.setMatchUsers = function (matchId, userId, key, value) {
 
-    for(let users of matchList[matchId]){
-        for(let user of users){
-            if(user.userId==userId){
-                user[key] = value
-            }
+    for (let user of matchList[matchId].users) {
+        if (user.userId == userId) {
+            user[key] = value
         }
+
     }
-    matchList[matchId].users.push(data)
     return 1
 }
 
 //退赛
-exports.exitMatch = function(matchId,userId){
-    for(let i of matchList[matchId].users){
-        if(i.userId==userId){
+exports.exitMatch = function (matchId, userId) {
+    for (let i of matchList[matchId].users) {
+        if (i.userId == userId) {
             let index = matchList[matchId].users.indexOf(i)
-            return matchList[matchId].users.splice(index,1)
+            return matchList[matchId].users.splice(index, 1)
         }
     }
     return null
 
 }
 //创建新的比赛场
-exports.addMatch = function(matchId,usersNum,type){
-    matchList[matchId] = {usersNum:usersNum,type:type,users:[]}
+exports.addMatch = function (matchId, usersNum, type, difen, dizhu) {
+    let data = { usersNum: usersNum, type: type, level: 0, jushu: 0, status: 0, diFen: difen, diZhu: dizhu, users: [], rooms: [] }
+    matchList[matchId] = data
+    console.log("mdata", data)
     return 1
 }
 
 //删除比赛场
-exports.DelMatch = function(matchId){
+exports.DelMatch = function (matchId) {
     delete matchList[matchId]
     return 1
 }
@@ -122,9 +142,9 @@ exports.DelMatch = function(matchId){
  */
 exports.getRoomIdByUser = function (userId) {
     var pl = playerLocation[userId];
-    if(pl){
+    if (pl) {
         return pl.roomId;
-    }else{
+    } else {
         return null;
     }
 }
@@ -236,12 +256,12 @@ exports.createRoom = async function (data) {
             return
         }
 
-        if (data.coins <data.minScoreLimit) {
+        if (data.coins < data.minScoreLimit) {
             resolve(2221);
             return;
         }
 
-        
+
         // data.biPai = 1;//最低比牌圈数
         let roomId = await generateRoomId();
         if (roomId == 0) {
@@ -249,14 +269,14 @@ exports.createRoom = async function (data) {
             return
         }
 
-        if(!data.roomName||data.roomName==''){
-            data.roomName = data.isPrivate==1?'私密房':'畅玩房';
+        if (!data.roomName || data.roomName == '') {
+            data.roomName = data.isPrivate == 1 ? '私密房' : '畅玩房';
         }
 
 
         let roomCfg = {
-            coins:data.coins,
-            roomName:data.roomName,
+            coins: data.coins,
+            roomName: data.roomName,
             diZhu: data.diZhu,//底分
             seatCount: data.seatCount,//最大人数
             maxGames: data.maxGames,//最大局数
@@ -272,18 +292,18 @@ exports.createRoom = async function (data) {
             jinbijiesuan: true,
             limit_coins: data.diZhu * 10,
             isDaiKai: data.isDaiKai || 0,
-            room_type:data.room_type,
-            choushuiRate:data.choushuiRate,
-            minScoreLimit:data.minScoreLimit,
-            maxScoreLimit:data.maxScoreLimit,
-            serial_num:data.serial_num,
-            qiangfen :data.qiangfen,
-            publicBeishu:data.publicBeishu,
-            chushibeishu:data.chushibeishu,//初始倍数
-            clubId :data.clubId,
+            room_type: data.room_type,
+            choushuiRate: data.choushuiRate,
+            minScoreLimit: data.minScoreLimit,
+            maxScoreLimit: data.maxScoreLimit,
+            serial_num: data.serial_num,
+            qiangfen: data.qiangfen,
+            publicBeishu: data.publicBeishu,
+            chushibeishu: data.chushibeishu,//初始倍数
+            clubId: data.clubId,
         }
 
-        if(data.password){
+        if (data.password) {
             roomCfg.password = data.password;
         }
 
@@ -300,7 +320,7 @@ exports.createRoom = async function (data) {
                 state: "idle",
                 creator_id: data.creator,
                 is_private: data.isPrivate,
-                room_type:data.room_type,
+                room_type: data.room_type,
                 game_id: data.kindId,
                 is_daikai: data.isDaiKai || 0,
                 // belongs_club
@@ -364,8 +384,8 @@ exports.enterRoom = async function (data) {
             coins: data.coins,
             headimg: "",
             ctrlParam: data.ctrlParam,
-            sex:data.sex,
-            is_robot:data.is_robot
+            sex: data.sex,
+            is_robot: data.is_robot
         })
     } else {
         //恢复数据，暂缓
@@ -384,20 +404,20 @@ exports.enterRoom = async function (data) {
             let userId = roomInfo[`user_id${i}`];
             //判断是否已经在房间里了
             let tempPlayer = room.getPlayerById(userId);
-            if(tempPlayer){
+            if (tempPlayer) {
                 continue;
             }
             //判断是否是机器人
             let userInfo = await commonService.getTableValuesAsync("*", "t_users", { userid: userId });
             if (userInfo) {
-                let player = new Player(data.roomId, i,{
+                let player = new Player(data.roomId, i, {
                     name: crypto.fromBase64(name),
                     userId: userId,
                     coins: userInfo.coins,
                     headimg: userInfo.headimg,
                     ctrlParam: roomInfo[`user_ctrl_param${i}`],
-                    sex:userInfo.sex,
-                    is_robot:userInfo.is_robot
+                    sex: userInfo.sex,
+                    is_robot: userInfo.is_robot
                 });
                 room.joinRoom(player);
                 // if (room.seats.length == 1) {
@@ -408,18 +428,18 @@ exports.enterRoom = async function (data) {
                     roomId: data.roomId,
                 }
                 //如果是机器人
-                if(userInfo.is_robot==1){
+                if (userInfo.is_robot == 1) {
                     //判断其是否还仍旧在房间游戏内
-                    if(!userInfo.roomid){
+                    if (!userInfo.roomid) {
                         gameService.updateUserExitRoom(userId, i, (err, result) => {
                             if (err) {
                                 console.error(err);
                             }
                         });
-                    }else{
+                    } else {
                         //通知机器人重新登录游戏
                         console.log('*******通知机器人重新连接游戏*******');
-                        robotServer.joinRoom(data.roomId,userId);
+                        robotServer.joinRoom(data.roomId, userId);
                     }
                 }
             }
@@ -430,7 +450,7 @@ exports.enterRoom = async function (data) {
             coins: data.coins,
             headimg: "",
             ctrlParam: data.ctrlParam,
-            is_robot:0
+            is_robot: 0
         })
     }
 }
@@ -509,40 +529,40 @@ exports.bipai = function (me, other) {
  */
 exports.settlement = function (roomId) {
     let roomInfo = roomList[roomId];
-     let winner = roomInfo.winer;
-     let banker = roomInfo.getBanker();
+    let winner = roomInfo.winer;
+    let banker = roomInfo.getBanker();
     let public = roomInfo.public;
     let bankerTotalWin = 0;
     let nongminTotalWin = {};
-    for(let i of roomInfo.seats){
-        if(i.userId==banker.userId){
+    for (let i of roomInfo.seats) {
+        if (i.userId == banker.userId) {
             let beishu = public * banker.privateBeishu * roomInfo.nongminBeishu;
             bankerTotalWin = beishu * roomInfo.diZhu;
-        }else{
+        } else {
             let beishu = public * i.privateBeishu * banker.privateBeishu;
             nongminTotalWin[i.userId] = beishu * roomInfo.diZhu;
         }
     }
-    console.log("nongminTotalWin",nongminTotalWin)
-     if(banker.userId==winner){
-          for(let i of roomInfo.seats){
-              if(i.userId == banker.userId){
-                  i.settlement(bankerTotalWin)
-              }else{
-                  i.settlement(0-nongminTotalWin[i.userId])
-              }
+    console.log("nongminTotalWin", nongminTotalWin)
+    if (banker.userId == winner) {
+        for (let i of roomInfo.seats) {
+            if (i.userId == banker.userId) {
+                i.settlement(bankerTotalWin)
+            } else {
+                i.settlement(0 - nongminTotalWin[i.userId])
+            }
 
-          }
-     }else{
-        for(let i of roomInfo.seats){
-            if(i.userId == banker.userId){
-                i.settlement(0- bankerTotalWin)
-            }else{
+        }
+    } else {
+        for (let i of roomInfo.seats) {
+            if (i.userId == banker.userId) {
+                i.settlement(0 - bankerTotalWin)
+            } else {
                 i.settlement(nongminTotalWin[i.userId])
             }
 
         }
-     }
+    }
 
 }
 
@@ -623,20 +643,20 @@ exports.clearRoom = function (roomId) {
 
 
 //换牌  返回一手比传入参数大的牌型
-exports.huanPai = function(roomId,otherPokers){
+exports.huanPai = function (roomId, otherPokers) {
     var roomInfo = roomList[roomId];
     var usedPokers = [];
     for (let i = 0; i < roomInfo.seats.length; i++) {
         let tempPlayer = roomInfo.seats[i];
-        if (tempPlayer.state!=tempPlayer.PLAY_STATE.FREE) {
-            if(tempPlayer.hold&&tempPlayer.hold.length>0){
+        if (tempPlayer.state != tempPlayer.PLAY_STATE.FREE) {
+            if (tempPlayer.hold && tempPlayer.hold.length > 0) {
                 usedPokers = usedPokers.concat(tempPlayer.hold);
             }
         }
     }
 
-    let exchaged = gameLogic.huanPai(usedPokers,otherPokers);
-    console.log('换牌后：'+exchaged);
+    let exchaged = gameLogic.huanPai(usedPokers, otherPokers);
+    console.log('换牌后：' + exchaged);
     return exchaged;
 }
 
