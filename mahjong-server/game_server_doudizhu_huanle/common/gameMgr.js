@@ -73,11 +73,11 @@ exports.getMatchUsers = function (matchId) {
 }
 
 //加入比赛场
-exports.joinMatch = function (matchId, userId, fen, name) {
+exports.joinMatch = function (matchId, userId, fen, name, headimg) {
     if (matchList[matchId].users.length >= matchList[matchId].usersNum) {
         return 0
     }
-    let data = { userId: userId, fen: fen, status: 0, name: name, jushu: 0, level: 0 }
+    let data = { userId: userId, fen: fen, status: 0, name: name, headimg: headimg, jushu: 0, level: 0 }
     matchList[matchId].users.push(data)
     return 1
 }
@@ -382,7 +382,7 @@ exports.enterRoom = async function (data) {
             name: data.name,
             userId: data.userId,
             coins: data.coins,
-            headimg: "",
+            headimg: data.headimg,
             ctrlParam: data.ctrlParam,
             sex: data.sex,
             is_robot: data.is_robot
@@ -565,7 +565,47 @@ exports.settlement = function (roomId) {
     }
 
 }
+/**
+ * 游戏积分结算
+ */
+exports.settlementJifen = function (roomId) {
+    let roomInfo = roomList[roomId];
+    let winner = roomInfo.winer;
+    let banker = roomInfo.getBanker();
+    let public = roomInfo.public;
+    let bankerTotalWin = 0;
+    let nongminTotalWin = {};
+    for (let i of roomInfo.seats) {
+        if (i.userId == banker.userId) {
+            let beishu = public * banker.privateBeishu * roomInfo.nongminBeishu;
+            bankerTotalWin = beishu * roomInfo.diFen;
+        } else {
+            let beishu = public * i.privateBeishu * banker.privateBeishu;
+            nongminTotalWin[i.userId] = beishu * roomInfo.diFen;
+        }
+    }
+    console.log("nongminTotalWin", nongminTotalWin)
+    if (banker.userId == winner) {
+        for (let i of roomInfo.seats) {
+            if (i.userId == banker.userId) {
+                i.settlementJifen(bankerTotalWin)
+            } else {
+                i.settlementJifen(0 - nongminTotalWin[i.userId])
+            }
 
+        }
+    } else {
+        for (let i of roomInfo.seats) {
+            if (i.userId == banker.userId) {
+                i.settlementJifen(0 - bankerTotalWin)
+            } else {
+                i.settlementJifen(nongminTotalWin[i.userId])
+            }
+
+        }
+    }
+
+}
 /**
  * 开牌
  */

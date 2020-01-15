@@ -37,10 +37,10 @@ function Player(roomId, seatIndex, userInfo) {
     // this.mingpaiBeishu = 1;
     //默认是自由状态
     this.state = this.PLAY_STATE.FREE;
-
+    this.totalWinJifen = 0;
     //是否是庄家 0 否 1 是
     this.isBanker = 0;
-
+    this.jifen = 4000;
 
     //玩家开始游戏的时间
     this.beginGameTime = dateUtil.getCurrentTimestapm();
@@ -105,6 +105,9 @@ Player.prototype.setState = function (state) {
 }
 
 
+Player.prototype.updateTotalWinJifen = function (total) {
+    this.totalWinJifen += total
+}
 
 /**
  * 设置为庄家
@@ -164,7 +167,7 @@ Player.prototype.settlement = async function (totalWin) {
             } else {
                 actualTotalWin = totalWin;
             }
-
+            this.coins += totalWin;
         }
         this.totalWin = actualTotalWin;
 
@@ -173,7 +176,6 @@ Player.prototype.settlement = async function (totalWin) {
         this.totalWin = actualTotalWin;
         this.coins += actualTotalWin;
     }
-
     this.allTalWin += actualTotalWin;
     console.log("actualTotalWin", actualTotalWin, totalWin, this.userId)
     //保存游戏记录
@@ -209,6 +211,34 @@ Player.prototype.settlement = async function (totalWin) {
     }
 }
 
+/**
+ * 设置总输赢
+ */
+Player.prototype.settlementJifen = async function (totalWin) {
+    var roomList = roomMgr.getRoomList()
+    let roomInfo = roomList[this.roomId]
+    //console.log('******更新玩家['+this.userId+']的totalWin******'+totalWin);
+    //说明是赢
+    this.jifen += totalWin;
+    gameService.saveGameJiFenRecord(this.userId, this.name, "game_server_paodekuai", 0, this.totalWin, roomInfo.seatCount, this.roomId, this.numOfGame, 0, roomInfo.clubId, (err, result) => {
+        if (err) {
+            console.log(err);
+        }
+    })
+
+
+
+
+
+
+    //判断是否是机器人，是机器人，更新房间的奖池
+    let room_code = roomInfo.kindId + "0" + roomInfo.serial_num;
+    if (this.isRobot == 1) {
+        //console.log('****更新房间【'+this.roomId+'】的奖池,变化量：'+actualTotalWin);
+        await commonService.changeNumberOfObjForTableAsync("t_rooms", { bonus_pool: actualTotalWin }, { id: this.roomId });
+        await commonService.changeNumberOfObjForTableAsync("t_room_info", { robot_total_win: actualTotalWin }, { room_code: room_code });
+    }
+}
 /**
  * 重置玩家数据
  */
