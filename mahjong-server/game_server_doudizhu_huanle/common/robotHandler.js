@@ -802,7 +802,7 @@ async function chupai(socket, data) {
     let flag;
     if (tishi_result.length == 0) {
         flag = 0
-    } else if (roomInfo.lastPokers.userId == nextPlayer.userId || tishi_result.length > 0) {
+    } else if (roomInfo.lastPokers.userId == nextPlayer.userId) {
         flag = 1;
     }
 

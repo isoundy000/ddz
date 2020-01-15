@@ -40,7 +40,7 @@ function Player(roomId, seatIndex, userInfo) {
     this.totalWinJifen = 0;
     //是否是庄家 0 否 1 是
     this.isBanker = 0;
-    this.jifen = 4000;
+    this.jifen = userInfo.jifen;
 
     //玩家开始游戏的时间
     this.beginGameTime = dateUtil.getCurrentTimestapm();
@@ -154,28 +154,22 @@ Player.prototype.settlement = async function (totalWin) {
     //console.log('******更新玩家['+this.userId+']的totalWin******'+totalWin);
     //说明是赢
     var actualTotalWin = 0;
-    if (roomInfo.jiesuan == "jinbi") {
-        if (totalWin > 0) {
-            this.coins += totalWin;
-            actualTotalWin = totalWin;
-            if (totalWin > this.coins) {
-                actualTotalWin = this.coins;
-            }
-        } else {
-            if (this.coins < (0 - totalWin)) {
-                actualTotalWin = (0 - this.coins)
-            } else {
-                actualTotalWin = totalWin;
-            }
-            this.coins += totalWin;
-        }
-        this.totalWin = actualTotalWin;
+    if (totalWin > 0) {
 
-    } else {
         actualTotalWin = totalWin;
-        this.totalWin = actualTotalWin;
-        this.coins += actualTotalWin;
+        if (totalWin > this.coins) {
+            actualTotalWin = this.coins;
+        }
+        this.coins += totalWin;
+    } else {
+        if (this.coins < (0 - totalWin)) {
+            actualTotalWin = (0 - this.coins)
+        } else {
+            actualTotalWin = totalWin;
+        }
+        this.coins += totalWin;
     }
+    this.totalWin = actualTotalWin;
     this.allTalWin += actualTotalWin;
     console.log("actualTotalWin", actualTotalWin, totalWin, this.userId)
     //保存游戏记录
@@ -220,7 +214,8 @@ Player.prototype.settlementJifen = async function (totalWin) {
     //console.log('******更新玩家['+this.userId+']的totalWin******'+totalWin);
     //说明是赢
     this.jifen += totalWin;
-    gameService.saveGameJiFenRecord(this.userId, this.name, "game_server_paodekuai", 0, this.totalWin, roomInfo.seatCount, this.roomId, this.numOfGame, 0, roomInfo.clubId, (err, result) => {
+    this.totalWinJifen = totalWin
+    gameService.saveGameJiFenRecord(this.userId, this.name, "game_server_paodekuai", 0, this.totalWinJifen, roomInfo.seatCount, this.roomId, this.numOfGame, 0, roomInfo.clubId, (err, result) => {
         if (err) {
             console.log(err);
         }

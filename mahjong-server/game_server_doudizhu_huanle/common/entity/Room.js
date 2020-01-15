@@ -17,33 +17,34 @@ function Room(roomId, roomConfig, createUser) {
     //是否是私密 0 否 1 是
     this.isPrivate = roomConfig.isPrivate;
     //上家出的牌
-    this.lastPokers={userId:0,pokers:[]};
+    this.lastPokers = { userId: 0, pokers: [] };
     //剩余的牌
-    this.shengyuPokers=[];
+    this.shengyuPokers = [];
     //底注
     this.diZhu = roomConfig.diZhu;
+    this.diFen = roomConfig.diFen;
     //试玩房的初始金币
     this.coins = roomConfig.coins;
     //是否是固定房
-    this.isDaiKai = roomConfig.isDaiKai||0;
-    this.dipai=[];
+    this.isDaiKai = roomConfig.isDaiKai || 0;
+    this.dipai = [];
     //最低进入分数
     this.minScoreLimit = roomConfig.minScoreLimit;
     //最高进入分数
     this.maxScoreLimit = roomConfig.maxScoreLimit;
     //最低抢分
-    this.minQiangFen=0;
+    this.minQiangFen = 0;
     //房间抽水率(按照底注的50%抽水)
     this.choushuiRate = roomConfig.choushuiRate;
     this.kindId = roomConfig.kindId;
     //房间类型畅玩房或者不同dizhu的其他房间
-    this.room_type= roomConfig.room_type;
+    this.room_type = roomConfig.room_type;
     //房间机器人的数量
-    this.robotCount = roomConfig.robot_count||0;
+    this.robotCount = roomConfig.robot_count || 0;
     //机器人胜率
-    this.robotWinPR = roomConfig.robot_win_pr||80;
+    this.robotWinPR = roomConfig.robot_win_pr || 80;
     //玩家胜率
-    this.playerWinPR = roomConfig.player_win_pr||20;
+    this.playerWinPR = roomConfig.player_win_pr || 20;
     //场次
     this.serial_num = roomConfig.serial_num;
     //当前玩家
@@ -76,27 +77,27 @@ function Room(roomId, roomConfig, createUser) {
     //炸弹翻倍
     this.zdBeishu = 0;
     //春天倍数
-    this.spring=0;
+    this.spring = 0;
     //当前倍数
-    this.beishu = (1+this.zhadanNum)*this.minQiangFen;
+    this.beishu = (1 + this.zhadanNum) * this.minQiangFen;
     //上次的赢家
     this.lastWinner = null;
     //游戏的状态 ready 等待玩家准备   playing 比牌阶段  settlement 分数结算阶段
-    this.GAME_STATE = {READY:'ready',QIANGDIZHU:"qiangdizhu",JIABEI:"jiabei",PLAYING:'playing',BUCHU:"buchu",CHUPAI:"chupai",SETTLEMENT:'settlement'};
+    this.GAME_STATE = { READY: 'ready', QIANGDIZHU: "qiangdizhu", JIABEI: "jiabei", PLAYING: 'playing', BUCHU: "buchu", CHUPAI: "chupai", SETTLEMENT: 'settlement' };
     //第一个叫分的人
     this.jiaofenNO1 = 0;
     this.gameState = this.GAME_STATE.READY;
     //等待准备超时时间（10S）
-    this.READY_COUNTDOWN = 10*1000;
+    this.READY_COUNTDOWN = 10 * 1000;
     //操作超时时间 10s
-    this.OPT_COUNTDOWN = 20*1000;
+    this.OPT_COUNTDOWN = 20 * 1000;
     //加倍倒计时
     this.JB_COUNTDOWN = 7000;
     //抢地主倒计时
     this.QDZ_COUNTDOWN = 15000;
     this.chushi = roomConfig.chushibeishu;
     this.winer;
-    this.clubId=roomConfig.clubId;
+    this.clubId = roomConfig.clubId;
     //公共倍数
     this.public = 1;
     /**
@@ -106,23 +107,23 @@ function Room(roomId, roomConfig, createUser) {
     this.countdown = 0;
     this.noQiang = 0;//都不抢地主的次数
     let self = this
-    this.publicBeishu={chushi:roomConfig.chushibeishu,mingpai:0,qiangdizhu:this.minQiangFen,dipai:0,zhadan:this.zdBeishu,chuntian:0,shengpai:0};
+    this.publicBeishu = { chushi: roomConfig.chushibeishu, mingpai: 0, qiangdizhu: this.minQiangFen, dipai: 0, zhadan: this.zdBeishu, chuntian: 0, shengpai: 0 };
     this.nongminBeishu = 0;
 }
 
 //Room.prototype.GAME_STATE = {READY:'ready',PLAYING:'playing',SETTLEMENT:'settlement'};
 
-Room.prototype.setQiangfenNo1 = function(userid){
+Room.prototype.setQiangfenNo1 = function (userid) {
     this.jiaofenNO1 = userid;
 }
 //更新最新出的牌
-Room.prototype.setLastPokers = function(userId,pokers){
+Room.prototype.setLastPokers = function (userId, pokers) {
     this.lastPokers.pokers = pokers;
     this.lastPokers.userId = userId;
 }
 
 
-Room.prototype.setPublicBeishu = function(key,value){
+Room.prototype.setPublicBeishu = function (key, value) {
     this.publicBeishu[key] = value;
 }
 
@@ -134,7 +135,7 @@ Room.prototype.joinRoom = function (player) {
     this.seats.push(player);
 }
 
-Room.prototype.setBeiShu = function(beishu){
+Room.prototype.setBeiShu = function (beishu) {
     this.beishu = this.beishu * beishu
 }
 /**
@@ -177,9 +178,9 @@ Room.prototype.getPlayerSeatIndex = function (playerId) {
 /**
  * 根据座位号获取玩家
  */
-Room.prototype.getPlayerBySeatIndex = function(seatIndex){
+Room.prototype.getPlayerBySeatIndex = function (seatIndex) {
     var player = null;
-    for(var i = 0; i < this.seats.length; i++){
+    for (var i = 0; i < this.seats.length; i++) {
         var p = this.seats[i];
         if (p.seatIndex == seatIndex) {
             player = p;
@@ -192,11 +193,11 @@ Room.prototype.getPlayerBySeatIndex = function(seatIndex){
 /**
  * 判断某个游戏状态中，所有的玩家是否都已经操作
  */
-Room.prototype.isAllOpt = function(gameState){
+Room.prototype.isAllOpt = function (gameState) {
     var isAllOpt = true;
-    for(let i=0;i<this.seats.length;i++){
+    for (let i = 0; i < this.seats.length; i++) {
         let player = this.seats[i];
-        if(player.state !== gameState){
+        if (player.state !== gameState) {
             return false;
         }
     }
@@ -207,25 +208,25 @@ Room.prototype.isAllOpt = function(gameState){
 /**
  * 找出庄家
  */
-Room.prototype.findDiZhu = function(){
+Room.prototype.findDiZhu = function () {
     let ids = [];
-    for(let i=0;i<this.seats.length;i++){
+    for (let i = 0; i < this.seats.length; i++) {
         let player = this.seats[i];
-        if (player.qiangfen === this.minQiangFen){
+        if (player.qiangfen === this.minQiangFen) {
             ids.push(player.userId);
         }
     }
-    if(ids.length ===1){
+    if (ids.length === 1) {
         return ids[0];
-    }else if(ids.length>1){
-        if (ids.indexOf(this.jiaofenNO1) !== -1){
+    } else if (ids.length > 1) {
+        if (ids.indexOf(this.jiaofenNO1) !== -1) {
             return this.jiaofenNO1;
-        }else{
+        } else {
             return ids[0];
         }
     }
 
-    
+
 }
 /**
  * 获取空椅子号
@@ -243,12 +244,12 @@ Room.prototype.getFreeSeatIndex = function () {
 /**
  * 设置庄家
  */
-Room.prototype.setBanker = function(userId){
-    for(var i=0;i<this.seats.length;i++){
+Room.prototype.setBanker = function (userId) {
+    for (var i = 0; i < this.seats.length; i++) {
         var player = this.seats[i];
-        if(player.userId == userId){
+        if (player.userId == userId) {
             player.setBanker(1);
-        }else{
+        } else {
             player.setBanker(0);
         }
     }
@@ -257,11 +258,11 @@ Room.prototype.setBanker = function(userId){
 /**
  * 获取当前房间的庄家
  */
-Room.prototype.getBanker = function(){
+Room.prototype.getBanker = function () {
     var banker = null;
-    for(var i=0;i<this.seats.length;i++){
+    for (var i = 0; i < this.seats.length; i++) {
         var player = this.seats[i];
-        if(player.isBanker==1){
+        if (player.isBanker == 1) {
             banker = player;
         }
     }
@@ -275,8 +276,8 @@ Room.prototype.getPlayerCount = function () {
     var count = 0;
     for (let i = 0; i < this.seats.length; i++) {
         var player = this.seats[i];
-        if (player&&player.userId) {
-           count++;
+        if (player && player.userId) {
+            count++;
         }
     }
     return count;
@@ -290,7 +291,7 @@ Room.prototype.getCurrentRobotCount = function () {
     var count = 0;
     for (let i = 0; i < this.seats.length; i++) {
         var player = this.seats[i];
-        if (player.isRobot==1) {
+        if (player.isRobot == 1) {
             count++;
         }
     }
@@ -305,7 +306,7 @@ Room.prototype.getPreparedPlayerCount = function () {
     var count = 0;
     for (let i = 0; i < this.seats.length; i++) {
         var player = this.seats[i];
-        if (player.state==player.PLAY_STATE.READY) {
+        if (player.state == player.PLAY_STATE.READY) {
             count++;
         }
     }
@@ -322,7 +323,7 @@ Room.prototype.getPlayingPlayerCount = function () {
     var count = 0;
     for (let i = 0; i < this.seats.length; i++) {
         var player = this.seats[i];
-        if (player.state==player.PLAY_STATE.PLAYING||player.state==player.PLAY_STATE.WAITTING) {
+        if (player.state == player.PLAY_STATE.PLAYING || player.state == player.PLAY_STATE.WAITTING) {
             count++;
         }
     }
@@ -334,21 +335,21 @@ Room.prototype.getPlayingPlayerCount = function () {
  * 设置游戏的状态
  * @param state
  */
-Room.prototype.setState = function(state){
+Room.prototype.setState = function (state) {
     this.gameState = state;
 }
 
 /**
  * 获取操作的下家
  */
-Room.prototype.getNextTurnPlayer = function(currentTurn){
+Room.prototype.getNextTurnPlayer = function (currentTurn) {
     var nextTurnPlayer = null;
     //从当前的玩家位置开始遍历,最大遍历一圈
-    for(let i=(currentTurn+1);i<(currentTurn+this.seatCount);i++){
-        var player = this.getPlayerBySeatIndex(i%this.seatCount);
-        if(player){
+    for (let i = (currentTurn + 1); i < (currentTurn + this.seatCount); i++) {
+        var player = this.getPlayerBySeatIndex(i % this.seatCount);
+        if (player) {
             //如果游戏在准备状态
-            if(1){
+            if (1) {
                 nextTurnPlayer = player;
                 break;
             }
@@ -361,12 +362,12 @@ Room.prototype.getNextTurnPlayer = function(currentTurn){
 /**
  * 获取操作的下家
  */
-Room.prototype.changeBanker = function(currentBankerSeatIndex){
+Room.prototype.changeBanker = function (currentBankerSeatIndex) {
     var nextTurnPlayer = null;
     //从当前的玩家位置开始遍历,最大遍历一圈
-    for(let i=(currentBankerSeatIndex+1);i<(currentBankerSeatIndex+this.seatCount);i++){
-        var player = this.getPlayerBySeatIndex(i%this.seatCount);
-        if(player&&player.isOnline==1){
+    for (let i = (currentBankerSeatIndex + 1); i < (currentBankerSeatIndex + this.seatCount); i++) {
+        var player = this.getPlayerBySeatIndex(i % this.seatCount);
+        if (player && player.isOnline == 1) {
             nextTurnPlayer = player;
             break;
         }
@@ -380,27 +381,27 @@ Room.prototype.changeBanker = function(currentBankerSeatIndex){
 /**
  * 设置当前轮到操作的坐位号
  */
-Room.prototype.setCurrentTurn = function(seatIndex){
+Room.prototype.setCurrentTurn = function (seatIndex) {
     this.currentTurn = seatIndex;
 }
 
 /**
  * 更新游戏局数
  */
-Room.prototype.updateNumOfGame = function(){
+Room.prototype.updateNumOfGame = function () {
     this.numOfGame++;
 }
 
 /**
  * 重置房间数据
  */
-Room.prototype.reset = function(){
+Room.prototype.reset = function () {
     this.minQiangFen = 0;
     this.nongminBeishu = 1;
-    this.publicBeishu={chushi:this.chushi,mingpai:0,qiangdizhu:0,dipai:0,zhadan:this.zdBeishu,chuntian:0,shengpai:0};
-    this.zhadanNum=0;
-    this.lastPokers={uesrId:0,pokers:[]};
-    this.zdBeishu=0;
+    this.publicBeishu = { chushi: this.chushi, mingpai: 0, qiangdizhu: 0, dipai: 0, zhadan: this.zdBeishu, chuntian: 0, shengpai: 0 };
+    this.zhadanNum = 0;
+    this.lastPokers = { uesrId: 0, pokers: [] };
+    this.zdBeishu = 0;
 }
 
 /**
@@ -408,9 +409,9 @@ Room.prototype.reset = function(){
  */
 Room.prototype.getPlayingUserCount = function () {
     var playingUserCount = 0;
-    for(var i=0;i<this.seats.length;i++){
+    for (var i = 0; i < this.seats.length; i++) {
         var player = this.seats[i];
-        if(player.state==player.PLAY_STATE.WAITTING||player.state==player.PLAY_STATE.PLAYING){
+        if (player.state == player.PLAY_STATE.WAITTING || player.state == player.PLAY_STATE.PLAYING) {
             playingUserCount++;
         }
     }
@@ -420,41 +421,41 @@ Room.prototype.getPlayingUserCount = function () {
 /**
  * 房间抽水（每局抽底注的50%）,扣除
  */
-Room.prototype.choushui = async function(){
-    let fee = this.diZhu*this.choushuiRate
-    for(let i=0;i<this.seats.length;i++){
-       var player = this.seats[i];
-       if(player.state!=player.PLAY_STATE.FREE){
-           //console.log('*******抽水【'+player.userId+'】*******');
-           let change_before = player.coins;
-           player.updateCoins(player.coins-fee);
-           let id = this.serial_num+this.kindId +""
-           try {
-               gameService.updateBonusPoolByRoomCode(fee, id);
-               agentService.someLevelRebate(player.userId, fee, 3, '炸金花')
+Room.prototype.choushui = async function () {
+    let fee = this.diZhu * this.choushuiRate
+    for (let i = 0; i < this.seats.length; i++) {
+        var player = this.seats[i];
+        if (player.state != player.PLAY_STATE.FREE) {
+            //console.log('*******抽水【'+player.userId+'】*******');
+            let change_before = player.coins;
+            player.updateCoins(player.coins - fee);
+            let id = this.serial_num + this.kindId + ""
+            try {
+                gameService.updateBonusPoolByRoomCode(fee, id);
+                agentService.someLevelRebate(player.userId, fee, 3, '炸金花')
 
-               //保存抽水记录
-               let choushui_record = {}
-               choushui_record.fk_player_id = player.userId;
-               choushui_record.username = crypto.toBase64(player.name);
-               choushui_record.choushui_before = change_before;
-               choushui_record.choushui_count = fee;
-               choushui_record.remark = '炸金花房间['+this.roomId+']收取服务费';
-               choushui_record.record_time = Math.floor(Date.now() / 1000);
-               choushui_record.treasure_type = 'coins';
-               choushui_record.room_id = 'zjh';
-               await commonService.saveAsync("t_choushui_record", choushui_record);
-                if(this.room_type !=="shiwanfang"){
-                    commonService.changeNumberOfObjForTableAsync('t_users', { coins: -fee, choushui: fee }, { userid: player.userId});
+                //保存抽水记录
+                let choushui_record = {}
+                choushui_record.fk_player_id = player.userId;
+                choushui_record.username = crypto.toBase64(player.name);
+                choushui_record.choushui_before = change_before;
+                choushui_record.choushui_count = fee;
+                choushui_record.remark = '炸金花房间[' + this.roomId + ']收取服务费';
+                choushui_record.record_time = Math.floor(Date.now() / 1000);
+                choushui_record.treasure_type = 'coins';
+                choushui_record.room_id = 'zjh';
+                await commonService.saveAsync("t_choushui_record", choushui_record);
+                if (this.room_type !== "shiwanfang") {
+                    commonService.changeNumberOfObjForTableAsync('t_users', { coins: -fee, choushui: fee }, { userid: player.userId });
                 }
-               
-           } catch (error) {
-               console.error(
-                   `user_id:${user_id}扣除手续费出错。
+
+            } catch (error) {
+                console.error(
+                    `user_id:${user_id}扣除手续费出错。
                     ${error}`
-               );
-           }
-       }
+                );
+            }
+        }
     }
     return;
 }
@@ -463,13 +464,13 @@ Room.prototype.choushui = async function(){
 /**
  * 记录房间内玩家未参与游戏观战游戏次数
  */
-Room.prototype.recordWatchTimes = function(){
-    for(let i=0;i<this.seats.length;i++) {
+Room.prototype.recordWatchTimes = function () {
+    for (let i = 0; i < this.seats.length; i++) {
         var player = this.seats[i];
         if (player.state != player.PLAY_STATE.FREE) {
             player.updateWatchTimes(0);
-        }else{
-            player.updateWatchTimes(player.watchTimes+1);
+        } else {
+            player.updateWatchTimes(player.watchTimes + 1);
         }
     }
 }
@@ -478,7 +479,7 @@ Room.prototype.recordWatchTimes = function(){
 /**
  * 设置倒计时
  */
-Room.prototype.setTimer = function(timer){
+Room.prototype.setTimer = function (timer) {
     //先清除一下上个倒计时，防止重复
     this.clearTimer();
     this.timer = timer;
@@ -486,7 +487,7 @@ Room.prototype.setTimer = function(timer){
 /**
  * 取消倒计时
  */
-Room.prototype.clearTimer = function(){
+Room.prototype.clearTimer = function () {
     clearInterval(this.timer);
     this.timer = null;
 }

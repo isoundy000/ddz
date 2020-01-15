@@ -77,7 +77,7 @@ exports.joinMatch = function (matchId, userId, fen, name, headimg) {
     if (matchList[matchId].users.length >= matchList[matchId].usersNum) {
         return 0
     }
-    let data = { userId: userId, fen: fen, status: 0, name: name, headimg: headimg, jushu: 0, level: 0 }
+    let data = { userId: userId, jifen: fen, status: 0, name: name, headimg: headimg, jushu: 0, level: 0 }
     matchList[matchId].users.push(data)
     return 1
 }
@@ -277,7 +277,8 @@ exports.createRoom = async function (data) {
         let roomCfg = {
             coins: data.coins,
             roomName: data.roomName,
-            diZhu: data.diZhu,//底分
+            diZhu: data.diZhu,//底注
+            diFen: data.diFen,//底分
             seatCount: data.seatCount,//最大人数
             maxGames: data.maxGames,//最大局数
             kindId: data.kindId,//游戏id
@@ -382,6 +383,7 @@ exports.enterRoom = async function (data) {
             name: data.name,
             userId: data.userId,
             coins: data.coins,
+            jifen: data.jifen,
             headimg: data.headimg,
             ctrlParam: data.ctrlParam,
             sex: data.sex,

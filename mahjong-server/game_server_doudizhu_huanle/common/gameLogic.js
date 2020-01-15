@@ -1031,7 +1031,7 @@ exports.getSuijiPai = function (mypokers) {
 
         shunzi.sort(sortLen)
         for (let i of shunzi) {
-            if (i.length > 5) {
+            if (i.length >= 5) {
                 result = i;
                 break;
             }
@@ -1055,7 +1055,8 @@ exports.getSuijiPai = function (mypokers) {
         let res = [];
         for (let i of shunzi) {
             if (i.length >= 3) {
-                res.push(i);
+                res = i;
+                break;
             }
         }
         if (res.length === 0) {
@@ -1064,11 +1065,11 @@ exports.getSuijiPai = function (mypokers) {
         let temp = {}
         let lastRes = [];
         res.sort(sortLen)
-        for (let i of res[0]) {
+        for (let i of res) {
             temp[i] = 0
         }
         // console.log("res[0]",res[0])
-        for (let i of res[0]) {
+        for (let i of res) {
             for (let j of mypokers) {
                 if (i == j.num && temp[i] !== 2) {
                     temp[i] += 1
@@ -1086,7 +1087,8 @@ exports.getSuijiPai = function (mypokers) {
         let res = [];
         for (let i of shunzi) {
             if (i.length >= 2) {
-                res.push(i);
+                res = i;
+                break;
             }
         }
         if (res.length === 0) {

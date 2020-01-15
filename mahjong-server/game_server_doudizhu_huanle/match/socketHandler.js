@@ -2040,6 +2040,7 @@ async function enterRoom(socket, data) {
     var coins = data.coins;
     var headimg = data.headimg;
     var sex = data.sex;
+    let jifen = data.jifen
 
     var ctrl_param = 0;
     console.log("data", data)
@@ -2062,6 +2063,7 @@ async function enterRoom(socket, data) {
             userId: userId,
             name: name,
             coins: parseInt(coins),
+            jifen: jifen,
             headimg: headimg,
             ctrlParam: ctrl_param,
             sex: sex,
@@ -2124,16 +2126,17 @@ function matchStart(matchId, roomId, nowdiFen, nowdiZhu, needStop) {
                     if (i.status == 0) {
                         let socket = userMgr.get(i.userId)
                         let data = {};
-                        data.name = i.name,
-                            data.userId = i.userId,
-                            data.sex = 0,
-                            data.type = matchInfo.type,
-                            data.clubId = matchId,
-                            data.nowdiFen = nowdiFen,
-                            data.nowdiZhu = nowdiZhu,
-                            data.headimg = i.headimg,
-                            data.roomId = roomId,
-                            data.coins = await getCoins(i.userId);
+                        data.name = i.name
+                        data.userId = i.userId
+                        data.sex = 0
+                        data.type = matchInfo.type
+                        data.clubId = matchId
+                        data.nowdiFen = nowdiFen
+                        data.nowdiZhu = nowdiZhu
+                        data.headimg = i.headimg
+                        data.roomId = roomId
+                        data.jifen = i.jifen
+                        data.coins = await getCoins(i.userId);
                         gameMgr.setMatchUsers(matchId, i.userId, "status", 1)
                         setTimeout(function () {
                             enterRoom(socket, data)
