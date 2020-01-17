@@ -15,16 +15,10 @@ var myConfig = require("../match/config_match")
 /**
  * 机器人金币不足时退出游戏
  */
-exports.exit = function (userId) {
-    if (!userId) {
-        return;
-    }
-    var robotSocket = userMgr.get(userId);
-    var resData = {};
-    resData.userId = userId;
-    exit(robotSocket, JSON.stringify(resData));
-    //使用过的机器人重新放回机器人队列中
-    robotMgr.addRobot(userId);
+exports.exit = function (socket, data) {
+
+    exit(socket, data);
+
 }
 
 
@@ -456,7 +450,7 @@ async function exit(socket, data) {
     }
 
     var userId = data.userId;
-    let isMe = datta.isMe;
+    let isMe = data.isMe;
     if (!userId) {
         return;
     }
@@ -909,18 +903,18 @@ function gameOver(roomId) {
                         socket = userMgr.getT(player.userId)
                         socket.userId = player.userId;
                     }
-                    // (function (socket) {
-                    //     let dataRes = {};
-                    //     dataRes.userId = player.userId;
-                    //     exports.exit(socket, JSON.stringify(dataRes));
-                    // })(socket)
+                    (function () {
+                        let dataRes = {};
+                        dataRes.userId = player.userId;
+                        exports.exit(socket, JSON.stringify(dataRes));
+                    })()
                 }
             }
 
             let data = {};
             data.numOfGame = roomInfo.numOfGame;
             data.countdown = roomInfo.READY_COUNTDOWN;
-            userMgr.broacastByRoomId('gb_begin_ready', data, roomId);
+            // userMgr.broacastByRoomId('gb_begin_ready', data, roomId);
             //更新游戏局数
             roomInfo.updateNumOfGame();
             //设置房间的状态为准备状态
@@ -930,7 +924,7 @@ function gameOver(roomId) {
             for (var i = 0; i < roomInfo.seats.length; i++) {
                 let player = roomInfo.seats[i];
                 if (player.state != player.PLAY_STATE.READY) {
-                    userMgr.sendMsg(player.userId, 'begin_ready', { numOfGame: roomInfo.numOfGame, countdown: roomInfo.READY_COUNTDOWN });
+                    // userMgr.sendMsg(player.userId, 'begin_ready', { numOfGame: roomInfo.numOfGame, countdown: roomInfo.READY_COUNTDOWN });
                     //设置等待倒计时
                     //var timer = tichu(player.userId);
                     //player.setTimer(timer, roomInfo.READY_COUNTDOWN);
@@ -1284,13 +1278,14 @@ async function match(matchId) {
                     award: "",
                     stop: 1
                 })
+                let socket = userMgr.get(i.userId)
+                if (!socket) {
+                    socket = userMgr.getT(i.userId)
+                }
+                exports.exit(socket, { userId: i.userId, isMe: 1 })
             }
 
-            let socket = userMgr.get(i.userId)
-            if (!socket) {
-                socket = userMgr.getT(i.userId)
-            }
-            exports.exit(socket, { userId: i.userId, isMe: 1 })
+
             return "stop"
         }
     }

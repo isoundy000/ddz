@@ -144,19 +144,33 @@ exports.login = async function (socket, data, config) {
 
     }
     await getCoins();
+    let async = require("async")
     async function getRoomId() {
-        return new Promise((resolve, reject) => {
-            playerService.getUserDataByUserId(userId, function (err, result) {
-                if (err) {
-                    console.log(err)
-                    return;
+
+        async.auto({
+            roomId: (callback) => {
+                playerService.getUserDataByUserId(userId, callback)
+            },
+            baseInfo: ["roomId", (result, callback) => {
+                let roomId = result.roomId.roomid
+                if (!roomId) {
+                    return null
                 }
-                if (result) {
-                    resolve(result.roomid)
-                    roomId = result.roomid;
-                }
-            });
+                commonServer.getTableValuesAsync("base_info", "t_rooms", { id: roomId }, callback)
+            }]
+        }, function (err, result) {
+            if (err) {
+                return reject(err)
+            }
+            let base_info = result.baseInfo.base_info
+            if (!base_info) {
+                return null
+            }
+            base_info = JSON.parse(base_info)
+            let clubId = base_info.clubId
+            return { roomId: result.roomId.roomid, clubId: clubId }
         })
+
 
     }
     //检查参数是否被篡改
@@ -168,8 +182,14 @@ exports.login = async function (socket, data, config) {
 
     //选择房间
     var roomId = "";
-    let room_id = await getRoomId();
-    roomId = room_id
+    let room_id;
+    let info = await getRoomId();
+    console.log("info", info)
+    if (info && !info.clubId) {
+        roomId = info.roomId
+        room_id = info.roomId
+    }
+
     if (!roomId) {
         roomId = ""
     }

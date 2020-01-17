@@ -98,11 +98,6 @@ exports.login = async function (socket, data) {
         data = JSON.parse(data);
     }
 
-    if (socket.userId != null) {
-        //已经登陆过的就忽略
-        return;
-    }
-
     var userId = data.userId
     var name = data.name;
     var sex = data.sex;
@@ -1619,11 +1614,11 @@ function gameOver(roomId) {
                         socket = userMgr.getT(player.userId)
                         socket.userId = player.userId;
                     }
-                    (function (socket) {
-                        let dataRes = {};
-                        dataRes.userId = player.userId;
-                        exports.exit(socket, JSON.stringify(dataRes));
-                    })(socket)
+                    // (function (socket) {
+                    //     let dataRes = {};
+                    //     dataRes.userId = player.userId;
+                    //     exports.exit(socket, JSON.stringify(dataRes));
+                    // })(socket)
                 }
 
             }
@@ -2058,6 +2053,7 @@ async function enterRoom(socket, data) {
         return;
     }
     let roomInfo = gameMgr.getRoomById(roomId);
+    console.log("roomInfo_enter", roomInfo)
     if (!roomInfo) {
         roomInfo = await commonService.getTableValuesAsync("*", "t_rooms", { id: roomId });
         roomInfo = JSON.parse(roomInfo.base_info);
@@ -2085,6 +2081,8 @@ async function enterRoom(socket, data) {
             socket.emit("system_error", { errocde: 500, errmsg: errors[ret] || "未知错误" });
             return;
         }
+        console.log("data", data)
+        console.log("ret", ret)
         exports.login(socket, data)
     } catch (error) {
         console.log(error);
@@ -2316,11 +2314,13 @@ async function match(matchId) {
                     award: "",
                     stop: 1
                 })
+                let socket = userMgr.get(i.userId)
+                if (!socket) {
+                    socket = userMgr.getT(i.userId)
+                }
+                exports.exit(socket, { userId: i.userId, isMe: 1 })
             }
-            if (!socket) {
-                socket = userMgr.getT(i.userId)
-            }
-            exports.exit(socket, { userId: i.userId, isMe: 1 })
+
             gameMgr.DelMatch(matchId)
 
             return "stop"
