@@ -38,7 +38,7 @@ exports.account_server = function () {
         HALL_IP: HALL_IP,
         HALL_CLIENT_PORT: HALL_CLIENT_PORT,
         ACCOUNT_PRI_KEY: ACCOUNT_PRI_KEY,
-        CLIENT_PORT2:19003,
+        CLIENT_PORT2: 19003,
         //
         DEALDER_API_IP: LOCAL_IP,
         DEALDER_API_PORT: 22583,
@@ -50,8 +50,8 @@ exports.account_server = function () {
 exports.static_server = function () {
     return {
         HALL_IP: HALL_IP,
-        CLEINT_PORT: 12345,
-        
+        CLEINT_PORT: 54321,
+
     };
 };
 //大厅服配置
@@ -369,7 +369,7 @@ exports.coinNIUNIU = function () {
         HALL_PORT: COIN_SERVER_PORT,
         //与大厅服协商好的通信加密KEY
         ROOM_PRI_KEY: ROOM_PRI_KEY,
-        HTTP_PORT:25017,
+        HTTP_PORT: 25017,
         //暴露给客户端的接口
         CLIENT_IP: HALL_IP,
         CLIENT_PORT: 25001,
@@ -615,26 +615,26 @@ exports.game_server_bairenniuniu = {
 }
 
 //推筒子服务器配置
-exports.game_server = function(){
-	return {
-		SERVER_ID:"012",
-		
-		//暴露给大厅服的HTTP端口号
-		HTTP_PORT:19017,
-		//HTTP TICK的间隔时间，用于向大厅服汇报情况
-		HTTP_TICK_TIME:5000,
-		//大厅服IP
-		HALL_IP:LOCAL_IP,
-		FOR_HALL_IP:LOCAL_IP,
-		//大厅服端口
-		HALL_PORT:HALL_ROOM_PORT,
-		//与大厅服协商好的通信加密KEY
-		ROOM_PRI_KEY:ROOM_PRI_KEY,
-		
-		//暴露给客户端的接口
-		CLIENT_IP:HALL_IP,
-		CLIENT_PORT:10017,
-	};
+exports.game_server = function () {
+    return {
+        SERVER_ID: "012",
+
+        //暴露给大厅服的HTTP端口号
+        HTTP_PORT: 19017,
+        //HTTP TICK的间隔时间，用于向大厅服汇报情况
+        HTTP_TICK_TIME: 5000,
+        //大厅服IP
+        HALL_IP: LOCAL_IP,
+        FOR_HALL_IP: LOCAL_IP,
+        //大厅服端口
+        HALL_PORT: HALL_ROOM_PORT,
+        //与大厅服协商好的通信加密KEY
+        ROOM_PRI_KEY: ROOM_PRI_KEY,
+
+        //暴露给客户端的接口
+        CLIENT_IP: HALL_IP,
+        CLIENT_PORT: 10017,
+    };
 };
 
 
@@ -696,8 +696,8 @@ exports.game_server_tb_melee = function () {
 exports.wechat_pay = {
     APP_ID: "wx20f99e5365cae8ab",
     APP_KEY: "14637449a2e1bfe9736ec8227118e23c",
-    MCH_ID:"1512155981",
-    NOTIFY_URL:"http://"+HALL_IP+":"+HALL_CLIENT_PORT+"/webhooks"
+    MCH_ID: "1512155981",
+    NOTIFY_URL: "http://" + HALL_IP + ":" + HALL_CLIENT_PORT + "/webhooks"
 }
 
 /**
@@ -705,37 +705,37 @@ exports.wechat_pay = {
  * @type {{}}
  */
 exports.ali_pay = {
-    APP_ID:'',
-    PARTNER_ID:'',
-    APP_PRIVATE_KEY:'-----BEGIN RSA PRIVATE KEY-----\r\n' +
-    'MIIEpAIBAAKCAQEAtzsHL8hpwQg9RV4h5EEqdWw9BJ70urjFY0+pRI8M5vQumqz1'+
-    '75r5rkl1KL2SMoPaiCLW00/Aq/6iMiaa+hYQ0ZGnN7avqnzJ0sKm7wFdxnkPoJg7'+
-    'yOK0H9siL4fjAAXV52Klb5pm1zAadLP+QVnTXgGILy4XPgz5oIQq+DU6WfnIgoOy'+
-    'DN2bZOfLXUNV5qj+4mpjvx4S+iTkKSeIDoaJfs7fGiPDWjFUQlZdTIDrlZLGwEf+'+
-    'kd1RCkpAeTOsmWhbXgQ1zuw+ODJVWPQleimA7r+S64Ql5qcJhUQxUCLXeGKmb0Ms'+
-    'WRKdBD6Vh1Anvgch98ifjAXH1yMZv3s23Hu1pwIDAQABAoIBAElA7yGaVTVYLu7B'+
-    'sHkJ2Iizaj2jsyHHZxrKKVkAe98FtnAeQAC4C6QzOAS+rWlGr6KHky1OEDBzD7NP'+
-    'Hdxn3/d47MpoXhih5So+qfCZsjz7/1RsKFKq1+p4eFVaVVWX/6mPFablqsHTOHB5'+
-    '2WeVGtzVbfW2zpH/K/mRfYBX/2kituN/k4ZU+y7HVqhG8SboSlGfjDLsWIOuk5RB'+
-    'jPhyfZJuISB8tjMa2ZcLGm1aZi/ZLqb+QtfJhF5VSarmOGZM6/Az0NQAXgYu6DaU'+
-    'ZxRPRw5twmrbpprhQN2UAH+jdj1pZKTigWWqgl7QWBfQHM3Zeh9wE4SPa5MZuuZ4'+
-    'TJuYFBECgYEA6jCqdeeh2B1kYBqF5qov57SmTL5obywZQz+QaQQ6HlWhbaM2yLEV'+
-    '1u3r0w/zQEkmqlf1nH3hMgFViH1x859STsS348xUaerrc0HpVqQJ3QfBhI6IjwyV'+
-    'CI9Gf2yIYQFFGOI3x6GvnhOvWfvt6YI1rXRZgAP/1Pijga/Fo0fpIzkCgYEAyEtv'+
-    'O7doIExJPY64YQB8opO5RAfsuOs9OL/g1p7Ts9DiIreUV9hCiTO8h8oXoABTOuZf'+
-    'mDdy3K8l02hgt4kYddFBwg02OvdVzw1Vf3Z0up8zHzEkLoGWx3jjp8ouPBtLdGsP'+
-    'ko708HJa7m7mgH+VnsCso7E5/tfDc3Bqu5eTP98CgYAMRWSJLQvz8QZTatBdV8mO'+
-    '0I5uMwPx31OrjGcauZf6Au6kegri1TSZwHm843cRhUO7ZUR/YLEuF5fNwRT5eP2t'+
-    'Fu2zx/8cVazkqy141ruVk1R2h6lsJXKhsjA1eRBkVNa0CRZ3JWe4Vru3cVX0CFib'+
-    'sB8IcC01kZmvr/AhMCFtMQKBgQCnqqYBukV7DAEfe7KS2QJ8YebrsSqTnbBRKiZ/'+
-    '4tLbKteyMjUG2CzSh7GhhiYCtWL24lRRqtEHNcMXVr/nw+bq8XH3jHHCKLv3KHVS'+
-    'zwlmE9CKoutj1u0uK99+3PuZK0wdt2WAzRTzlvbRs5pXJPZNv4KFQN2InHurzgY6'+
-    '5ObJxwKBgQC8GcHs0zzKJH2gx9HCwNhDA7PY6q2DyKww8sXFjXc/lTMQBnkwoafc'+
-    'cnhuii5Vc71ZzTuKJ0DLBEjZwM2i/yX3ZNhUNu1wM3dD0s0g/emHIvbujKj6x7Kq'+
-    '5tjJO+yKiR4f7p2edrUkq2029rg0vAPZctrR3ARhDYZz2xWjgOqebw=='+
-    '\r\n-----END RSA PRIVATE KEY-----',
-    RSA_PUBLIC_KEY:'-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtzsHL8hpwQg9RV4h5EEqdWw9BJ70urjFY0+pRI8M5vQumqz175r5rkl1KL2SMoPaiCLW00/Aq/6iMiaa+hYQ0ZGnN7avqnzJ0sKm7wFdxnkPoJg7yOK0H9siL4fjAAXV52Klb5pm1zAadLP+QVnTXgGILy4XPgz5oIQq+DU6WfnIgoOyDN2bZOfLXUNV5qj+4mpjvx4S+iTkKSeIDoaJfs7fGiPDWjFUQlZdTIDrlZLGwEf+kd1RCkpAeTOsmWhbXgQ1zuw+ODJVWPQleimA7r+S64Ql5qcJhUQxUCLXeGKmb0MsWRKdBD6Vh1Anvgch98ifjAXH1yMZv3s23Hu1pwIDAQAB\r\n-----END PUBLIC KEY-----',
-    NOTIFY_URL:''
+    APP_ID: '',
+    PARTNER_ID: '',
+    APP_PRIVATE_KEY: '-----BEGIN RSA PRIVATE KEY-----\r\n' +
+        'MIIEpAIBAAKCAQEAtzsHL8hpwQg9RV4h5EEqdWw9BJ70urjFY0+pRI8M5vQumqz1' +
+        '75r5rkl1KL2SMoPaiCLW00/Aq/6iMiaa+hYQ0ZGnN7avqnzJ0sKm7wFdxnkPoJg7' +
+        'yOK0H9siL4fjAAXV52Klb5pm1zAadLP+QVnTXgGILy4XPgz5oIQq+DU6WfnIgoOy' +
+        'DN2bZOfLXUNV5qj+4mpjvx4S+iTkKSeIDoaJfs7fGiPDWjFUQlZdTIDrlZLGwEf+' +
+        'kd1RCkpAeTOsmWhbXgQ1zuw+ODJVWPQleimA7r+S64Ql5qcJhUQxUCLXeGKmb0Ms' +
+        'WRKdBD6Vh1Anvgch98ifjAXH1yMZv3s23Hu1pwIDAQABAoIBAElA7yGaVTVYLu7B' +
+        'sHkJ2Iizaj2jsyHHZxrKKVkAe98FtnAeQAC4C6QzOAS+rWlGr6KHky1OEDBzD7NP' +
+        'Hdxn3/d47MpoXhih5So+qfCZsjz7/1RsKFKq1+p4eFVaVVWX/6mPFablqsHTOHB5' +
+        '2WeVGtzVbfW2zpH/K/mRfYBX/2kituN/k4ZU+y7HVqhG8SboSlGfjDLsWIOuk5RB' +
+        'jPhyfZJuISB8tjMa2ZcLGm1aZi/ZLqb+QtfJhF5VSarmOGZM6/Az0NQAXgYu6DaU' +
+        'ZxRPRw5twmrbpprhQN2UAH+jdj1pZKTigWWqgl7QWBfQHM3Zeh9wE4SPa5MZuuZ4' +
+        'TJuYFBECgYEA6jCqdeeh2B1kYBqF5qov57SmTL5obywZQz+QaQQ6HlWhbaM2yLEV' +
+        '1u3r0w/zQEkmqlf1nH3hMgFViH1x859STsS348xUaerrc0HpVqQJ3QfBhI6IjwyV' +
+        'CI9Gf2yIYQFFGOI3x6GvnhOvWfvt6YI1rXRZgAP/1Pijga/Fo0fpIzkCgYEAyEtv' +
+        'O7doIExJPY64YQB8opO5RAfsuOs9OL/g1p7Ts9DiIreUV9hCiTO8h8oXoABTOuZf' +
+        'mDdy3K8l02hgt4kYddFBwg02OvdVzw1Vf3Z0up8zHzEkLoGWx3jjp8ouPBtLdGsP' +
+        'ko708HJa7m7mgH+VnsCso7E5/tfDc3Bqu5eTP98CgYAMRWSJLQvz8QZTatBdV8mO' +
+        '0I5uMwPx31OrjGcauZf6Au6kegri1TSZwHm843cRhUO7ZUR/YLEuF5fNwRT5eP2t' +
+        'Fu2zx/8cVazkqy141ruVk1R2h6lsJXKhsjA1eRBkVNa0CRZ3JWe4Vru3cVX0CFib' +
+        'sB8IcC01kZmvr/AhMCFtMQKBgQCnqqYBukV7DAEfe7KS2QJ8YebrsSqTnbBRKiZ/' +
+        '4tLbKteyMjUG2CzSh7GhhiYCtWL24lRRqtEHNcMXVr/nw+bq8XH3jHHCKLv3KHVS' +
+        'zwlmE9CKoutj1u0uK99+3PuZK0wdt2WAzRTzlvbRs5pXJPZNv4KFQN2InHurzgY6' +
+        '5ObJxwKBgQC8GcHs0zzKJH2gx9HCwNhDA7PY6q2DyKww8sXFjXc/lTMQBnkwoafc' +
+        'cnhuii5Vc71ZzTuKJ0DLBEjZwM2i/yX3ZNhUNu1wM3dD0s0g/emHIvbujKj6x7Kq' +
+        '5tjJO+yKiR4f7p2edrUkq2029rg0vAPZctrR3ARhDYZz2xWjgOqebw==' +
+        '\r\n-----END RSA PRIVATE KEY-----',
+    RSA_PUBLIC_KEY: '-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtzsHL8hpwQg9RV4h5EEqdWw9BJ70urjFY0+pRI8M5vQumqz175r5rkl1KL2SMoPaiCLW00/Aq/6iMiaa+hYQ0ZGnN7avqnzJ0sKm7wFdxnkPoJg7yOK0H9siL4fjAAXV52Klb5pm1zAadLP+QVnTXgGILy4XPgz5oIQq+DU6WfnIgoOyDN2bZOfLXUNV5qj+4mpjvx4S+iTkKSeIDoaJfs7fGiPDWjFUQlZdTIDrlZLGwEf+kd1RCkpAeTOsmWhbXgQ1zuw+ODJVWPQleimA7r+S64Ql5qcJhUQxUCLXeGKmb0MsWRKdBD6Vh1Anvgch98ifjAXH1yMZv3s23Hu1pwIDAQAB\r\n-----END PUBLIC KEY-----',
+    NOTIFY_URL: ''
 }
 
 
@@ -745,8 +745,8 @@ exports.ali_pay = {
  * @type {{}}
  */
 exports.sms_config = {
-    AccessKeyId:'LTAI6g5GltkMKEbM',
-    AccessKeySecret:'6xBuLINFCS0qIjkMnoPPK3jJHfzc6u'
+    AccessKeyId: 'LTAI6g5GltkMKEbM',
+    AccessKeySecret: '6xBuLINFCS0qIjkMnoPPK3jJHfzc6u'
 }
 
 
@@ -756,13 +756,13 @@ exports.sms_config = {
  */
 exports.pay_server = {
     //接口验签
-    API_TOKEN : "S&*#$%()X",
+    API_TOKEN: "S&*#$%()X",
     //支付服务器端口
     HTTP_PORT: 6688,
     MCH_ID: '10048',
     MCH_KEY: 'db1d1860092e4accb7a553e3cdbc107a',
     //同步回调地址
-    CALLBACK_URL:"http://pay.6u3w5.cn/quansupay/complete",
+    CALLBACK_URL: "http://pay.6u3w5.cn/quansupay/complete",
     //异步回调地址
-    NOTIFY_URL:""
+    NOTIFY_URL: ""
 }

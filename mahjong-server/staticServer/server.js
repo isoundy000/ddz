@@ -24,10 +24,11 @@ app.set("view engine", "html");
 app.set("views", path.join(__dirname, "../view"))
 app.use(express.static(path.join(__dirname, '../public')))
 app.use(express.static(path.join(__dirname, '../hotUpdate')))
+let hall_ip = "47.105.174.215"
 app.get('/create_qrcode', function (req, res) {
     let userId = req.query.userId;
     let hall_Server = config.static_server();
-    let url = "http://" + hall_Server.HALL_IP + ":" + hall_Server.CLEINT_PORT + "/register?bind_recommender=" + userId;
+    let url = "http://" + hall_ip + ":" + hall_Server.CLEINT_PORT + "/register?bind_recommender=" + userId;
     console.log(111)
     if (!userId) {
         http.send(res, 1, "参数错误")
@@ -47,15 +48,15 @@ app.get('/create_qrcode', function (req, res) {
 app.get("/createqrcode", function (req, res) {
     let userId = req.query.userId;
     let hall_Server = config.static_server();
-    let url = "http://" + hall_Server.HALL_IP + ":" + hall_Server.CLEINT_PORT + "/create_qrcode?userId=" + userId;
+    let url = "http://" + hall_ip + ":" + hall_Server.CLEINT_PORT + "/create_qrcode?userId=" + userId;
 
     res.header("Content-Type", "application/json;charset=utf-8");
-    http.send(res, 200, "ok", { share: url, download: "http://www.pornhub.com" });
+    http.send(res, 200, "ok", { share: url, download: "https://www.bilibili.com/" });
 }),
     app.get("/img", function (req, res) {
         let userId = req.query.userId;
         let hall_Server = config.static_server();
-        let url = "http://" + hall_Server.HALL_IP + ":" + hall_Server.CLEINT_PORT + "/register?bind_recommender=" + userId;
+        let url = "http://" + hall_ip + ":" + hall_Server.CLEINT_PORT + "/register?bind_recommender=" + userId;
         console.log(111)
         if (!userId) {
             http.send(res, 1, "参数错误")
@@ -94,7 +95,7 @@ app.get("/createqrcode", function (req, res) {
                 //     'Location': "http://"+hall_Server.HALL_IP + ":12345/share/"+userId+".jpg"
                 // }),
                 // res.end(),
-                url1 = "http://" + hall_Server.HALL_IP + ":12345/share/" + userId + ".jpg",
+                url1 = "http://" + hall_ip + ":12345/share/" + userId + ".jpg",
                 http.send(res, 0, "ok", { url1: url1 }),
             )
             // console.log(path.join(__dirname, '../public/img/share.jpg'))
