@@ -5,8 +5,7 @@ let matchServer = require("../../common/service/matchServer")
 let config = {
     xinshou: xinshou(),
     jingying: jingying(),
-    dashi: dashi(),
-    bisai_config: bisai_config()
+    dashi: dashi()
 }
 async function xinshou() {
 
@@ -129,7 +128,7 @@ async function bisai_config() {
         type: "xinshou",
         description: xinshou.description,
         award: xinshou.award_name,
-
+        minScoreLimit: xinshou.minScoreLimit,
 
         fee: xinshou.fee,
     },
@@ -138,7 +137,7 @@ async function bisai_config() {
         type: "jingying",
         description: jingying.description,
         award: jingying.award_name,
-
+        minScoreLimit: jingying.minScoreLimit,
 
         fee: jingying.fee,
     },
@@ -147,6 +146,7 @@ async function bisai_config() {
         type: "dashi",
         description: dashi.description,
         award: dashi.award_name,
+        minScoreLimit: dashi.minScoreLimit,
 
 
         fee: dashi.fee,
@@ -177,3 +177,4 @@ function getMatchDb2(type, callback) {
 }
 
 exports.config = config
+exports.bisai_config = bisai_config

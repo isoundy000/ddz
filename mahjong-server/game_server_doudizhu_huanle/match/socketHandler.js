@@ -1790,6 +1790,7 @@ var async = require("async")
 //报名参加比赛
 exports.baoming = async function (socket, data) {
     let userId = data.userId;
+
     let type = data.type;
     let name = data.name
     let headimg = data.headimg
@@ -1809,7 +1810,18 @@ exports.baoming = async function (socket, data) {
     // console.log("config.chushifenshu", config.chushifenshu)
     let difen = config.diFen
     let dizhu = config.diZhu
+    let info = gameMgr.usersIsMatch(userId)
+
     let matchId = gameMgr.getOneMatch(type)
+    if (info) {
+        matchId = info.matchId
+    }
+    let isIn = 0;
+    if (info) {
+
+        matchId = info.matchId
+        isIn = 1;
+    }
     console.log("matchId", matchId)
     if (matchId) {
         async.auto({
@@ -1840,7 +1852,10 @@ exports.baoming = async function (socket, data) {
                 })
             }
             // gameMgr.addMatch(matchId, usersNum, type)
-            gameMgr.joinMatch(matchId, userId, fen, name, headimg)
+            if (!isIn) {
+                gameMgr.joinMatch(matchId, userId, fen, name, headimg)
+            }
+
             userMgr.bind(userId, socket)
 
             let nowUsersNum = gameMgr.getUsersNum(matchId)

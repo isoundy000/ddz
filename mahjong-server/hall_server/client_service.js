@@ -1220,6 +1220,49 @@ app.get("/get_zj", function (req, res) {
     });
 })
 
+// let async = require("async")
+async function getRoomId(userId) {
+
+    async.auto({
+        roomId: (callback) => {
+            playerService.getUserDataByUserId(userId, callback)
+        },
+        baseInfo: ["roomId", (result, callback) => {
+            let roomId = result.roomId.roomid
+            if (!roomId) {
+                return null
+            }
+            commonService.getTableValuesAsync("base_info", "t_rooms", { id: roomId }, callback)
+        }]
+    }, function (err, result) {
+        if (err) {
+            return reject(err)
+        }
+        let base_info = result.baseInfo.base_info
+        if (!base_info) {
+            return null
+        }
+        base_info = JSON.parse(base_info)
+        let clubId = base_info.clubId
+        return { roomId: result.roomId.roomid, clubId: clubId, type: base_info.room_type }
+    })
+
+
+}
+app.get("/check_user_isInRoom", async (req, res) => {
+    let userId = req.query.userId;
+    if (!userId) {
+        return http.send(res, 1, "参数错误")
+    }
+    let info = await getRoomId(userId);
+    if (!info) {
+        return http.send(res, 0, "ok")
+    }
+    return http.send(res, 2, "ok", info)
+
+
+})
+
 let getClientIp = function (req) {
     return req.headers['x-forwarded-for'] ||
         req.connection.remoteAddress ||
@@ -3653,6 +3696,22 @@ app.get('/get_backpack', (req, res) => {
     })
 })
 
+app.get("/shop_info", (req, res) => {
+    activityService.getShopInfo(function (err, result) {
+        if (err) {
+            return http.send(res, 1, "服务器异常")
+        }
+        let r = []
+        for (let i of result) {
+            let temp = {};
+            temp.img = i.img
+            temp.coins = i.count
+            temp.money = i.price
+            r.push(temp)
+        }
+        return http.send(res, 0, "ok", { info: r })
+    })
+})
 /********************************2018-06-27 新增俱乐部消息提醒功能 begin************************************/
 
 
@@ -3734,8 +3793,8 @@ app.get("/jubao", function (req, res) {
  */
 
 app.get("/get_bisai", function (req, res) {
-    let config = bisaiConfig.config.bisai_config
-    config.then(function (data) {
+    let config = bisaiConfig.bisai_config
+    config().then(function (data) {
         return http.send(res, 0, "ok", { data: data })
     })
 

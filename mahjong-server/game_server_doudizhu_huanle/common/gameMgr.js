@@ -39,6 +39,15 @@ exports.getRoomList = function () {
     return roomList;
 }
 
+exports.usersIsMatch = function (userId) {
+    for (let i in matchList) {
+        for (let j of matchList[i].users) {
+            if (j.userId == userId) {
+                return { matchId: i, matchInfo: matchList[i] }
+            }
+        }
+    }
+}
 /**
  * 获取比赛场列表
  */
