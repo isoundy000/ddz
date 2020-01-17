@@ -419,7 +419,7 @@ module.exports = {
      */
     saveGameRecord(player_id, username, game_type, create_ime, win_score, seatcount, roomId, jushu, sum_all, club_id, user_type, callback) {
         let sql = 'insert into t_game_record(fk_player_id, username, game_type, play_duration, win_score, record_time,seatcount,roomId,jushu,sum_all,club_id,user_type) values(?,?,?,?,?,?,?,?,?,?,?,?)'
-        const record_time = uTime.now();
+        const record_time = parseInt(new Date().getTime() / 1000);
         const play_duration = record_time - create_ime;
         const name = crypto.toBase64(username);
         const args = uArray.push(player_id, name, game_type, play_duration, win_score, record_time, seatcount, roomId, jushu, sum_all, club_id, user_type)
@@ -435,12 +435,12 @@ module.exports = {
  * @param {*} jifen 输赢分值
  * @param {*} callback 
  */
-    saveGameJiFenRecord(player_id, username, game_type, create_ime, jifen, seatcount, roomId, jushu, sum_all, club_id, callback) {
-        let sql = 'insert into t_game_record(fk_player_id, username, game_type, play_duration, jifen, record_time,seatcount,roomId,jushu,sum_all,club_id) values(?,?,?,?,?,?,?,?,?,?,?)'
-        const record_time = uTime.now();
+    saveGameJiFenRecord(player_id, username, game_type, create_ime, win_score, jifen, seatcount, roomId, jushu, sum_all, club_id, callback) {
+        let sql = 'insert into t_game_record(fk_player_id, username, game_type, play_duration, win_score,jifen, record_time,seatcount,roomId,jushu,sum_all,club_id) values(?,?,?,?,?,?,?,?,?,?,?,?)'
+        const record_time = parseInt(new Date().getTime() / 1000);
         const play_duration = record_time - create_ime;
         const name = crypto.toBase64(username);
-        const args = uArray.push(player_id, name, game_type, play_duration, jifen, record_time, seatcount, roomId, jushu, sum_all, club_id)
+        const args = uArray.push(player_id, name, game_type, play_duration, win_score, jifen, record_time, seatcount, roomId, jushu, sum_all, club_id)
         db.save(sql, args, callback)
     },
     /**

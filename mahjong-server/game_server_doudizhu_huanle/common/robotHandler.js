@@ -10,6 +10,7 @@ var gameLogic = require('./gameLogic');
 var commonUtil = require('../../utils/commonUtil');
 // var socketHandler = require('./socketHandler');
 var robotMgr = require('./robotMgr');
+var myConfig = require("../match/config_match")
 
 /**
  * 机器人金币不足时退出游戏
@@ -31,37 +32,8 @@ exports.exit = function (userId) {
  * 用户准备 判断机器人是否达到自动退出条件，满足的话自动离开房间（判断属性  游戏时长、局数）
  * @param userId
  */
-exports.ready = function (userId) {
-    if (!userId) {
-        return;
-    }
-    var roomInfo = gameMgr.getRoomByUserId(userId);
-    if (!roomInfo) {
-        return;
-    }
-    var player = roomInfo.getPlayerById(userId);
-    if (!player) {
-        return;
-    }
-    var playTime = dateUtil.getCurrentTimestapm() - player.beginGameTime;
-    var numOfGame = player.numOfGame;
-
-    var robotSocket = userMgr.get(userId);
-    var resData = {};
-    resData.userId = userId;
-    //玩家退出
-
-    //多少局退出
-    var maxNumOfGame = commonUtil.randomFrom(10, 40);
-    var maxPlayTime = commonUtil.randomFrom(10, 40);
-    //玩家退出
-    if (playTime > maxPlayTime * 60 * 60 || numOfGame > maxNumOfGame) {
-        exit(robotSocket, JSON.stringify(resData));
-        //使用过的机器人重新放回机器人队列中
-        robotMgr.addRobot(userId);
-    } else {
-        ready(robotSocket, JSON.stringify(resData));
-    }
+exports.ready = function (socket, userId) {
+    ready(socket, { userId: i.userId })
 }
 
 /**
@@ -176,19 +148,21 @@ exports.jiabei = function (socket, data) {
     }
     var userId = data.userId;
     var beishu = data.beishu;
-    if (!socket) {
-        socket = userMgr.getT(userId)
-    }
     if (!userId || beishu == undefined || beishu == null) {
-        socket.emit('system_error', { errcode: 500, errmsg: '参数错误', flag: "jiabei" });
+        socket.emit('system_error', {
+            errcode: 500,
+            errmsg: '参数错误'
+        });
     }
-    // dealUseridErr(socket,userId);
     var roomInfo = gameMgr.getRoomByUserId(userId);
     var player = roomInfo.getPlayerById(userId);
-    player.beishu = beishu;
+    player.privateBeishu = beishu;
     player.clearTimer();
     let banker = roomInfo.getBanker();
-    userMgr.broacastByRoomId("gb_jiabei", { beishu: beishu, userId: userId }, roomInfo.roomId);
+    userMgr.broacastByRoomId("gb_jiabei", {
+        beishu: beishu,
+        userId: userId
+    }, roomInfo.roomId);
     getBeishu(roomInfo.roomId)
     if (beishu == 0) {
         beishu = 1;
@@ -203,17 +177,21 @@ exports.jiabei = function (socket, data) {
     let f = roomInfo.isAllOpt(player.OPT_STATE.JIABEI);
     console.log("一个人加倍了", f)
     if (f) {
-
         let banker = roomInfo.getBanker()
         roomInfo.setCurrentTurn(banker.seatIndex)
         roomInfo.setState(roomInfo.GAME_STATE.PLAYING)
-        userMgr.broacastByRoomId("gb_turn", { gameState: roomInfo.GAME_STATE.CHUPAI, userId: banker.userId, countdown: roomInfo.OPT_COUNTDOWN }, roomInfo.roomId)
-        roomInfo.nongminBeishu = roomInfo.nongminBeishu - 1;
+        userMgr.broacastByRoomId("gb_turn", {
+            gameState: roomInfo.GAME_STATE.CHUPAI,
+            userId: banker.userId,
+            countdown: roomInfo.OPT_COUNTDOWN
+        }, roomInfo.roomId)
         if (banker.isTuoguan == 0) {
             banker.setTimer(optTimeOut(banker.userId), roomInfo.OPT_COUNTDOWN)
         } else {
             let tuoguanSocket = userMgr.getT(banker.userId)
-            tuoguanSocket.emit("your_turn", { gameState: "playing" });
+            tuoguanSocket.emit("your_turn", {
+                gameState: roomInfo.gameState
+            });
         }
     }
 }
@@ -222,7 +200,7 @@ exports.jiabei = function (socket, data) {
 function getBeishu(roomId) {
     let roomInfo = gameMgr.getRoomById(roomId);
     let beishus = roomInfo.publicBeishu;
-    console.log(beishus)
+    // console.log(beishus)
     let beishu = 1;
     for (let i in beishus) {
         if (beishus[i]) {
@@ -478,6 +456,7 @@ async function exit(socket, data) {
     }
 
     var userId = data.userId;
+    let isMe = datta.isMe;
     if (!userId) {
         return;
     }
@@ -503,7 +482,7 @@ async function exit(socket, data) {
     }
     //设置玩家离线
     player.setOnlineState(0);
-    if (socket) {
+    if (socket && !isMe) {
         socket.emit('exit_result', { state: player.state, res: "yes" });
         console.log("exit", player)
         exports.disconnect(socket);
@@ -525,6 +504,7 @@ async function exit(socket, data) {
             roomInfo.clearTimer();
             //玩家退出
             gameMgr.exitRoom(userId);
+            userMgr.delT(userId)
             //解散房间
             //如果是代开房间，则不解散房间
             if (roomInfo.isDaiKai == 0) {
@@ -532,6 +512,7 @@ async function exit(socket, data) {
             }
         } else {
             gameMgr.exitRoom(userId);
+            userMgr.delT(userId)
             if (player.isBanker) {
                 //console.log('********exit更换庄家**********');
 
@@ -613,10 +594,36 @@ async function ready(socket, data) {
         console.log("游戏将要开始前房内玩家数" + playerCount)
         console.log("游戏将要开始前房内已准备的玩家数" + preparedPlayerCount)
         //直接开始游戏
-        exports.gameBegin(roomInfo.roomId);
+        gameBegin(roomInfo.roomId);
     }
 }
+/**
+ * 开始游戏
+ */
+function gameBegin(roomId) {
+    var roomInfo = gameMgr.getRoomById(roomId);
+    //console.log('****游戏开始，庄家是【'+banker.userId+'】*****');
+    //广播通知游戏开始
+    // userMgr.broacastByRoomId('system_error', { errcode: 500, errmsg: '开始游戏' },roomId);
+    userMgr.broacastByRoomId('gb_game_begin', {
+        errcode: 0,
+        errmsg: "开始游戏"
+    }, roomId);
 
+    //扣除房间抽水
+    roomInfo.choushui();
+    //设置游戏的状态为开始状态
+    roomInfo.setState(roomInfo.GAME_STATE.QIANGDIZHU);
+    //更新游戏局数
+    roomInfo.updateNumOfGame();
+    var diZhu = roomInfo.diZhu;
+    var readyPlayerCount = roomInfo.getPlayerCount();
+
+    //延迟一秒后通知发牌
+    setTimeout(function () {
+        faPai(roomInfo);
+    }, 500);
+}
 //提示
 function tishi(socket, data) {
     let userId = data.userId;
@@ -658,7 +665,7 @@ function tishi(socket, data) {
         }
         return lastRes
     }
-    if (res.length == 0 && userId !== roomInfo.lastPokers.userId) {
+    if (res.length == 0 && lastPokersType.type != "huojian") {
 
         res = zhadan(player.pokers);
     }
@@ -684,7 +691,7 @@ async function buchu(socket, data) {
     }
     // userMgr.bind(userId,socket)
     let player = roomInfo.getPlayerById(userId)
-    let nextPlayer = roomInfo.getNextTurnPlayer(roomInfo.currentTurn);
+    let nextPlayer = roomInfo.getNextTurnPlayer(player.seatIndex);
     console.log("nextPlaroomInfo.currentTurnyer", roomInfo.currentTurn)
     console.log("nextPlayer", nextPlayer)
     player.clearTimer();
@@ -695,7 +702,8 @@ async function buchu(socket, data) {
     let flag;
     if (tishi_result.length == 0) {
         flag = 0
-    } else if (roomInfo.lastPokers.userId == nextPlayer.userId || tishi_result.length > 0) {
+    }
+    if (roomInfo.lastPokers.userId == nextPlayer.userId) {
         flag = 1;
     }
 
@@ -802,7 +810,8 @@ async function chupai(socket, data) {
     let flag;
     if (tishi_result.length == 0) {
         flag = 0
-    } else if (roomInfo.lastPokers.userId == nextPlayer.userId) {
+    }
+    if (roomInfo.lastPokers.userId == nextPlayer.userId) {
         flag = 1;
     }
 
@@ -832,8 +841,13 @@ function gameOver(roomId) {
     }
 
     //计算输赢
-    gameMgr.settlement(roomId);
-    gameMgr.settlementJifen(roomId)
+    if (roomInfo.clubId) {
+        gameMgr.settlementJifen(roomId)
+    } else {
+        gameMgr.settlement(roomId);
+    }
+
+
     let winner = null;
     //广播结算结果
     var results = [];
@@ -895,11 +909,11 @@ function gameOver(roomId) {
                         socket = userMgr.getT(player.userId)
                         socket.userId = player.userId;
                     }
-                    (function (socket) {
-                        let dataRes = {};
-                        dataRes.userId = player.userId;
-                        exports.exit(socket, JSON.stringify(dataRes));
-                    })(socket)
+                    // (function (socket) {
+                    //     let dataRes = {};
+                    //     dataRes.userId = player.userId;
+                    //     exports.exit(socket, JSON.stringify(dataRes));
+                    // })(socket)
                 }
             }
 
@@ -930,18 +944,21 @@ function gameOver(roomId) {
             for (let i in matchUsers) {
                 i = parseInt(i)
                 let socket = userMgr.get(matchUsers[i].userId)
-                socket.emit("rank_result", { rank: i + 1, usersNum: length })
+                socket.emit("rank_result2", { rank: i + 1, usersNum: length })
             }
-            setTimeout(function () {
-                let result = match(roomInfo.clubId);
+            setTimeout(async function () {
+                let result = await match(roomInfo.clubId);
+                console.log("result", result)
                 if (result && result != "stop") {
                     for (let i of matchUsers) {
                         let socket = userMgr.get(i.userId)
                         if (!socket) {
                             socket = userMgr.getT(i.userId)
                         }
+                        ready(socket, { userId: i.userId });
+
                     }
-                    exports.ready(socket, { userId: i.userId })
+
                 }
             }, 3000)
         }
@@ -949,7 +966,9 @@ function gameOver(roomId) {
     }, 2000)
 }
 
-
+function sortByfen(a, b) {
+    return a.fen - b.fen
+}
 /**
  * 
  * 自动匹配比赛场合适的玩家 
@@ -958,7 +977,8 @@ function gameOver(roomId) {
 function matchStart(matchId, roomId, nowdiFen, nowdiZhu, needStop) {
     let matchInfo = gameMgr.getMatchInfo(matchId)
     let matchUsers = matchInfo.users;
-    matchUsers.sort(sortByfen)
+    let usersNum2 = matchUsers.length
+    matchUsers.sort(sortByfen);
     let rooms = matchInfo.rooms
     console.log("matchStart开始了")
     if (needStop == 0) {
@@ -987,22 +1007,40 @@ function matchStart(matchId, roomId, nowdiFen, nowdiZhu, needStop) {
             if (randomUsers.length >= 3) {
                 let users = randomUsers.splice(0, 3)
                 console.log("users", users)
+                let fenRes = []
                 for (let i of users) {
                     if (i.status == 0) {
+                        let rank = 0;
+                        for (let j in matchUsers) {
+                            if (matchUsers[j].userId == i.userId) {
+                                rank = parseInt(j) + 1
+                            }
+                        }
                         let socket = userMgr.get(i.userId)
+                        if (!socket) {
+                            socket = userMgr.getT(i.userId)
+                        }
                         let data = {};
-                        data.name = i.name,
-                            data.userId = i.userId,
-                            data.sex = 0,
-                            data.type = matchInfo.type,
-                            data.clubId = matchId,
-                            data.nowdiFen = nowdiFen,
-                            data.nowdiZhu = nowdiZhu,
-                            data.headimg = i.headimg,
-                            data.roomId = roomId,
-                            data.coins = await getCoins(i.userId);
+                        data.name = i.name
+                        data.userId = i.userId
+                        data.sex = 0
+                        data.type = matchInfo.type
+                        data.jifen = i.jifen
+                        data.clubId = matchId
+                        data.nowdiFen = nowdiFen
+                        data.nowdiZhu = nowdiZhu
+                        data.headimg = i.headimg
+                        data.roomId = roomId
+                        data.coins = await getCoins(i.userId);
                         gameMgr.setMatchUsers(matchId, i.userId, "status", 1)
+                        let temp = {}
+                        temp.userId = i.userId
+                        temp.rank = rank
+                        temp.jifen = i.jifen
+                        temp.userNum = usersNum2
+                        fenRes.push(temp)
                         setTimeout(function () {
+                            socket.emit("gb_jr", { result: fenRes })
                             enterRoom(socket, data)
                         }, 500)
 
@@ -1028,7 +1066,99 @@ function matchStart(matchId, roomId, nowdiFen, nowdiZhu, needStop) {
         return needStop
     }
 }
+/**
+ * 创建房间
+ * @param {*} clubId 
+ * @param {*} type 
+ */
+async function createRoom(clubId, type) {
 
+    let room_config = await myConfig.config[type]
+    // if (data.nowdiFen && data.nowdiZhu) {
+    //     room_config.diZhu = nowdiZhu
+    //     room_config.diFen = nowdiZhu
+    //     socket.emit("fz_result", { difen: nowdiFen, dizhu: nowdiZhu })
+    // }
+    async function createRoom() {
+        return new Promise(async (resolve, reject) => {
+            // room_config.ip = config.SERVER_IP
+            // room_config.port = config.CLIENT_PORT
+            room_config.clubId = clubId;
+            try {
+                let createRes = await gameMgr.createRoom(room_config)
+                let roomId = createRes.roomId
+                resolve(roomId)
+                console.log(roomId)
+                console.log("房间id" + roomId)
+            } catch (error) {
+                console.log(error)
+                console.log(72)
+            }
+        })
+    }
+    console.log("shengchengfangjianzhong")
+    let roomId = await createRoom()
+    return roomId
+
+
+}
+/**
+ * 进入房间
+ * @param {*} socket 
+ * @param {*} data 
+ */
+async function enterRoom(socket, data) {
+    var userId = data.userId
+    var name = data.name;
+    var roomId = data.roomId;
+    var coins = data.coins;
+    var headimg = data.headimg;
+    var sex = data.sex;
+    let jifen = data.jifen
+
+    var ctrl_param = 0;
+    console.log("data", data)
+    console.log("进入enterroom", roomId)
+    console.log("headimg", headimg)
+    console.log("userId", userId)
+    if (userId == null || roomId == null || headimg == null) {
+        socket.emit("system_error", { errocde: 500, errmsg: "参数错误", flag: "enter_room" });
+        return;
+    }
+    let roomInfo = gameMgr.getRoomById(roomId);
+    if (!roomInfo) {
+        roomInfo = await commonService.getTableValuesAsync("*", "t_rooms", { id: roomId });
+        roomInfo = JSON.parse(roomInfo.base_info);
+    }
+    // //安排玩家坐下
+    try {
+        let ret = await gameMgr.enterRoom({
+            roomId: roomId,
+            userId: userId,
+            name: name,
+            coins: parseInt(coins),
+            jifen: jifen,
+            headimg: headimg,
+            ctrlParam: ctrl_param,
+            sex: sex,
+            is_robot: 0
+        });
+        let errors = {
+            [2222]: "房卡不足.",
+            [3]: "房间不存在.",
+            [4]: "房间已经满了.",
+            [5]: "内部错误.",
+        }
+        if (ret != 0) {
+            socket.emit("system_error", { errocde: 500, errmsg: errors[ret] || "未知错误" });
+            return;
+        }
+        exports.login(socket, data)
+    } catch (error) {
+        console.log(error);
+        socket.emit("system_error", { errocde: 500, errmsg: "加入房间失败, 请稍后重试" });
+    }
+}
 async function match(matchId) {
     let matchInfo = gameMgr.getMatchInfo(matchId)
     console.log("matchInfo", matchInfo)
@@ -1064,7 +1194,7 @@ async function match(matchId) {
         if (matchInfo.users.length > jinjiConfig[nowLevel]) {
             // let matchUsers = matchInfo.users.sort(sortByfen)
             for (let i of matchUsers) {
-                if (i.fen < nowLimitFen) {
+                if (i.jifen < nowLimitFen) {
                     let index = matchUsers.indexOf(i)
                     matchInfo.users.splice(index, 1)
                     let socket = userMgr.get(i.userId)
@@ -1074,6 +1204,10 @@ async function match(matchId) {
                         errmsg: "你当前排名第" + index + "名已被淘汰",
                         stop: 1
                     })
+                    if (!socket) {
+                        socket = userMgr.getT(i.userId)
+                    }
+                    exports.exit(socket, { userId: i.userId, isMe: 1 })
                 }
             }
             matchStart(matchId, nowdiFen, nowdiZhu, 1)
@@ -1086,10 +1220,20 @@ async function match(matchId) {
 
     if (nowLevel == 1) {
         console.log("开始复赛了")
-        if (matchInfo.jushu < 2) {
-            let jushu = matchInfo.jushu + 1
-            gameMgr.setMatchInfo(matchId, "jushu", jushu)
-            matchStart(matchId, nowdiFen, nowdiZhu, 0)
+        let jushu = matchInfo.users[0].jushu
+        if (jushu < 2) {
+            console.log("进入复赛了2", jushu)
+            let nowJushu = jushu + 1
+            for (let i of matchInfo.users) {
+
+                gameMgr.setMatchUsers(matchId, i.userId, "jushu", nowJushu)
+            }
+            if (jushu == 0) {
+                matchStart(matchId, 0, nowdiFen, nowdiZhu, 0)
+            } else {
+                return matchStart(matchId, 0, nowdiFen, nowdiZhu, 1)
+            }
+
         } else {
             for (let i of matchUsers) {
                 let index = matchUsers.indexOf(i)
@@ -1102,6 +1246,10 @@ async function match(matchId) {
                         errmsg: "你当前排名" + index + "名已被淘汰",
                         stop: 1
                     })
+                    if (!socket) {
+                        socket = userMgr.getT(i.userId)
+                    }
+                    exports.exit(socket, { userId: i.userId, isMe: 1 })
                 }
 
             }
@@ -1116,27 +1264,34 @@ async function match(matchId) {
         console.log("进入决赛了", jushu)
         if (jushu < 2) {
             console.log("进入决赛了2", jushu)
-            let nowJushu = jushu += 1
+            let nowJushu = jushu + 1
             for (let i of matchInfo.users) {
 
                 gameMgr.setMatchUsers(matchId, i.userId, "jushu", nowJushu)
             }
             if (jushu == 0) {
-                matchStart(matchId, 0, nowdiFen, nowdiZhu, 1)
-            } else {
                 matchStart(matchId, 0, nowdiFen, nowdiZhu, 0)
+            } else {
+                return matchStart(matchId, 0, nowdiFen, nowdiZhu, 1)
             }
 
         } else {
             for (let i in matchUsers) {
                 userMgr.sendMsg(matchUsers[i].userId, "bisai_result", {
-                    errocde: 200,
+                    errcode: 200,
                     errmsg: "比赛结束",
                     rank: i,
-                    award: ""
+                    award: "",
+                    stop: 1
                 })
             }
-            return stop
+
+            let socket = userMgr.get(i.userId)
+            if (!socket) {
+                socket = userMgr.getT(i.userId)
+            }
+            exports.exit(socket, { userId: i.userId, isMe: 1 })
+            return "stop"
         }
     }
 

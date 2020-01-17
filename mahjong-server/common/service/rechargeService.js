@@ -608,7 +608,8 @@ module.exports = {
             let sql = `select fk_player_id,username,play_duration,win_score,game.jifen,game.roomId,jushu,game_type,seatCount,users.headimg,game.user_type from t_game_record as game,t_users as users 
             where game.roomId in ? 
             and play_duration>=? 
-            and users.userid=game.fk_player_id
+            and game.fk_player_id =?
+            and users.userid = ?
             order by record_time DESC`
             let res2 = []
             for (let i of res) {
@@ -619,12 +620,11 @@ module.exports = {
                 return;
             }
             // console.log("res2",res2)
-            let args2 = [[res2], BeginTimestamp];
+            let args2 = [[res2], BeginTimestamp, user_id, user_id];
             db.queryForList(pagenum, size, sql, args2, callback);
         });
 
     },
-
 
     /**
      * 获得玩家玩的总局数

@@ -300,19 +300,30 @@ exports.getSamePai = function (pokers, weishu, len, otherPokerMax) {
 }
 exports.getAllSamePai = function (pokers, weishu) {
     pokers = [].concat(pokers);
-    console.log(pokers);
     let jin = [16, 17];
     if (weishu == 1) {
         jin.push(15)
     }
+    console.log("j1", jin)
+    // console.log("pokers", pokers);
+    let jinRes = [];
     for (let i of jin) {
         for (let j of pokers) {
             if (j.num == i) {
-                commonUtil.removeOne(pokers, j);
+                console.log("j", j)
+                jinRes.push(j)
             }
         }
 
     }
+    for (let i of jinRes) {
+        for (let j of pokers) {
+            if (j.num == i.num) {
+                commonUtil.removeOne(pokers, j)
+            }
+        }
+    }
+    // console.log("pokers", pokers)
     let temp = {}
     //初始化temp
     for (let i of pokers) {
@@ -327,7 +338,7 @@ exports.getAllSamePai = function (pokers, weishu) {
             delete temp[i]
         }
     }
-    console.log(temp)
+    console.log("temp", temp)
     //如果牌A在此数组内，为了方便先把牌A的值改为14
     let keys2 = Object.keys(temp).reverse();
     for (let i = 0; i < keys2.length; i++) {
@@ -1097,10 +1108,10 @@ exports.getSuijiPai = function (mypokers) {
         let temp = {};
         let lastRes = [];
         res.sort(sortLen)
-        for (let i of res[0]) {
+        for (let i of res) {
             temp[i] = 0
         }
-        for (let i of res[0]) {
+        for (let i of res) {
             for (let j of mypokers) {
                 if (i == j.num && temp[i] !== 3) {
                     temp[i] += 1
@@ -1149,7 +1160,7 @@ exports.getSuijiPai = function (mypokers) {
 function isHuoJian(pokers) {
     pokers = pokerSort(pokers);
     if (pokers.length === 2 && pokers[1].num == 16) {
-        return true;
+        return 17;
     }
     return false;
 

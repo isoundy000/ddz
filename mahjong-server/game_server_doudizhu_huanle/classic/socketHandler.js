@@ -115,6 +115,7 @@ exports.login = async function (socket, data, config) {
     if (!clubId) {
         clubId = 0;
     }
+    console.log("clubId", clubId)
     dealUseridErr(socket, userId)
     console.log("type", type)
     let room_config = myConfig.config[type]
@@ -989,7 +990,6 @@ exports.jiabei = function (socket, data) {
         roomInfo.setCurrentTurn(banker.seatIndex)
         roomInfo.setState(roomInfo.GAME_STATE.PLAYING)
         userMgr.broacastByRoomId("gb_turn", { gameState: roomInfo.GAME_STATE.CHUPAI, userId: banker.userId, countdown: roomInfo.OPT_COUNTDOWN }, roomInfo.roomId)
-        roomInfo.nongminBeishu = roomInfo.nongminBeishu - 1;
         if (banker.isTuoguan == 0) {
             banker.setTimer(optTimeOut(banker.userId), roomInfo.OPT_COUNTDOWN)
         } else {
@@ -1146,7 +1146,7 @@ exports.tishi = function (socket, data) {
         }
         return lastRes;
     }
-    if (res.length == 0) {
+    if (res.length == 0 && lastPokersType.type != "huojian") {
 
         res = zhadan(player.pokers);
     }
@@ -1460,10 +1460,9 @@ function gameOver(roomId) {
         //gameMgr.clearRoom(roomId);
         setTimeout(function () {
             let seatLength = roomInfo.seats.length;
-            let tempSeats = roomInfo.seats.concat();
+            let tempSeats = roomInfo.seats;
             for (var i = 0; i < seatLength; i++) {
                 var player = tempSeats[i];
-
                 var socket = userMgr.get(player.userId);
                 if (!socket || player.isOnline == 0) {
                     //console.log('*******清理玩家【'+player.userId+'】********');
@@ -1471,11 +1470,11 @@ function gameOver(roomId) {
                         socket = userMgr.getT(player.userId)
                         socket.userId = player.userId;
                     }
-                    (function (socket) {
+                    (function () {
                         let dataRes = {};
                         dataRes.userId = player.userId;
                         exports.exit(socket, JSON.stringify(dataRes));
-                    })(socket)
+                    })()
                 }
 
             }
@@ -1500,7 +1499,7 @@ function gameOver(roomId) {
                     //player.setTimer(timer, roomInfo.READY_COUNTDOWN);
                 }
             }
-        }, 1000)
+        }, 500)
     }, 2000)
 }
 
@@ -1721,6 +1720,7 @@ exports.exit = function (socket, data) {
     }
 
     var userId = data.userId;
+    var isMe = data.idMe;
     if (!userId) {
         return;
     }
@@ -1740,7 +1740,7 @@ exports.exit = function (socket, data) {
     }
     //设置玩家离线
     player.setOnlineState(0);
-    if (socket) {
+    if (socket && !isMe) {
         socket.emit('exit_result', { state: player.state, res: "yes" });
         console.log("exit", player)
         exports.disconnect(socket);
@@ -1766,6 +1766,7 @@ exports.exit = function (socket, data) {
             roomInfo.clearTimer();
             //玩家退出
             gameMgr.exitRoom(userId);
+            userMgr.delT(userId)
             //解散房间
             //如果是代开房间，则不解散房间
             if (roomInfo.isDaiKai == 0) {

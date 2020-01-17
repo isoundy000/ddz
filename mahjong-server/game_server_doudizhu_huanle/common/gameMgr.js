@@ -113,7 +113,11 @@ exports.setMatchUsers = function (matchId, userId, key, value) {
 
 //退赛
 exports.exitMatch = function (matchId, userId) {
-    for (let i of matchList[matchId].users) {
+    let matchInfo = matchList[matchId]
+    if (!matchInfo) {
+        return
+    }
+    for (let i of matchInfo.users) {
         if (i.userId == userId) {
             let index = matchList[matchId].users.indexOf(i)
             return matchList[matchId].users.splice(index, 1)
@@ -234,6 +238,7 @@ let fengDings = {
  * @param {*} data 用户的一些信息和创建房间的一些信息
  */
 exports.createRoom = async function (data) {
+
     return new Promise(async (resolve, reject) => {
         //游戏id
         if (typeof (data.isPrivate) !== "number" /*|| data.type == null */ || data.kindId == null) {//金币结算
@@ -359,6 +364,7 @@ exports.enterRoom = async function (data) {
                 [`user_coins${seatIndex}`]: userInfo.coins,
                 [`user_ctrl_param${seatIndex}`]: userInfo.ctrlParam,
             }, "id", roomId);
+            console.log("userInfo", userInfo)
             let player = new Player(roomId, seatIndex, userInfo);
             room.joinRoom(player);
             // if (room.seats.length == 1) {
@@ -576,32 +582,38 @@ exports.settlementJifen = function (roomId) {
     let banker = roomInfo.getBanker();
     let public = roomInfo.public;
     let bankerTotalWin = 0;
+    let bankerTotalWinJifen = 0;
     let nongminTotalWin = {};
     for (let i of roomInfo.seats) {
         if (i.userId == banker.userId) {
             let beishu = public * banker.privateBeishu * roomInfo.nongminBeishu;
-            bankerTotalWin = beishu * roomInfo.diFen;
+            bankerTotalWin = beishu * roomInfo.diZhu;
+            bankerTotalWinJifen = beishu * roomInfo.diFen;
         } else {
             let beishu = public * i.privateBeishu * banker.privateBeishu;
-            nongminTotalWin[i.userId] = beishu * roomInfo.diFen;
+            let temp = {};
+            temp.jinbi = beishu * roomInfo.diZhu
+            temp.jifen = beishu * roomInfo.diFen
+            nongminTotalWin[i.userId] = temp;
+
         }
     }
     console.log("nongminTotalWin", nongminTotalWin)
     if (banker.userId == winner) {
         for (let i of roomInfo.seats) {
             if (i.userId == banker.userId) {
-                i.settlementJifen(bankerTotalWin)
+                i.settlementJifen(bankerTotalWin, bankerTotalWinJifen)
             } else {
-                i.settlementJifen(0 - nongminTotalWin[i.userId])
+                i.settlementJifen(0 - nongminTotalWin[i.userId].jinbi, 0 - nongminTotalWin[i.userId].jifen)
             }
 
         }
     } else {
         for (let i of roomInfo.seats) {
             if (i.userId == banker.userId) {
-                i.settlementJifen(0 - bankerTotalWin)
+                i.settlementJifen(0 - bankerTotalWin, 0 - bankerTotalWinJifen)
             } else {
-                i.settlementJifen(nongminTotalWin[i.userId])
+                i.settlementJifen(nongminTotalWin[i.userId].jinbi, nongminTotalWin[i.userId].jifen)
             }
 
         }

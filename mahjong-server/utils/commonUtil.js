@@ -45,52 +45,52 @@ var commonUtil = {
         return rtn;
     },
     //为{num：1，color：1}结构设计删除数组中的指定值
-    remove:function(arr,value){
-        if(typeof value === "object"){
+    remove: function (arr, value) {
+        if (typeof value === "object") {
             let index;
             try {
-                for (let i of value){
-                    for(let j of arr){
-                        if(j.num===i.num && j.i==value.color){
+                for (let i of value) {
+                    for (let j of arr) {
+                        if (j.num === i.num && j.i == value.color) {
                             let index = arr.indexOf(j);
-                            arr.splice(index,1);
+                            arr.splice(index, 1);
                         }
-                        
+
                     }
-                    
+
                 }
             } catch (error) {
-                
+
             }
 
         }
-        for(let j of arr){
-            if(j.num===value.num && j.color==value.color){
+        for (let j of arr) {
+            if (j.num === value.num && j.color == value.color) {
                 let index = arr.indexOf(j);
-                arr.splice(index,1);
+                arr.splice(index, 1);
             }
-            
+
         }
     },
-    removeOne:function(arr,value){
-        for(let j of arr){
-            if(j.num===value.num && j.color==value.color){
+    removeOne: function (arr, value) {
+        for (let j of arr) {
+            if (j.num == value.num && j.color == value.color) {
                 let index = arr.indexOf(j);
                 // console.log(j)
-                arr.splice(index,1);
+                arr.splice(index, 1);
             }
-            
+
         }
     },
 
-    remove2:function(arr,value){
-        for(let j of arr){
-            if(j==value){
+    remove2: function (arr, value) {
+        for (let j of arr) {
+            if (j == value) {
                 let index = arr.indexOf(j);
                 // console.log(j)
-                arr.splice(index,1);
+                arr.splice(index, 1);
             }
-            
+
         }
     },
     /**
@@ -101,7 +101,7 @@ var commonUtil = {
         var reg = /^[\u4E00-\u9FA5]{2,4}$/;
         if (!reg.test(name)) {
             return false;
-        }else{
+        } else {
             return true;
         }
     },
@@ -141,8 +141,7 @@ var commonUtil = {
         return true;
     },
     //获取指定区间范围随机数，包括lowerValue和upperValue
-    randomFrom:function(lowerValue,upperValue)
-    {
+    randomFrom: function (lowerValue, upperValue) {
         return Math.floor(Math.random() * (upperValue - lowerValue + 1) + lowerValue);
     }
 }

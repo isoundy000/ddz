@@ -40,7 +40,7 @@ function Player(roomId, seatIndex, userInfo) {
     this.totalWinJifen = 0;
     //是否是庄家 0 否 1 是
     this.isBanker = 0;
-    this.jifen = userInfo.jifen;
+    this.jifen = parseInt(userInfo.jifen);
 
     //玩家开始游戏的时间
     this.beginGameTime = dateUtil.getCurrentTimestapm();
@@ -175,10 +175,10 @@ Player.prototype.settlement = async function (totalWin) {
     //保存游戏记录
     let type;
     if (roomInfo.clubId) {
-        type = "ddz_classic"
+        type = "ddz_match"
     }
     else {
-        type = "ddz_match"
+        type = "ddz_classic"
     }
 
     gameService.saveGameRecord(this.userId, this.name, type, 0, actualTotalWin, roomInfo.seatCount, this.roomId, this.numOfGame, 0, roomInfo.clubId, this.isBanker, (err, result) => {
@@ -191,7 +191,7 @@ Player.prototype.settlement = async function (totalWin) {
     //保存消费详情
     await rechargeService.changeUserGoldsAndSaveConsumeRecordAsync(
         this.userId, actualTotalWin, type, "coins",
-        `[跑得快]房间号[${this.roomId}]输或赢的金币`, this.roomId, roomInfo.clubId
+        `[斗地主]房间号[${this.roomId}]输或赢的金币`, this.roomId, roomInfo.clubId
     );
 
 
@@ -208,21 +208,51 @@ Player.prototype.settlement = async function (totalWin) {
 /**
  * 设置总输赢
  */
-Player.prototype.settlementJifen = async function (totalWin) {
+Player.prototype.settlementJifen = async function (totalWin, totalWinJifen) {
     var roomList = roomMgr.getRoomList()
     let roomInfo = roomList[this.roomId]
     //console.log('******更新玩家['+this.userId+']的totalWin******'+totalWin);
-    //说明是赢
-    this.jifen += totalWin;
-    this.totalWinJifen = totalWin
-    gameService.saveGameJiFenRecord(this.userId, this.name, "game_server_paodekuai", 0, this.totalWinJifen, roomInfo.seatCount, this.roomId, this.numOfGame, 0, roomInfo.clubId, (err, result) => {
+    //金币
+    var actualTotalWin = 0;
+    if (totalWin > 0) {
+
+        actualTotalWin = totalWin;
+        if (totalWin > this.coins) {
+            actualTotalWin = this.coins;
+        }
+        this.coins += totalWin;
+    } else {
+        if (this.coins < (0 - totalWin)) {
+            actualTotalWin = (0 - this.coins)
+        } else {
+            actualTotalWin = totalWin;
+        }
+        this.coins += totalWin;
+    }
+    this.totalWinJifen = totalWinJifen
+    this.totalWin = actualTotalWin;
+    console.log("actualTotalWin", actualTotalWin, totalWin, this.userId)
+    //保存游戏记录
+    let type;
+    if (roomInfo.clubId) {
+        type = "ddz_match"
+    }
+    else {
+        type = "ddz_classic"
+    }
+
+    gameService.saveGameJiFenRecord(this.userId, this.name, type, 0, this.totalWin, this.totalWinJifen, roomInfo.seatCount, this.roomId, this.numOfGame, 0, roomInfo.clubId, (err, result) => {
         if (err) {
             console.log(err);
         }
     })
 
 
-
+    //保存消费详情
+    await rechargeService.changeUserGoldsAndSaveConsumeRecordAsync(
+        this.userId, actualTotalWin, type, "coins",
+        `[斗地主比赛场]房间号[${this.roomId}]输或赢的金币`, this.roomId, roomInfo.clubId
+    );
 
 
 
@@ -234,6 +264,7 @@ Player.prototype.settlementJifen = async function (totalWin) {
         await commonService.changeNumberOfObjForTableAsync("t_room_info", { robot_total_win: actualTotalWin }, { room_code: room_code });
     }
 }
+
 /**
  * 重置玩家数据
  */

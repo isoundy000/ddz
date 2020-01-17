@@ -397,7 +397,7 @@ Room.prototype.updateNumOfGame = function () {
  */
 Room.prototype.reset = function () {
     this.minQiangFen = 0;
-    this.nongminBeishu = 1;
+    this.nongminBeishu = 0;
     this.publicBeishu = { chushi: this.chushi, mingpai: 0, qiangdizhu: 0, dipai: 0, zhadan: this.zdBeishu, chuntian: 0, shengpai: 0 };
     this.zhadanNum = 0;
     this.lastPokers = { uesrId: 0, pokers: [] };
