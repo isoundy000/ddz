@@ -1,5 +1,5 @@
-pm2 start ./account_server/app.js  --name account_server  -o ./logs/account_server.log -e ./logs/account_server_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
-pm2 start ./hall_server/app.js  --name hall_server -o ./logs/hall_server.log -e ./logs/hall_server_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
+pm2 start ./account_server/app.js  --name Daccount_server  -o ./logs/account_server.log -e ./logs/account_server_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
+pm2 start ./hall_server/app.js  --name Dhall_server -o ./logs/hall_server.log -e ./logs/hall_server_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
 pm2 start ./game_server_doudizhu_huanle/classic/app.js  --name classic -o ./logs/classic.log -e ./logs/classic_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
 pm2 start ./game_server_doudizhu_huanle/match/app.js  --name match -o ./logs/match.log -e ./logs/match_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
-pm2 start ./staticServer/app.js  --name staticServer -o ./logs/staticServer.log -e ./logs/staticServer_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
+pm2 start ./staticServer/app.js  --name DstaticServer -o ./logs/staticServer.log -e ./logs/staticServer_err.log --log-date-format="YYYY-MM-DD HH:mm Z"
