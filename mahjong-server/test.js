@@ -19,8 +19,10 @@
 // console.log(s2,typeof s2,s2[0])
 // let s3=JSON.parse(s2)
 // console.log(s3[0])
- let s =[]
- s.push(123)
- let j = JSON.stringify(s)
- console.log(j)
- console.log(JSON.parse(j))
+function sortByfen(a, b) {
+    return b.fen - a.fen
+}
+
+let s = [{ fen: 1 }, { fen: 19 }, { fen: 15 }, { fen: 17 }]
+s.sort(sortByfen)
+console.log(s)

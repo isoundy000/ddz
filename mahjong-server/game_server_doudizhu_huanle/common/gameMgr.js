@@ -483,6 +483,10 @@ exports.exitRoom = function (userId) {
 
     var roomId = location.roomId;
     var room = roomList[roomId];
+    if (!room) {
+        return;
+    }
+
     var player = room.getPlayerById(userId);
     delete playerLocation[userId];
     if (room == null) {

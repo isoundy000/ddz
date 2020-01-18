@@ -160,14 +160,14 @@ Player.prototype.settlement = async function (totalWin) {
         if (totalWin > this.coins) {
             actualTotalWin = this.coins;
         }
-        this.coins += totalWin;
+        this.coins += actualTotalWin;
     } else {
         if (this.coins < (0 - totalWin)) {
             actualTotalWin = (0 - this.coins)
         } else {
             actualTotalWin = totalWin;
         }
-        this.coins += totalWin;
+        this.coins += actualTotalWin;
     }
     this.totalWin = actualTotalWin;
     this.allTalWin += actualTotalWin;
@@ -220,17 +220,18 @@ Player.prototype.settlementJifen = async function (totalWin, totalWinJifen) {
         if (totalWin > this.coins) {
             actualTotalWin = this.coins;
         }
-        this.coins += totalWin;
+        this.coins += actualTotalWin;
     } else {
         if (this.coins < (0 - totalWin)) {
             actualTotalWin = (0 - this.coins)
         } else {
             actualTotalWin = totalWin;
         }
-        this.coins += totalWin;
+        this.coins += actualTotalWin;
     }
     this.totalWinJifen = totalWinJifen
     this.totalWin = actualTotalWin;
+    this.jifen += totalWinJifen;
     console.log("actualTotalWin", actualTotalWin, totalWin, this.userId)
     //保存游戏记录
     let type;

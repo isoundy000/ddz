@@ -1229,13 +1229,15 @@ async function getRoomId(userId) {
         },
         baseInfo: ["roomId", (result, callback) => {
             let roomId = result.roomId.roomid
-            if (!roomId) {
+            if (!result.roomId) {
                 return null
             }
             commonService.getTableValuesAsync("base_info", "t_rooms", { id: roomId }, callback)
         }]
     }, function (err, result) {
+        console.log("result", result)
         if (err) {
+            console.log(err)
             return reject(err)
         }
         let base_info = result.baseInfo.base_info

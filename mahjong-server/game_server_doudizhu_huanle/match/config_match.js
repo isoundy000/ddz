@@ -11,6 +11,16 @@ async function xinshou() {
 
     let data = await getMatchDb("xinshou")
     let usersNum = data.min_user_num
+    let award = JSON.parse(data.award_list)
+
+    for (let i of award) {
+        if (i.type == 0) {
+            i.name = i.award + "金币"
+        } else {
+            i.name = i.award
+        }
+
+    }
     return {
         room_type: "xinshou",
         diZhu: data.dizhu,
@@ -25,7 +35,7 @@ async function xinshou() {
         jinji: [21, 12, 3],//晋级名次
         chushifenshu: data.chushifenshu,
         allAward: data.award_name,//总奖励
-        award: data.award, //奖励
+        award: award, //奖励
         //明牌最大倍数
         mingpaiBeishu: 4,
         room_count: -1,
@@ -47,6 +57,15 @@ async function xinshou() {
 async function jingying() {
     let data = await getMatchDb("jingying")
     let usersNum = data.min_user_num
+    let award = JSON.parse(data.award_list)
+    for (let i of award) {
+        if (i.type == 0) {
+            i.name = i.award + "金币"
+        } else {
+            i.name = i.award
+        }
+
+    }
     return {
         room_type: "jingying",
         diZhu: data.dizhu,
@@ -61,7 +80,7 @@ async function jingying() {
         jinji: [21, 12, 3],//晋级名次
         chushifenshu: data.chushifenshu,
         allAward: data.award_name,//总奖励
-        award: data.award, //奖励
+        award: award, //奖励
         //明牌最大倍数
         mingpaiBeishu: 4,
         room_count: -1,
@@ -84,6 +103,15 @@ async function jingying() {
 async function dashi() {
     let data = await getMatchDb("dashi")
     let usersNum = data.min_user_num
+    let award = JSON.parse(data.award_list)
+    for (let i of award) {
+        if (i.type == 0) {
+            i.name = i.award + "金币"
+        } else {
+            i.name = i.award
+        }
+
+    }
     return {
         room_type: "jingying",
         diZhu: data.dizhu,
@@ -98,7 +126,7 @@ async function dashi() {
         jinji: [21, 12, 3],//晋级名次
         chushifenshu: data.chushifenshu,
         allAward: data.award_name,//总奖励
-        award: data.award, //奖励
+        award: award, //奖励
         //明牌最大倍数
         mingpaiBeishu: 4,
         room_count: -1,
@@ -122,6 +150,33 @@ async function bisai_config() {
     let jingying = await getMatchDb("jingying")
     let xinshou = await getMatchDb("xinshou")
     let dashi = await getMatchDb("dashi")
+    let xinshouAward = JSON.parse(xinshou.award_list)
+    let jingyingAward = JSON.parse(jingying.award_list)
+    let dashiAward = JSON.parse(dashi.award_list)
+    for (let i of xinshouAward) {
+        if (i.type == 0) {
+            i.name = i.award + "金币"
+        } else {
+            i.name = i.award
+        }
+
+    }
+    for (let i of jingyingAward) {
+        if (i.type == 0) {
+            i.name = i.award + "金币"
+        } else {
+            i.name = i.award
+        }
+
+    }
+    for (let i of dashiAward) {
+        if (i.type == 0) {
+            i.name = i.award + "金币"
+        } else {
+            i.name = i.award
+        }
+
+    }
     // console.log("jingying", jingying)
     return [{
         img: xinshou.img,
@@ -129,8 +184,11 @@ async function bisai_config() {
         description: xinshou.description,
         award: xinshou.award_name,
         minScoreLimit: xinshou.minScoreLimit,
-
+        summary: xinshou.summary,
+        award_list: xinshouAward,
         fee: xinshou.fee,
+        rule: xinshou.rule,
+
     },
     {
         img: jingying.img,
@@ -138,7 +196,9 @@ async function bisai_config() {
         description: jingying.description,
         award: jingying.award_name,
         minScoreLimit: jingying.minScoreLimit,
-
+        award_list: jingyingAward,
+        summary: jingying.summary,
+        rule: jingying.rule,
         fee: jingying.fee,
     },
     {
@@ -147,9 +207,10 @@ async function bisai_config() {
         description: dashi.description,
         award: dashi.award_name,
         minScoreLimit: dashi.minScoreLimit,
-
-
+        award_list: dashiAward,
+        summary: dashi.summary,
         fee: dashi.fee,
+        rule: dashi.rule,
     },
     ]
 }

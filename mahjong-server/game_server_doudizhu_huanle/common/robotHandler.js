@@ -11,7 +11,9 @@ var commonUtil = require('../../utils/commonUtil');
 // var socketHandler = require('./socketHandler');
 var robotMgr = require('./robotMgr');
 var myConfig = require("../match/config_match")
-
+let club_server = require("../../common/service/clubService")
+let playerService = require("../../common/service/playerService")
+let rechargeService = require("../../common/service/rechargeService")
 /**
  * 机器人金币不足时退出游戏
  */
@@ -83,6 +85,9 @@ exports.qiangdizhu = function (socket, data) {
             if (roomInfo.noQiang % 3 == 0) {
                 let random = commonUtil.randomFrom(1, 3)
                 let banker = roomInfo.seats[random]
+                if (!banker) {
+                    banker = player
+                }
                 roomInfo.setBanker(banker.userId)
             } else {
                 for (let i of roomInfo.seats) {
@@ -454,13 +459,7 @@ async function exit(socket, data) {
     if (!userId) {
         return;
     }
-    //检查传过来的userId是否有误
-    let userid = await checkUserId(socket, userId);
-    console.log("userid", userid);
-    if (userid === 1 || !userid || userid !== userId) {
-        socket.emit('system_error', { errcode: 500, errmsg: "传入的数据有误" });
-        return;
-    }
+
     var roomInfo = gameMgr.getRoomByUserId(userId);
     if (!roomInfo) {
         return;
@@ -678,11 +677,12 @@ function tishi(socket, data) {
 async function buchu(socket, data) {
     let pokers = data.pokers;
     let userId = data.userId;
-    let roomInfo = gameMgr.getRoomByUserId(userId)
+
     if (socket && !userId) {
         socket.emit("chupai_result", { errcode: 1, errmsg: "参数错误", flag: "buchu" });
         return;
     }
+    let roomInfo = gameMgr.getRoomByUserId(userId)
     // userMgr.bind(userId,socket)
     let player = roomInfo.getPlayerById(userId)
     let nextPlayer = roomInfo.getNextTurnPlayer(player.seatIndex);
@@ -933,11 +933,17 @@ function gameOver(roomId) {
         }, 1000)
         if (roomInfo.clubId) {
             let matchUsers = gameMgr.getMatchUsers(roomInfo.clubId)
+            for (let i of roomInfo.seats) {
+                gameMgr.setMatchUsers(roomInfo.clubId, i.userId, "jifen", i.jifen)
+            }
             matchUsers.sort(sortByfen)
             let length = matchUsers.length
             for (let i in matchUsers) {
                 i = parseInt(i)
                 let socket = userMgr.get(matchUsers[i].userId)
+                if (!socket) {
+                    socket = userMgr.getT(matchUsers[i].userId)
+                }
                 socket.emit("rank_result2", { rank: i + 1, usersNum: length })
             }
             setTimeout(async function () {
@@ -961,7 +967,24 @@ function gameOver(roomId) {
 }
 
 function sortByfen(a, b) {
-    return a.fen - b.fen
+    return b.jifen - a.jifen
+}
+
+
+async function getCoins(userId) {
+    return new Promise((resolve, reject) => {
+        playerService.getUserDataByUserId(userId, function (err, result) {
+            if (err) {
+                console.log(err)
+                return;
+            }
+            if (result) {
+                resolve(result.coins)
+                coins = result.coins;
+            }
+        });
+    })
+
 }
 /**
  * 
@@ -1053,6 +1076,7 @@ function matchStart(matchId, roomId, nowdiFen, nowdiZhu, needStop) {
             }
         }
         let randomUsers = gameMgr.getRandomUser(matchId);
+
         randomUsers.sort(sortByfen)
         loop(randomUsers)
 
@@ -1169,13 +1193,20 @@ async function match(matchId) {
     let nowdiZhu = matchInfo.nowdiZhu + nowJushu * 2
     let nowUsersLength = matchInfo.users.length
     let stop = 0
+    for (let i of matchInfo.users) {
+        let coins = await getCoins(i.userId)
+        if (coins <= 0) {
+            let index = matchInfo.users.indexOf(i)
+            matchInfo.users.splice(index, 1)
+        }
+    }
     if (nowUsersLength > jinjiConfig[0]) {
         nowLevel = 0
     }
     if (nowUsersLength <= jinjiConfig[0] && nowUsersLength > jinjiConfig[1]) {
         nowLevel = 1
     }
-    if (nowUsersLength == 3) {
+    if (nowUsersLength <= 3) {
         nowLevel = 2
     }
     if (matchInfo.users.length <= jinjiConfig[2]) {
@@ -1188,7 +1219,8 @@ async function match(matchId) {
         if (matchInfo.users.length > jinjiConfig[nowLevel]) {
             // let matchUsers = matchInfo.users.sort(sortByfen)
             for (let i of matchUsers) {
-                if (i.jifen < nowLimitFen) {
+                let coins = await getCoins(i.userId)
+                if (i.jifen < nowLimitFen || coins <= 0) {
                     let index = matchUsers.indexOf(i)
                     matchInfo.users.splice(index, 1)
                     let socket = userMgr.get(i.userId)
@@ -1198,6 +1230,7 @@ async function match(matchId) {
                         errmsg: "你当前排名第" + index + "名已被淘汰",
                         stop: 1
                     })
+                    jiangli(index, i);
                     if (!socket) {
                         socket = userMgr.getT(i.userId)
                     }
@@ -1231,7 +1264,8 @@ async function match(matchId) {
         } else {
             for (let i of matchUsers) {
                 let index = matchUsers.indexOf(i)
-                if (index > jinjiConfig[1]) {
+                let coins = await getCoins(i.userId)
+                if (index > jinjiConfig[1] || coins <= 0) {
                     matchInfo.users.splice(index, 1)
                     let socket = userMgr.get(i.userId)
 
@@ -1240,12 +1274,12 @@ async function match(matchId) {
                         errmsg: "你当前排名" + index + "名已被淘汰",
                         stop: 1
                     })
-                    if (!socket) {
-                        socket = userMgr.getT(i.userId)
-                    }
-                    exports.exit(socket, { userId: i.userId, isMe: 1 })
+                    jiangli(index, i);
                 }
-
+                if (!socket) {
+                    socket = userMgr.getT(i.userId)
+                }
+                exports.exit(socket, { userId: i.userId, isMe: 1 })
             }
             nowLevel = 2
             gameMgr.setMatchInfo(matchId, "level", 2)
@@ -1253,10 +1287,11 @@ async function match(matchId) {
         }
     }
     if (nowLevel == 2) {
+
         console.log("进入决赛了")
         let jushu = matchInfo.users[0].jushu
         console.log("进入决赛了", jushu)
-        if (jushu < 2) {
+        if (jushu < 2 && matchInfo.users.length == 3) {
             console.log("进入决赛了2", jushu)
             let nowJushu = jushu + 1
             for (let i of matchInfo.users) {
@@ -1271,25 +1306,44 @@ async function match(matchId) {
 
         } else {
             for (let i in matchUsers) {
+                gameMgr.exitRoom(i.userId)
                 userMgr.sendMsg(matchUsers[i].userId, "bisai_result", {
                     errcode: 200,
                     errmsg: "比赛结束",
                     rank: i,
-                    award: "",
+                    award: config.award,
                     stop: 1
                 })
-                let socket = userMgr.get(i.userId)
+                jiangli(i, matchUsers[i]);
+                let socket = userMgr.get(matchUsers[i].userId.userId)
                 if (!socket) {
-                    socket = userMgr.getT(i.userId)
+                    socket = userMgr.getT(matchUsers[i].userId.userId)
                 }
-                exports.exit(socket, { userId: i.userId, isMe: 1 })
+                exports.exit(socket, { userId: matchUsers[i].userId.userId, isMe: 1 })
             }
 
+            gameMgr.DelMatch(matchId)
 
             return "stop"
         }
     }
+    function jiangli(index, i) {
+        index = parseInt(index)
+        let length = config.award.length
+        if (index < length) {
+            let count = config.award[index].award
+            console.log()
+            let content = "用户ID" + i.userId + i.name + "在比赛场" + config.room_type + "获得第" + (index + 1) + "名奖励" + config.award[index].name
+            console.log("content", content)
+            if (config.award[index].type == 0) {
+                rechargeService.changeUserGoldsAndSaveConsumeRecord(i.userId, count, "ddz_math", "coins", content, function (err, value) { console.log(err) })
+                club_server.sendemail(config.award[index].name, i.userId, i.name, function (err, value) { console.log(err) })
+            } else {
+                club_server.sendemail(config.award[index].name, i.userId, function (err, value) { console.log(err) })
+            }
 
+        }
+    }
 }
 /**
  * 发表情

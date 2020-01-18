@@ -145,13 +145,17 @@ exports.login = async function (socket, data, config) {
     }
     await getCoins();
     let async = require("async")
-    async function getRoomId() {
+    async function getRoomId(userId) {
 
         async.auto({
             roomId: (callback) => {
                 playerService.getUserDataByUserId(userId, callback)
             },
             baseInfo: ["roomId", (result, callback) => {
+                console.log("result", result)
+                if (!result.roomId) {
+                    return null
+                }
                 let roomId = result.roomId.roomid
                 if (!roomId) {
                     return null
@@ -162,13 +166,14 @@ exports.login = async function (socket, data, config) {
             if (err) {
                 return reject(err)
             }
+            console.log("result2", result)
             let base_info = result.baseInfo.base_info
             if (!base_info) {
                 return null
             }
             base_info = JSON.parse(base_info)
             let clubId = base_info.clubId
-            return { roomId: result.roomId.roomid, clubId: clubId }
+            return { roomId: result.roomId.roomid, clubId: clubId, type: base_info.room_type }
         })
 
 
@@ -183,9 +188,9 @@ exports.login = async function (socket, data, config) {
     //选择房间
     var roomId = "";
     let room_id;
-    let info = await getRoomId();
-    console.log("info", info)
-    if (info && !info.clubId) {
+    let info = await getRoomId(userId);
+    console.log("info1", info);
+    if (info && !info.clubId && info.type == type) {
         roomId = info.roomId
         room_id = info.roomId
     }
@@ -209,12 +214,12 @@ exports.login = async function (socket, data, config) {
     }
 
     for (let i of keys) {
-        if (roomList[i].getPlayerCount() < roomList[i].seatCount) {
+        if (roomList[i].getPlayerCount() < roomList[i].seatCount && roomList[i].room_type == type) {
             roomId = i;
             break;
         }
     }
-    if (roomId === "") {
+    if (roomId == "") {
         async function createRoom() {
             return new Promise(async (resolve, reject) => {
                 room_config.ip = config.SERVER_IP
@@ -1195,10 +1200,11 @@ exports.buchu = function (socket, data) {
 
 
     let roomInfo = gameMgr.getRoomByUserId(userId);
-    let nextPlayer = roomInfo.getNextTurnPlayer(roomInfo.currentTurn);
+    let player = roomInfo.getPlayerById(userId)
+    let nextPlayer = roomInfo.getNextTurnPlayer(player.seatIndex);
     let nextSocket = userMgr.get(nextPlayer.userId);
     let tishi = exports.tishi(nextSocket, { userId: nextPlayer.userId, chupai: 1 });
-    console.log("nextSocketaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nextSocket.userId)
+    // console.log("nextSocketaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", nextSocket.userId)
     console.log("tishi", tishi)
 
     userMgr.broacastByRoomId('gb_buchu', { userId: userId, countdown: roomInfo.OPT_COUNTDOWN, gameState: roomInfo.gameState }, roomInfo.roomId);
@@ -1208,7 +1214,7 @@ exports.buchu = function (socket, data) {
     if (roomInfo.lastPokers.userId == nextPlayer.userId) {//如果自己第一个出牌或者自己出的牌没有人压得上则必须出牌
         var chupai_flag = 1;
     }
-    let player = roomInfo.getPlayerById(userId)
+
     player.clearTimer();
     checkGameState(userId, roomInfo.roomId, chupai_flag);
 }
